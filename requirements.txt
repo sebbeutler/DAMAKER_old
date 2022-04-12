@@ -1,0 +1,12 @@
+pillow
+libtiff
+opencv-python
+
+numpy
+vedo
+matplotlib
+
+pynstaller
+pyside
+
+setuptools
