@@ -1,17 +1,22 @@
+import math
 from vedo.applications import *
 from vedo.picture import Picture
 from tiffile import *
 from os.path import exists
+import cv2
 
 import numpy as np
 
-class TiffObject:
+class TiffChannel:
     def __init__(self, name: str="", data: np.ndarray=[], metadata: list={}, channel: int=0):
         self.name = name
         self.data = np.array(data)
-        self.shape = self.data.shape
         self.metadata = metadata
         self.channel = channel
+    
+    @property
+    def shape(self):
+        return self.data.shape
     
     def save(self, filename: str):
         imwrite(filename, self.data, metadata=self.metadata)
@@ -26,8 +31,8 @@ def openTiff(filename: str):
         filename (str): name of the file
 
     Returns:
-        TiffObject: the corresponding object loaded from the file
-        list(TiffObject): a list of TiffObject corresponding to each channel of the file
+        TiffChannel: the corresponding object loaded from the file
+        list(TiffChannel): a list of TiffChannel corresponding to each channel of the file
     """
     # verify if the file exist
     if not exists(filename):
@@ -43,20 +48,45 @@ def openTiff(filename: str):
     fn = filename.split("/")[-1]
     # Split the file by channel
     if len(data.shape) == 3:
-        return TiffObject(fn, data, metadata)
+        return TiffChannel(fn, data, metadata)
     elif len(data.shape) == 4:
         objs = []
         for i in range(data.shape[1]):
-            objs.append(TiffObject(fn, data[:, i, :, :], metadata, i))
+            objs.append(TiffChannel(fn, data[:, i, :, :], metadata, i))
         return objs
 
-def crop(obj: TiffObject, p1, p2):
-    obj.data = obj.data[:, p1[1]:p2[1], p1[0]:p2[0]]
-    obj.shape = obj.data.shape
-    return obj
+def crop(chn: TiffChannel, p1, p2):
+    chn.data = chn.data[:, p1[1]:p2[1], p1[0]:p2[0]]
+    return chn
+
+def rotate(chn: TiffChannel, degrees: float):
+    # create a rotation matric
+    w, h = (chn.shape[2], chn.shape[1])
+    img_center = (chn.shape[2]/2, chn.shape[1]/2)
+    rot = cv2.getRotationMatrix2D(img_center, 30, 1)
+    
+    # calculate the new size of a frame
+    rad = math.radians(30)
+    sin = math.sin(rad)
+    cos = math.cos(rad)
+    b_w = int((h * abs(sin)) + (w * abs(cos)))
+    b_h = int((h * abs(cos)) + (w * abs(sin)))
+
+    # re-center the frame
+    rot[0, 2] += ((b_w / 2) - img_center[0])
+    rot[1, 2] += ((b_h / 2) - img_center[1])
+    
+    # new stack of frame with the correct size
+    new_data = np.zeros(shape=(chn.shape[0], b_h, b_w), dtype=np.int32)
+    
+    # apply rotation
+    for i in range(chn.shape[0]):
+        new_data[i] = cv2.warpAffine(chn.data[i], rot, (b_w, b_h), flags=cv2.INTER_LINEAR)
+    
+    chn.data = new_data
 
 _plt = None
-def plot(tiff: TiffObject):
+def plot(tiff: TiffChannel):
     global _plt
     actors = []
 

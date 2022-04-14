@@ -8,11 +8,12 @@ def app():
             - plot : display the current stack of image.
             - invert : invert the color on each grayscale frame.
             - crop x1 y1 x2 y2 : cut the frame stack on the given coordinates.
+            - rotate degrees : apply a rotation on the frame stack from the center
             - quit | q : stop the program.
     """
     print(help_str)
     
-    tiff = TiffObject("")
+    tiff = TiffChannel("")
     
     stop = False
     while not stop:
@@ -37,6 +38,11 @@ def app():
         elif inp.startswith("crop"):
             if len(args) > 4:
                 crop(tiff, (int(args[1]), int(args[2])), (int(args[3]), int(args[4])))
+            else:
+                print("[DAMAKER] Warning: not enough arguments")
+        elif inp.startswith("rotate"):
+            if len(args) > 1:
+                rotate(tiff, int(args[1]))
             else:
                 print("[DAMAKER] Warning: not enough arguments")
         elif inp.startswith("quit") or inp == "q":

@@ -1,3 +1,4 @@
+import math
 from aicsimageio import AICSImage
 from vedo import *
 from vedo.picture import Picture
@@ -6,6 +7,7 @@ from vedo.applications import *
 from aicsimageio.writers import OmeTiffWriter
 from tiffile import *
 from processing import *
+import cv2
 
 def test1():
     img = AICSImage("../resources/Threshold3.4UserAveragedC1E1.tif")
@@ -47,13 +49,13 @@ def test5():
     # img = imread('../resources/Threshold3.4UserAveragedC1E1.tif')
     img = imread('../resources/E1.tif')
     i = img[:, 1, :, :]
-    obj = TiffObject("test", i, [])
-    plot(obj)
+    chn = TiffChannel("test", i, [])
+    plot(chn)
 
 def test6():
-    obj = openTiff('../resources/Threshold3.4UserAveragedC1E1.tif')
-    obj.invert()
-    plot(obj)
+    chn = openTiff('../resources/Threshold3.4UserAveragedC1E1.tif')
+    chn.invert()
+    plot(chn)
 
 def test7():
     with TiffFile('../resources/Threshold3.4UserAveragedC1E1.tif') as tif:
@@ -62,9 +64,37 @@ def test7():
         print(f'{k} {e}')
 
 def test8():
-    obj = openTiff("../resources/Threshold3.4UserAveragedC1E1.tif")
-    crop(obj, (50, 50), (100, 100))
-    plot(obj)
+    chn = openTiff("../resources/Threshold3.4UserAveragedC1E1.tif")
+    crop(chn, (50, 50), (100, 100))
+    plot(chn)
+
+def test9():
+    chn = openTiff("../resources/Threshold3.4UserAveragedC1E1.tif")
+    
+    w, h = (chn.shape[2], chn.shape[1])
+    img_center = (chn.shape[2]/2, chn.shape[1]/2)
+    rot = cv2.getRotationMatrix2D(img_center, 30, 1)
+    
+    rad = math.radians(30)
+    sin = math.sin(rad)
+    cos = math.cos(rad)
+    b_w = int((h * abs(sin)) + (w * abs(cos)))
+    b_h = int((h * abs(cos)) + (w * abs(sin)))
+
+    rot[0, 2] += ((b_w / 2) - img_center[0])
+    rot[1, 2] += ((b_h / 2) - img_center[1])
+    
+    out_img = cv2.warpAffine(chn.data[55], rot, (b_w, b_h), flags=cv2.INTER_LINEAR)
+    
+    cv2.imshow("img", out_img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+def test10():
+    chn = openTiff("../resources/Threshold3.4UserAveragedC1E1.tif")
+    chn.invert()
+    rotate(chn, 30)
+    plot(chn)
 
 if __name__ == '__main__':
-    test8()
+    test10()
