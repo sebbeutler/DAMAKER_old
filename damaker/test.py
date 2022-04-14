@@ -96,5 +96,15 @@ def test10():
     rotate(chn, 30)
     plot(chn)
 
+def test11():
+    chn = openTiff("../resources/Threshold3.4UserAveragedC1E1.tif")
+    rotate90(chn)
+    plot(chn)
+
+def test12():
+    chn = openTiff("../resources/Threshold3.4UserAveragedC1E1.tif")
+    flipHorizontally(chn)
+    plot(chn)
+    
 if __name__ == '__main__':
-    test10()
+    test12()

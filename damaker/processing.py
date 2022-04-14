@@ -85,6 +85,33 @@ def rotate(chn: TiffChannel, degrees: float):
     
     chn.data = new_data
 
+def rotateType(chn: TiffChannel, rotType):
+    if rotType == cv2.ROTATE_180:
+        new_data = np.zeros(shape=chn.shape, dtype=np.int32)
+    else:
+        new_data = np.zeros(shape=(chn.shape[0], chn.shape[2], chn.shape[1]), dtype=np.int32)
+    
+    for i in range(chn.shape[0]):
+        new_data[i] = cv2.rotate(chn.data[i], rotType)
+    chn.data = new_data
+
+def rotate90(chn: TiffChannel):
+    rotateType(chn, cv2.ROTATE_90_CLOCKWISE)
+
+def rotate180(chn: TiffChannel):
+    rotateType(chn, cv2.ROTATE_180)
+
+def rotate270(chn: TiffChannel):
+    rotateType(chn, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    
+def flipHorizontally(chn: TiffChannel):
+    for i in range(chn.shape[0]):
+        chn.data[i] = cv2.flip(chn.data[i], 1)
+
+def flipVertically(chn: TiffChannel):
+    for i in range(chn.shape[0]):
+        chn.data[i] = cv2.flip(chn.data[i], 0)
+
 _plt = None
 def plot(tiff: TiffChannel):
     global _plt
