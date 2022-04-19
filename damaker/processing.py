@@ -59,14 +59,26 @@ def crop(chn: TiffChannel, p1, p2):
     chn.data = chn.data[:, p1[1]:p2[1], p1[0]:p2[0]]
     return chn
 
-def rotate(chn: TiffChannel, degrees: float):
+def rotate(chn: TiffChannel, degrees: float, inter: str="bicubic"):
+    interpolations = {
+        "nearest": cv2.INTER_NEAREST,
+        "bilinear": cv2.INTER_LINEAR,
+        "bicubic": cv2.INTER_CUBIC,
+        "area": cv2.INTER_AREA,
+        "lanczos4": cv2.INTER_LANCZOS4
+    }
+    
+    if inter not in interpolations.keys():
+        print("[DAMAKER] Error: rotate() -> interpolation algorithm unkown.")
+        return
+    
     # create a rotation matric
     w, h = (chn.shape[2], chn.shape[1])
     img_center = (chn.shape[2]/2, chn.shape[1]/2)
-    rot = cv2.getRotationMatrix2D(img_center, 30, 1)
+    rot = cv2.getRotationMatrix2D(img_center, degrees, 1)
     
     # calculate the new size of a frame
-    rad = math.radians(30)
+    rad = math.radians(degrees)
     sin = math.sin(rad)
     cos = math.cos(rad)
     b_w = int((h * abs(sin)) + (w * abs(cos)))
@@ -81,7 +93,7 @@ def rotate(chn: TiffChannel, degrees: float):
     
     # apply rotation
     for i in range(chn.shape[0]):
-        new_data[i] = cv2.warpAffine(chn.data[i], rot, (b_w, b_h), flags=cv2.INTER_LINEAR)
+        new_data[i] = cv2.warpAffine(chn.data[i], rot, (b_w, b_h), flags=interpolations[inter])
     
     chn.data = new_data
 
@@ -111,6 +123,28 @@ def flipHorizontally(chn: TiffChannel):
 def flipVertically(chn: TiffChannel):
     for i in range(chn.shape[0]):
         chn.data[i] = cv2.flip(chn.data[i], 0)
+
+def pixelIntensity(chn: TiffChannel, frameId: int=-1):
+    """Compute the amount of each pixel values in a frame or a stack
+
+    Args:
+        chn (TiffChannel): frame stack
+        frameId (int, optional): chose a specific frame. use -1 to compute the entire stack
+
+    Returns:
+        ndarray: array of length 256 where each element represent the pixel count in order 
+    """    
+    if frameId < 0:
+        data = chn.data
+    else:
+        data = chn.data[frameId]    
+    
+    px_intensity = np.zeros(shape=(256), dtype=np.int32)
+    
+    for px in data:
+        px_intensity[px] += 1
+    
+    return px_intensity
 
 _plt = None
 def plot(tiff: TiffChannel):

@@ -8,6 +8,8 @@ from aicsimageio.writers import OmeTiffWriter
 from tiffile import *
 from processing import *
 import cv2
+from vedo.pyplot import plot as vplot
+from vedo.pyplot import PlotBars
 
 def test1():
     img = AICSImage("../resources/Threshold3.4UserAveragedC1E1.tif")
@@ -105,6 +107,44 @@ def test12():
     chn = openTiff("../resources/Threshold3.4UserAveragedC1E1.tif")
     flipHorizontally(chn)
     plot(chn)
+
+def test13():
+    chn = openTiff("../resources/E1.tif")[0]
+    img = chn.data[55]
     
+    px_int = np.zeros(shape=(256), dtype=np.int32)
+    
+    for px in img:
+        px_int[px] += 1
+    
+    vplot(px_int).show()
+
+def test14():
+    chn = openTiff("../resources/Threshold3.4UserAveragedC1E1.tif")
+    chn.invert()
+    plot(chn)
+    rotate90(chn)
+    plot(chn)
+    flipVertically(chn)
+    plot(chn)
+
+
+import aicsimageio.readers.bioformats_reader as br
+from aicsimageio.writers import OmeTiffWriter
+
+def test15():
+    file = br.BioformatsReader("../resources/Threshold3.4UserAveragedC1E1.tif")
+    OmeTiffWriter.save(file.data, "test.tif", physical_pixel_sizes=file.physical_pixel_sizes)    
+    
+    with TiffFile("../resources/E1.tif") as tiff:
+        print(tiff.ome_metadata)
+    
+    with TiffFile("test.tif") as tiff:
+        print(tiff.ome_metadata)
+
+def test16():
+    file_metadata = br.BioFile("../resources/Threshold3.4UserAveragedC1E1.tif")
+    print(file_metadata.ome_metadata.images)
+
 if __name__ == '__main__':
-    test12()
+    test16()
