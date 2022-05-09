@@ -64,7 +64,7 @@ while True:
 s1 = load(a).extractLargestRegion()
 s2 = load(b).extractLargestRegion()
 
-s1.distanceToMesh(s2, signed=True, negate=False)
+s1.distanceToMesh(s2, signed=True)
 s1.cmap(input_array="Distance", cname=lut)
 s1.addScalarBar(title='Signed\nDistance(\mum)')
 

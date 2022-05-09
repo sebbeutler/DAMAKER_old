@@ -3,3 +3,9 @@
 *.lif
 
 *.pyc
+*.csv
+*.xls
+*.obj
+.vscode/
+__pycache__/
+/.metadata/
