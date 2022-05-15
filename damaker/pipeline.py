@@ -1,33 +1,61 @@
-
-from processing import *
-from utils import *
-
 # TODO: take **kwargs into account
+from inspect import signature
+
+from .Channel import Channel, Channels
 
 class Operation:    
-    def __init__(self, func, args):
+    def __init__(self, func=None, args=[], name=""):
         self.func = func
         self.args = args
+        self.name = name
         self.output = None
 
-    def run(self):
-        arguments = [] 
-        
+    def run(self):       
+        arg_id = 0
+        sign = signature(self.func)
+        arguments = []
         for arg in self.args:
-            if type(arg) is Operation:
-                arguments.append(arg.output)
-            elif type(arg) is list:
-                arg_as_list = []
+            if type(arg) is list:
+                outputs = []                    
                 for i in range(len(arg)):
                     if type(arg[i]) is Operation:
-                        arg_as_list.append(arg[i].output)
+                        outputs.append(arg[i].output)
                     else:
-                        arg_as_list.append(arg[i])                
-                arguments.append(arg_as_list)
+                        outputs.append(arg[i])                
+                arguments.append(outputs)
+            elif type(arg) is Operation:
+                arguments.append(arg.output)                    
             else:
-                arguments.append(arg)                
+                arguments.append(arg)
         
-        self.output = self.func(*arguments)
+        
+        batch_size = 0     
+        sign = signature(self.func)
+        arg_id = 0
+        for name in sign.parameters:
+            param = sign.parameters[name]
+            arg = arguments[arg_id]
+            if param.annotation is Channel and type(arg) is list:
+                batch_size = len(arg)
+                break
+        
+        if batch_size == 0:
+            self.output = self.func(*arguments)
+            return
+        
+        self.output = []
+        for i in range(batch_size):
+            arg_id = 0
+            args_tmp = arguments.copy()
+            for name in sign.parameters:
+                param = sign.parameters[name]
+                arg = arguments[arg_id]
+                if param.annotation is Channel and type(arg) is list:
+                    args_tmp[arg_id] = arguments[arg_id][i]
+            self.output.append(self.func(*args_tmp))
+    
+    def __str__(self) -> str:
+        return self.name
         
 
 class Pipeline:
@@ -36,6 +64,10 @@ class Pipeline:
     
     def add(self, func, *args):
         op = Operation(func, args)
+        self.operations.append(op)
+        return op
+
+    def addOperation(self, op):
         self.operations.append(op)
         return op
     

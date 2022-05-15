@@ -1,0 +1,16 @@
+[
+    {
+        "name": "channelFlipHorizontally",
+        "function": "channelFlipHorizontally",
+        "args": [
+            null
+        ]
+    },
+    {
+        "name": "channelFlipVertically",
+        "function": "channelFlipVertically",
+        "args": [
+            "%channelFlipHorizontally"
+        ]
+    }
+]

@@ -36,8 +36,8 @@ public class DamakerGateway {
 	};
 	
 	public static void main(String[] args) {		
-		// DamakerGateway dg = new DamakerGateway();		
-		// dg.start();
+		DamakerGateway dg = new DamakerGateway();		
+		dg.start();
 		
 		/*
 		WekaSegmentation segmentator = new WekaSegmentation(  IJ.openImage( "../../resources/segmentation/C1-E0.tif" ) );
@@ -63,22 +63,17 @@ public class DamakerGateway {
 		
 		//IJ.save(img, "out.tif");
 		
-		
+		/*
 		new ij.ImageJ();
 		Weka_Segmentation ws = new Weka_Segmentation();
 		ws.run("");
+		*/
 		
 	}
 	
 	GatewayServer gatewayServer;
 	public DamakerGateway() {
 		gatewayServer = new GatewayServer(this);
-	}
-	
-	public void prl(byte[] l) {
-		for (byte b : l) {
-			System.out.println(b);
-		}
 	}
 	
 	public void start() {
@@ -94,14 +89,17 @@ public class DamakerGateway {
 		System.out.println(arg);
 	}
 	
+	
 	public void runSegmentation(String filepath, String modelpath, String outpath) {
 		ImagePlus input  = IJ.openImage( filepath );
 		
 		WekaSegmentation segmentator = new WekaSegmentation( input );
 		segmentator.setEnabledFeatures(enabledFeatures);
 		
-		if (!segmentator.loadClassifier(modelpath))
+		if (!segmentator.loadClassifier(modelpath)) {
 			System.out.println("Weka - Could not load training model");
+			return;
+		}
 		
 		segmentator.applyClassifier(false);
 		ImagePlus classifiedImage = segmentator.getClassifiedImage();
@@ -109,17 +107,51 @@ public class DamakerGateway {
 		segmentator.shutDownNow();
 	}
 	
-	public void runSegmentation(ImagePlus img, String modelpath, String outpath) {		
+	public void runSegmentation(ImagePlus img, String modelpath, String outpath) {
+		
 		WekaSegmentation segmentator = new WekaSegmentation( img );
 		segmentator.setEnabledFeatures(enabledFeatures);
 		
-		if (!segmentator.loadClassifier(modelpath))
+		if (!segmentator.loadClassifier(modelpath)) {
 			System.out.println("Weka - Could not load training model");
+			return;
+		}
 		
 		segmentator.applyClassifier(false);
 		ImagePlus classifiedImage = segmentator.getClassifiedImage();
 		IJ.save(classifiedImage, outpath);
 		segmentator.shutDownNow();
+	}
+	
+	public byte[][] runSegmentation(ImagePlus img, String modelpath) {		
+		WekaSegmentation segmentator = new WekaSegmentation( img );
+		segmentator.setEnabledFeatures(enabledFeatures);
+
+		if (!segmentator.loadClassifier(modelpath)) {
+			System.out.println("Weka - Could not load training model");
+			return null;
+		}
+		
+		segmentator.applyClassifier(false);
+		ImagePlus classifiedImage = segmentator.getClassifiedImage();
+
+		IJ.save(classifiedImage, "test.tif");
+		segmentator.shutDownNow();
+		return imagePlusToByteArray(classifiedImage);
+	}
+	
+	public byte[][] imagePlusToByteArray(ImagePlus img) {
+		Object[] arr = img.getStack().getImageArray();
+		byte[][] b_arr = new byte[img.getStackSize()][img.getHeight() + img.getWidth()];
+		
+		int j=0;
+		for (int i=0; i < arr.length; i++) {
+			if (arr[i] != null) {
+				b_arr[j] = (byte[]) arr[i];
+				j++;
+			}
+		}
+		return b_arr;
 	}
 	
 	public ImagePlus numpyToImagePlus(byte[] px, int w, int h, int d) {
@@ -130,9 +162,5 @@ public class DamakerGateway {
 		}
 		
 		return new ImagePlus("", img_stack);
-	}
-	
-	public void prObj(Object o) {
-		System.out.println(o.getClass());
 	}
 }

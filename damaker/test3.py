@@ -13,14 +13,14 @@ def resample(image, transform):
     return sitk.Resample(image, reference_image, transform, interpolator, default_value)
 
 def plotSITKImage(img):
-    plotChannel(TiffChannel("", sitk.GetArrayFromImage(img)))
+    plotChannel(Channel("", sitk.GetArrayFromImage(img)))
 
-chn1 = openTiff_hybrid("../resources/registration/C1-E0.tif")[0]
+chn1 = loadChannelsFromFile("../resources/registration/C1-E0.tif")[0]
 ref = sitk.GetImageFromArray(chn1.data.astype(np.float32))
 ref.SetSpacing(tuple(chn1.px_sizes))
 
 
-chn2 = openTiff_hybrid("../resources/registration/C1-E1.tif")[0]
+chn2 = loadChannelsFromFile("../resources/registration/C1-E1.tif")[0]
 mov = sitk.GetImageFromArray(chn2.data.astype(np.float32))
 mov.SetSpacing(tuple(chn2.px_sizes))
 

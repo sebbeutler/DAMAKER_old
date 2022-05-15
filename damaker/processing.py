@@ -1,38 +1,42 @@
-import imp
+import os
+import subprocess
 import math
-from tiffile import TiffFile
-from vedo.applications import *
-from vedo.picture import Picture
-from os.path import exists
 import cv2
-import aicsimageio.readers.bioformats_reader as bioreader
-from aicsimageio.types import PhysicalPixelSizes
-from aicsimageio.writers import OmeTiffWriter
-import typing
 import numpy as np
-from vedo import Plotter
-from scipy import ndimage
-from skimage import measure
-import mcubes
-from tiffChannel import *     
-from vedo import * 
+
 import vedo
+from vedo import Mesh
+from vedo.applications import *
 
-def channelSelect(channels, id: int):
-    return channels[id]
+from aicsimageio.types import PhysicalPixelSizes
+from scipy import ndimage
 
-def channelSave(chn: TiffChannel, filename: str):
-    chn.save(filename)
+from py4j.java_gateway import JavaGateway
+from py4j.java_collections import JavaArray
 
-def channelInvert(chn: TiffChannel):    
-    chn.data = 255 - chn.data
-    return chn
+from .utils import StrFilePath, plotArray, plotChannel
+from .Channel import Channel, Channels
 
-def channelCrop(chn: TiffChannel, p1, p2):
-    chn.data = chn.data[:, p1[1]:p2[1], p1[0]:p2[0]]
-    return chn
+def selectChannels(input: Channel, id: int):
+    """
+        Category: Channel filter
+        Desc: Choose a specific channels
+    """
+    channels = []
+    for channel in input:
+        if channel.id == id:
+            channels.append(channel)
+    return channels
 
-def channelRotate(chn: TiffChannel, degrees: float, inter: str="bicubic"):
+def invertChannel(input: Channel):
+    input.data = 255 - input.data
+    return input
+
+def channelCrop(input: Channel, p1, p2):
+    input.data = input.data[:, p1[1]:p2[1], p1[0]:p2[0]]
+    return input
+
+def channelRotate(input: Channel, degrees: float, inter: str="bicubic"):   
     interpolations = {
         "nearest": cv2.INTER_NEAREST,
         "bilinear": cv2.INTER_LINEAR,
@@ -46,8 +50,8 @@ def channelRotate(chn: TiffChannel, degrees: float, inter: str="bicubic"):
         return
     
     # create a rotation matric
-    w, h = (chn.shape[2], chn.shape[1])
-    img_center = (chn.shape[2]/2, chn.shape[1]/2)
+    w, h = (input.shape[2], input.shape[1])
+    img_center = (input.shape[2]/2, input.shape[1]/2)
     rot = cv2.getRotationMatrix2D(img_center, degrees, 1)
     
     # calculate the new size of a frame
@@ -62,53 +66,54 @@ def channelRotate(chn: TiffChannel, degrees: float, inter: str="bicubic"):
     rot[1, 2] += ((b_h / 2) - img_center[1])
     
     # new stack of frame with the correct size
-    new_data = np.zeros(shape=(chn.shape[0], b_h, b_w), dtype=np.int32)
+    new_data = np.zeros(shape=(input.shape[0], b_h, b_w), dtype=np.int32)
     
     # apply rotation
-    for i in range(chn.shape[0]):
-        new_data[i] = cv2.warpAffine(chn.data[i], rot, (b_w, b_h), flags=interpolations[inter])
+    for i in range(input.shape[0]):
+        new_data[i] = cv2.warpAffine(input.data[i], rot, (b_w, b_h), flags=interpolations[inter])
     
-    chn.data = new_data
-    return chn
+    input.data = new_data
+    return input
 
-def channelRotateType(chn: TiffChannel, rotType):
+def channelRotateType(input: Channel, rotType):
     if rotType == cv2.ROTATE_180:
-        new_data = np.zeros(shape=chn.shape, dtype=np.int32)
+        new_data = np.zeros(shape=input.shape, dtype=np.int32)
     else:
-        new_data = np.zeros(shape=(chn.shape[0], chn.shape[2], chn.shape[1]), dtype=np.int32)
+        new_data = np.zeros(shape=(input.shape[0], input.shape[2], input.shape[1]), dtype=np.int32)
     
-    for i in range(chn.shape[0]):
-        new_data[i] = cv2.rotate(chn.data[i], rotType)
-    chn.data = new_data
-    return chn
+    for i in range(input.shape[0]):
+        new_data[i] = cv2.rotate(input.data[i], rotType)
+    input.data = new_data
+    return input
 
-def channelRotate90(chn: TiffChannel):
-    channelRotateType(chn, cv2.ROTATE_90_CLOCKWISE)
-    return chn
+def channelRotate90(input: Channel):
+    print(input)
+    channelRotateType(input, cv2.ROTATE_90_CLOCKWISE)
+    return input
 
-def channelRotate180(chn: TiffChannel):
-    channelRotateType(chn, cv2.ROTATE_180)
-    return chn
+def channelRotate180(input: Channel):
+    channelRotateType(input, cv2.ROTATE_180)
+    return input
 
-def channelRotate270(chn: TiffChannel):
-    channelRotateType(chn, cv2.ROTATE_90_COUNTERCLOCKWISE)
-    return chn
+def channelRotate270(input: Channel):
+    channelRotateType(input, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    return input
     
-def channelFlipHorizontally(chn: TiffChannel):
-    for i in range(chn.shape[0]):
-        chn.data[i] = cv2.flip(chn.data[i], 1)
-    return chn
+def channelFlipHorizontally(input: Channel):
+    for i in range(input.shape[0]):
+        input.data[i] = cv2.flip(input.data[i], 1)
+    return input
 
-def channelFlipVertically(chn: TiffChannel):
-    for i in range(chn.shape[0]):
-        chn.data[i] = cv2.flip(chn.data[i], 0)
-    return chn
+def channelFlipVertically(input: Channel):
+    for i in range(input.shape[0]):
+        input.data[i] = cv2.flip(input.data[i], 0)
+    return input
 
-def pixelIntensity(chn: TiffChannel, frameId: int=-1):
+def pixelIntensity(input: Channel, frameId: int=-1):
     if frameId < 0:
-        data = chn.data
+        data = input.data
     else:
-        data = chn.data[frameId]    
+        data = input.data[frameId]    
     
     px_intensity = np.zeros(shape=(256), dtype=np.int32)
     
@@ -117,87 +122,87 @@ def pixelIntensity(chn: TiffChannel, frameId: int=-1):
     
     return px_intensity
 
-def zProjectionMax(tiff: TiffChannel):
-    return tiff.data.max(0)
+def zProjectionMax(Input: Channel):
+    return Input.data.max(0)
 
-def zProjectionMean(tiff: TiffChannel):
-    return tiff.data.mean(0)
+def zProjectionMean(Input: Channel):
+    return Input.data.mean(0)
 
-def zProjectionMin(tiff: TiffChannel):
-    return tiff.data.min(0)
+def zProjectionMin(Input: Channel):
+    return Input.data.min(0)
 
 
-# TODO: Verify types of the channels to be TiffChannel
-def operatorAND(chn: TiffChannel, channels, threshold: int=1):
-    result = chn.copy()
-    for channel in channels:
+# TODO: Verify types of the channels to be Channel
+def operatorAND(input: Channels, threshold: int=1):
+    result = input[0].copy()
+    for channel in input:
         result.data = np.where(channel.data >= threshold, result.data, 0)
     return result
 
-def operatorOR(chn: TiffChannel, channels):
-    datas = [chn.data]
-    for channel in channels:
+def operatorOR(input: Channels):
+    datas = input.data
+    for channel in input:
         datas.append(channel.data)
-    return chn.clone(np.maximum.reduce(datas))
+    return input[0].clone(np.maximum.reduce(datas))
 
-def operatorADD(chn1: TiffChannel, channels):
-    result = chn1.copy()
+def operatorADD(input: Channels):
+    result = input[0].copy()
     result.data = result.data.astype(np.uint16)
-    for channel in channels:
+    for channel in input:
         result.data += channel.data
     result.data = result.data.clip(0, 255)
     result.data = result.data.astype(np.uint8)
     return result
 
-def operatorSUB(chn1: TiffChannel, channels):
-    result = chn1.copy()
+def operatorSUB(input: Channels):
+    result = input[0].copy()
     result.data = result.data.astype(np.int16)
-    for channel in channels:
+    for channel in input:
         result.data -= channel.data
     result.data = result.data.clip(0, 255)
     result.data = result.data.astype(np.uint8)
     return result
 
-def changeBrightnessAndContrast(chn: TiffChannel, brightness: int, contrast: int):
+def changeBrightnessAndContrast(input: Channel, brightness: int, contrast: int):
     def contrastFactor(c):
         return (259*(c + 255)) / (255*(259 - c))
 
     factor = contrastFactor(contrast)
     
-    data = chn.data.astype(np.float16)
+    data = input.data.astype(np.float16)
     
     data += brightness
     data = factor*(data - 128) + 128
  
-    chn.data = data.clip(0, 255).astype(np.uint8)
-    return chn
+    input.data = data.clip(0, 255).astype(np.uint8)
+    return input
 
-def averageChannels(channels):
+def averageChannels(input: Channels):
     data = []
-    for chn in channels:
+    for chn in input:
         data.append(chn.data)
     
     data = np.array(data, dtype=np.uint32)
     data = data.mean(0)
     
-    return TiffChannel("average", data, channels[0].px_sizes)
+    return Channel("average", data, input[0].px_sizes)
 
-def thresholdChannel(chn: TiffChannel, tmin:int=0, tmax:int=255, replace=True):
+def thresholdChannel(input: Channel, tmin:int=0, tmax:int=255, replace=True):
     if not replace:
         chn = chn.copy()
     chn.data[chn.data < tmin] = 0
     chn.data[chn.data > tmax] = 0
     return chn
 
-def thresholdChannelLevel(chn: TiffChannel, nb_sample, level, replace=True, tmax=255):
-    return thresholdChannel(chn, level/nb_sample * 255, tmax, replace)
+def thresholdChannelLevel(input: Channel, nb_sample, level, replace=True, tmax=255):
+    return thresholdChannel(input, level/nb_sample * 255, tmax, replace)
 
-def resliceTop(chn: TiffChannel):        
-    Z, Y, X = chn.shape
+def resliceTop(input: Channel):        
+    Z, Y, X = input.shape
     
-    reslice = np.swapaxes(chn.data, 0, 1) # (Z, Y, X) -> (Y, Z, X)
+    reslice = np.swapaxes(input.data, 0, 1) # (Z, Y, X) -> (Y, Z, X)
     
-    new_Z = Z * chn.px_sizes.Z / chn.px_sizes.Y
+    new_Z = Z * input.px_sizes.Z / input.px_sizes.Y
     new_Z = int(new_Z)
     
     result = np.zeros((Y, new_Z, X))
@@ -205,16 +210,16 @@ def resliceTop(chn: TiffChannel):
     for i in range(Y):
         result[i, :, :] =  cv2.resize(reslice[i], (X, new_Z), interpolation=cv2.INTER_CUBIC)
     
-    return TiffChannel("reslicedTop_" + chn.name, result, PhysicalPixelSizes(chn.px_sizes.X, chn.px_sizes.X, chn.px_sizes.Y))
+    return Channel("reslicedTop_" + input.name, result, PhysicalPixelSizes(input.px_sizes.X, input.px_sizes.X, input.px_sizes.Y))
 
 
-def resliceLeft(chn: TiffChannel):
-    Z, Y, X = chn.shape
+def resliceLeft(input: Channel):
+    Z, Y, X = input.shape
     
-    reslice = np.swapaxes(chn.data, 0, 2) # (Z, Y, X) -> (X, Y, Z)
+    reslice = np.swapaxes(input.data, 0, 2) # (Z, Y, X) -> (X, Y, Z)
     reslice = np.swapaxes(reslice, 1, 2) # (X, Y, Z) -> (X, Z, Y)
     
-    new_Z = Z * chn.px_sizes.Z / chn.px_sizes.X
+    new_Z = Z * input.px_sizes.Z / input.px_sizes.X
     new_Z = int(new_Z)
     
     result = np.zeros((X, new_Z, Y))
@@ -222,17 +227,17 @@ def resliceLeft(chn: TiffChannel):
     for i in range(X):
         result[i, :, :] =  cv2.resize(reslice[i], (Y, new_Z), interpolation=cv2.INTER_CUBIC)
     
-    return TiffChannel("reslicedTop_" + chn.name, result, PhysicalPixelSizes(chn.px_sizes.X, chn.px_sizes.X, chn.px_sizes.Y))
+    return Channel("reslicedTop_" + input.name, result, PhysicalPixelSizes(input.px_sizes.X, input.px_sizes.X, input.px_sizes.Y))
 
-def reverseChannel(chn: TiffChannel):
-    chn.data = chn.data[::-1]
-    return chn
+def reverseChannel(input: Channel):
+    input.data = input.data[::-1]
+    return input
 
 def sliceVolume(data, s_z, s_y, s_x, threshold=0):
     return np.count_nonzero(data[data >= threshold]) * s_z * s_y * s_x
 
-def channelTotalVolume(chn: TiffChannel, min_size=0):
-    l, n = ndimage.label(chn.data, np.ones((3, 3, 3)))
+def channelTotalVolume(input: Channel, min_size=0):
+    l, n = ndimage.label(input.data, np.ones((3, 3, 3)))
     
     f = ndimage.find_objects(l)
     
@@ -242,34 +247,34 @@ def channelTotalVolume(chn: TiffChannel, min_size=0):
         count.append(np.count_nonzero(l[f[i]] == i+1))
     count = np.array(count)
     
-    return count[count >= min_size].sum() * chn.px_sizes.Z * chn.px_sizes.Y * chn.px_sizes.X
+    return count[count >= min_size].sum() * input.px_sizes.Z * input.px_sizes.Y * input.px_sizes.X
 
-def channelVolumeArray(chn: TiffChannel):
-    z, y, x = chn.shape
+def channelVolumeArray(input: Channel):
+    z, y, x = input.shape
     
     volumes = []
     
     for i in range(z):
-        volumes.append(sliceVolume(chn.data[i], chn.px_sizes.Z, chn.px_sizes.Y, chn.px_sizes.X))
+        volumes.append(sliceVolume(input.data[i], input.px_sizes.Z, input.px_sizes.Y, input.px_sizes.X))
     
     return volumes
 
-def channelAxisQuantification(chn: TiffChannel):
-    axisFront = channelVolumeArray(chn)
-    axisTop = channelVolumeArray(resliceTop(chn))
-    axisLeft = channelVolumeArray(resliceLeft(chn))
+def channelAxisQuantification(input: Channel):
+    axisFront = channelVolumeArray(input)
+    axisTop = channelVolumeArray(resliceTop(input))
+    axisLeft = channelVolumeArray(resliceLeft(input))
     
     return [axisFront, axisTop, axisLeft]
 
 def meshCompareDistance(mesh1, mesh2, largest_region=False):
     colors = []
     for i in np.linspace(-80, 80):
-        c = colorMap(i, name='seismic', vmin=-80, vmax=80)
+        c = vedo.colorMap(i, name='seismic', vmin=-80, vmax=80)
         if abs(i) < 5:
             c = 'white'
         colors.append([i, c])
 
-    lut = buildLUT(
+    lut = vedo.buildLUT(
         colors,
         vmin=-80,
         vmax=80,
@@ -293,12 +298,12 @@ def meshCompareDistance(mesh1, mesh2, largest_region=False):
 def meshCompareDistance_fiji(mesh1, mesh2):
     colors = []
     for i in np.linspace(-80, 80):
-        c = colorMap(i, name='seismic', vmin=-80, vmax=80)
+        c = vedo.colorMap(i, name='seismic', vmin=-80, vmax=80)
         if abs(i) < 5:
             c = 'white'
         colors.append([i, c])
 
-    lut = buildLUT(
+    lut = vedo.buildLUT(
         colors,
         vmin=-80,
         vmax=80,
@@ -315,5 +320,125 @@ def meshCompareDistance_fiji(mesh1, mesh2):
     
     return obj1.pointdata["Distance"]
 
-def channelFromBinary(chn: TiffChannel):
-    chn.data[chn.data > 0] = 255
+def channelFromBinary(input: Channel):
+    input.data[input.data > 0] = 255
+
+
+def wekaSegmentation(input: Channel, classifier: StrFilePath, jar_path: StrFilePath):
+    process = subprocess.Popen("java -Xms200M -Xmx8G -jar " + jar_path)
+    gateway = JavaGateway()
+
+    z, y, x = input.shape
+    arr = bytes(input.data.flatten().tolist())
+    img = gateway.entry_point.numpyToImagePlus(arr, x, y, z)
+    segmented = gateway.entry_point.runSegmentation(img, os.path.abspath(classifier))
+        
+    res = []
+    for frame in segmented:
+        res += frame
+    input.data = np.array(res).reshape(z, y, x)
+    channelFromBinary(input)
+    gateway.shutdown()
+    process.kill()
+    return input
+
+import SimpleITK as sitk
+
+def registration(reference: Channel, input: Channel):
+    def resample(image, transform):
+        reference_image = image
+        interpolator = sitk.sitkLinear
+        default_value = 0.0
+        return sitk.Resample(image, reference_image, transform, interpolator, default_value)
+
+    def plotSITKImage(img):
+        plotChannel(Channel("", sitk.GetArrayFromImage(img)))
+
+    ref = sitk.GetImageFromArray(reference.data.astype(np.float32))
+    ref.SetSpacing(tuple(reference.px_sizes))
+
+    mov = sitk.GetImageFromArray(input.data.astype(np.float32))
+    mov.SetSpacing(tuple(input.px_sizes))
+
+
+    flt = sitk.ResampleImageFilter()
+    flt.SetInterpolator(sitk.sitkLinear)
+    flt.SetOutputSpacing(tuple(reference.px_sizes))
+    flt.SetSize((
+        int(reference.px_sizes.X / input.px_sizes.X * input.shape[2]),
+        int(reference.px_sizes.Y / input.px_sizes.Y * input.shape[1]),
+        int(reference.px_sizes.Z / input.px_sizes.Z * input.shape[0])
+        ))
+
+    ref = flt.Execute(ref)
+    mov = flt.Execute(mov)
+
+
+    initial_transform = sitk.CenteredTransformInitializer(
+        ref,
+        mov,
+        sitk.Euler3DTransform(),
+        sitk.CenteredTransformInitializerFilter.GEOMETRY
+    )
+
+    reference.data = sitk.GetArrayFromImage(mov)
+
+    mov_res = sitk.Resample(
+        mov,
+        ref,
+        initial_transform,
+        sitk.sitkLinear,
+        0.0,
+        mov.GetPixelID()
+    )
+
+    registration_method = sitk.ImageRegistrationMethod()
+
+    # Similarity metric settings.
+    registration_method.SetMetricAsMattesMutualInformation(numberOfHistogramBins=50)
+    registration_method.SetMetricSamplingStrategy(registration_method.REGULAR)
+    registration_method.SetMetricSamplingPercentage(0.01)
+
+    registration_method.SetInterpolator(sitk.sitkLinear)
+
+    # Optimizer settings.
+    registration_method.SetOptimizerAsGradientDescent(
+        learningRate=1.0,
+        numberOfIterations=100,
+        convergenceMinimumValue=1e-7,
+        convergenceWindowSize=10,
+    )
+    registration_method.SetOptimizerScalesFromPhysicalShift()
+
+    # Setup for the multi-resolution framework.
+    registration_method.SetShrinkFactorsPerLevel(shrinkFactors=[4, 2, 1])
+    registration_method.SetSmoothingSigmasPerLevel(smoothingSigmas=[2, 1, 0])
+    registration_method.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()
+
+    # Don't optimize in-place, we would possibly like to run this cell multiple times.
+    registration_method.SetInitialTransform(initial_transform, inPlace=False)
+
+
+    final_transform = registration_method.Execute(
+        ref, mov
+    )
+
+    print(f'Final metric value: {registration_method.GetMetricValue()}')
+    print(
+        f'Optimizer stopping condition, {registration_method.GetOptimizerStopConditionDescription()}'
+    )
+
+
+    mov_res = sitk.Resample(
+        mov,
+        ref,
+        final_transform,
+        sitk.sitkLinear,
+        0.0,
+        mov.GetPixelID(),
+    )
+
+    reference.data = sitk.GetArrayFromImage(ref)
+    input.data = sitk.GetArrayFromImage(mov_res)
+
+    return input

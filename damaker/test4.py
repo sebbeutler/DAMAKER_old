@@ -1,34 +1,36 @@
-from utils import *
-from processing import *
+import sys
+sys.path.insert(0, '../')
+
+from damaker.utils import *
+from damaker.processing import *
 from vedo import *
 from pipeline import *
 
 import SimpleITK as sitk
 import matplotlib.pyplot as plt
 
-chn1 = openTiff_hybrid("../resources/registration/C1-E0.tif")[0]
-ref = sitk.GetImageFromArray(chn1.data.astype(np.float32))
-ref.SetSpacing(tuple(chn1.px_sizes))
+chns = loadChannels("../resources/E1.tif")
 
+lut_red = np.zeros((256, 3), np.uint8)
+lut_red[:, 0] = np.arange(256)
 
-chn2 = openTiff_hybrid("../resources/registration/C1-E1.tif")[0]
-mov = sitk.GetImageFromArray(chn2.data.astype(np.float32))
-mov.SetSpacing(tuple(chn2.px_sizes))
+lut_green = np.zeros((256, 3), np.uint8)
+lut_green[:, 1] = np.arange(256)
 
+lut_blue = np.zeros((256, 3), np.uint8)
+lut_blue[:, 2] = np.arange(256)
 
-flt = sitk.ResampleImageFilter()
-flt.SetInterpolator(sitk.sitkLinear)
-flt.SetOutputSpacing(tuple(chn1.px_sizes))
-flt.SetSize((
-    int(chn1.px_sizes.X / chn2.px_sizes.X * chn2.shape[2]),
-    int(chn1.px_sizes.Y / chn2.px_sizes.Y * chn2.shape[1]),
-    int(chn1.px_sizes.Z / chn2.px_sizes.Z * chn2.shape[0])
-    ))
+luts = [lut_red, lut_green, lut_blue]
 
-ref = flt.Execute(ref)
-mov = flt.Execute(mov)
+frame = np.zeros((chns[0].shape[1],chns[0].shape[2], 3), np.int32)
+frame_id = 55
 
-chn1.data = sitk.GetArrayFromImage(ref)
-chn2.data = sitk.GetArrayFromImage(mov)
+for chn in chns:
+    if chn.lut is None:
+        chn.lut = luts[chn.id]
+    frame[:, :, 0] += chn.lut[:, 0][chn.data[frame_id]]
+    frame[:, :, 1] += chn.lut[:, 1][chn.data[frame_id]]
+    frame[:, :, 2] += chn.lut[:, 2][chn.data[frame_id]] 
+frame = frame.clip(0, 255)
 
-plotChannelRGB(chn1, chn2)
+plotFrame(frame)

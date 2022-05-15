@@ -1,1 +1,0 @@
-from resources import files_rc
