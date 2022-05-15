@@ -344,6 +344,16 @@ def wekaSegmentation(input: Channel, classifier: StrFilePath, jar_path: StrFileP
 
 import SimpleITK as sitk
 
+def resampleChannel(input: channel, sizeX: int, sizeY: int, sizeZ: int, px_sizeX: int, px_sizeY: int, px_sizeZ: int):
+    arr = sitk.GetImageFromArray(input.data.astype(np.float32))
+    arr.SetSpacing(tuple(input.px_sizes))
+    
+    flt = sitk.ResampleImageFilter()
+    flt.SetInterpolator(sitk.sitkLinear)
+    flt.SetOutputSpacing((px_sizeX, px_sizeY, px_sizeZ))
+    flt.SetSize((sizeX, sizeY, sizeZ))
+    arr = flt.Execute(arr)
+
 def registration(reference: Channel, input: Channel):
     def resample(image, transform):
         reference_image = image
@@ -359,7 +369,6 @@ def registration(reference: Channel, input: Channel):
 
     mov = sitk.GetImageFromArray(input.data.astype(np.float32))
     mov.SetSpacing(tuple(input.px_sizes))
-
 
     flt = sitk.ResampleImageFilter()
     flt.SetInterpolator(sitk.sitkLinear)
