@@ -644,12 +644,31 @@ class Ui_MainWindow(object):
         self.parameters_container.setFrameShape(QFrame.StyledPanel)
         self.verticalLayout_4 = QVBoxLayout(self.parameters_container)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.edit_operation_name = QLineEdit(self.parameters_container)
+        self.pipline_settings_top = QFrame(self.parameters_container)
+        self.pipline_settings_top.setObjectName(u"pipline_settings_top")
+        sizePolicy9 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        sizePolicy9.setHorizontalStretch(0)
+        sizePolicy9.setVerticalStretch(0)
+        sizePolicy9.setHeightForWidth(self.pipline_settings_top.sizePolicy().hasHeightForWidth())
+        self.pipline_settings_top.setSizePolicy(sizePolicy9)
+        self.pipeline_settings_layout_top = QHBoxLayout(self.pipline_settings_top)
+        self.pipeline_settings_layout_top.setObjectName(u"pipeline_settings_layout_top")
+        self.edit_operation_name = QLineEdit(self.pipline_settings_top)
         self.edit_operation_name.setObjectName(u"edit_operation_name")
         self.edit_operation_name.setEnabled(True)
         self.edit_operation_name.setFrame(True)
 
-        self.verticalLayout_4.addWidget(self.edit_operation_name)
+        self.pipeline_settings_layout_top.addWidget(self.edit_operation_name)
+
+        self.checkbox_enabled = QCheckBox(self.pipline_settings_top)
+        self.checkbox_enabled.setObjectName(u"checkbox_enabled")
+        self.checkbox_enabled.setChecked(True)
+        self.checkbox_enabled.setTristate(False)
+
+        self.pipeline_settings_layout_top.addWidget(self.checkbox_enabled)
+
+
+        self.verticalLayout_4.addWidget(self.pipline_settings_top)
 
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
@@ -701,32 +720,32 @@ class Ui_MainWindow(object):
         self.layout_operation_list_btns.setObjectName(u"layout_operation_list_btns")
         self.btn_run_pipeline = QPushButton(self.operation_list_btns)
         self.btn_run_pipeline.setObjectName(u"btn_run_pipeline")
-        sizePolicy9 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.MinimumExpanding)
-        sizePolicy9.setHorizontalStretch(0)
-        sizePolicy9.setVerticalStretch(0)
-        sizePolicy9.setHeightForWidth(self.btn_run_pipeline.sizePolicy().hasHeightForWidth())
-        self.btn_run_pipeline.setSizePolicy(sizePolicy9)
+        sizePolicy10 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.MinimumExpanding)
+        sizePolicy10.setHorizontalStretch(0)
+        sizePolicy10.setVerticalStretch(0)
+        sizePolicy10.setHeightForWidth(self.btn_run_pipeline.sizePolicy().hasHeightForWidth())
+        self.btn_run_pipeline.setSizePolicy(sizePolicy10)
 
         self.layout_operation_list_btns.addWidget(self.btn_run_pipeline)
 
         self.btn_load_pipeline = QPushButton(self.operation_list_btns)
         self.btn_load_pipeline.setObjectName(u"btn_load_pipeline")
-        sizePolicy9.setHeightForWidth(self.btn_load_pipeline.sizePolicy().hasHeightForWidth())
-        self.btn_load_pipeline.setSizePolicy(sizePolicy9)
+        sizePolicy10.setHeightForWidth(self.btn_load_pipeline.sizePolicy().hasHeightForWidth())
+        self.btn_load_pipeline.setSizePolicy(sizePolicy10)
 
         self.layout_operation_list_btns.addWidget(self.btn_load_pipeline)
 
         self.btn_save_pipeline = QPushButton(self.operation_list_btns)
         self.btn_save_pipeline.setObjectName(u"btn_save_pipeline")
-        sizePolicy9.setHeightForWidth(self.btn_save_pipeline.sizePolicy().hasHeightForWidth())
-        self.btn_save_pipeline.setSizePolicy(sizePolicy9)
+        sizePolicy10.setHeightForWidth(self.btn_save_pipeline.sizePolicy().hasHeightForWidth())
+        self.btn_save_pipeline.setSizePolicy(sizePolicy10)
 
         self.layout_operation_list_btns.addWidget(self.btn_save_pipeline)
 
         self.btn_remove_operation = QPushButton(self.operation_list_btns)
         self.btn_remove_operation.setObjectName(u"btn_remove_operation")
-        sizePolicy9.setHeightForWidth(self.btn_remove_operation.sizePolicy().hasHeightForWidth())
-        self.btn_remove_operation.setSizePolicy(sizePolicy9)
+        sizePolicy10.setHeightForWidth(self.btn_remove_operation.sizePolicy().hasHeightForWidth())
+        self.btn_remove_operation.setSizePolicy(sizePolicy10)
 
         self.layout_operation_list_btns.addWidget(self.btn_remove_operation)
 
@@ -772,11 +791,8 @@ class Ui_MainWindow(object):
 
         self.slide_mainPreview = QSlider(self.mainPreview_frame)
         self.slide_mainPreview.setObjectName(u"slide_mainPreview")
-        sizePolicy10 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        sizePolicy10.setHorizontalStretch(0)
-        sizePolicy10.setVerticalStretch(0)
-        sizePolicy10.setHeightForWidth(self.slide_mainPreview.sizePolicy().hasHeightForWidth())
-        self.slide_mainPreview.setSizePolicy(sizePolicy10)
+        sizePolicy9.setHeightForWidth(self.slide_mainPreview.sizePolicy().hasHeightForWidth())
+        self.slide_mainPreview.setSizePolicy(sizePolicy9)
         self.slide_mainPreview.setOrientation(Qt.Horizontal)
 
         self.verticalLayout_3.addWidget(self.slide_mainPreview)
@@ -868,6 +884,7 @@ class Ui_MainWindow(object):
         self.edit_operation_name.setInputMask("")
         self.edit_operation_name.setText("")
         self.edit_operation_name.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Operation name", None))
+        self.checkbox_enabled.setText("")
         self.btn_modify_operation.setText(QCoreApplication.translate("MainWindow", u"Modify", None))
         self.btn_add_operation.setText(QCoreApplication.translate("MainWindow", u"Add", None))
         self.btn_run_pipeline.setText(QCoreApplication.translate("MainWindow", u"Run", None))

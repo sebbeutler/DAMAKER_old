@@ -1,4 +1,6 @@
+from multiprocessing import Pipe
 from pathlib import Path
+import builtins 
 from unittest import addModuleCleanup
 from webbrowser import Opera
 from PySide2.QtWidgets import *
@@ -35,7 +37,7 @@ class PlanPage:
     def __init__(self, ui: Ui_MainWindow):
         self.ui = ui
         self.preview = PreviewWidget(self.ui.mainPreview, self.ui.slide_mainPreview, [Channel("", np.zeros((100, 100, 100), np.uint8))], self.ui.fileInfo)
-        self.threadpool = QThreadPool()
+        self.pipelineThread = None
         
         self.functions = dict(getmembers(damaker.processing, isfunction))
         self.functions.update(dict(getmembers(damaker.utils, isfunction)))
@@ -55,6 +57,7 @@ class PlanPage:
         self.ui.btn_add_operation.setHidden(True)
         self.ui.btn_modify_operation.setHidden(True)
         self.ui.edit_operation_name.setHidden(True)
+        self.ui.checkbox_enabled.setHidden(True)
         
         self.selectedOperationItem = None
         
@@ -71,6 +74,7 @@ class PlanPage:
             return
         
         name = self.ui.edit_operation_name.text()
+        enabled = self.ui.checkbox_enabled.isChecked()
         
         args = []        
         for i in range(self.ui.layout_fargs.count()):
@@ -85,13 +89,14 @@ class PlanPage:
                 args.append(widget.text())
             else:
                 args.append(None)
-        self.ui.list_operations.addItem(ListWidgetOperation(Operation(func, args, name)))
+        self.ui.list_operations.addItem(ListWidgetOperation(Operation(func, args, name, enabled)))
     
     def modifyOperation(self, event):
         if self.selectedOperationItem is None:
             return
         
         name = self.ui.edit_operation_name.text()
+        enabled = self.ui.checkbox_enabled.isChecked()
         
         args = []        
         for i in range(self.ui.layout_fargs.count()):
@@ -108,6 +113,7 @@ class PlanPage:
                 args.append(None)
         self.selectedOperationItem.operation.args = args
         self.selectedOperationItem.operation.name = name
+        self.selectedOperationItem.operation.enabled = enabled
         self.selectedOperationItem.updateText()
 
     def getOperationFromList(self, name: str):
@@ -128,11 +134,14 @@ class PlanPage:
         clearLayout(self.ui.layout_fnames)
         clearLayout(self.ui.layout_fargs)
         self.ui.edit_operation_name.setHidden(False)
+        self.ui.checkbox_enabled.setHidden(False)
         self.ui.btn_add_operation.setHidden(False)
         self.ui.btn_modify_operation.setHidden(True)
         
         func = self.getSelectedFunction()
         self.ui.edit_operation_name.setText(func.__name__)
+        self.ui.checkbox_enabled.setChecked(True)
+        
         sign = signature(func)
         for name in sign.parameters:
             param = sign.parameters[name]            
@@ -163,6 +172,7 @@ class PlanPage:
         clearLayout(self.ui.layout_fnames)
         clearLayout(self.ui.layout_fargs)
         self.ui.edit_operation_name.setHidden(False)
+        self.ui.checkbox_enabled.setHidden(False)
         self.ui.btn_add_operation.setHidden(True)
         self.ui.btn_modify_operation.setHidden(False)
         
@@ -171,7 +181,8 @@ class PlanPage:
             return None
         self.selectedOperationItem = operation_items[0]
         operation: Operation = operation_items[0].operation
-        self.ui.edit_operation_name.setText(operation.name)
+        self.ui.edit_operation_name.setText(operation.name)        
+        self.ui.checkbox_enabled.setChecked(operation.enabled)
         
         arg_id=0
         sign = signature(operation.func)
@@ -228,67 +239,56 @@ class PlanPage:
         comboBox.setFixedHeight(25)
         return comboBox
     
+    _print = builtins.print
     def runPipeline(self):
-        pipelineWorker = PipelineRunnerWorker(self.ui.list_operations)
+        if self.pipelineRunning:
+            self.pipelineStopped()
+        
         self.ui.edit_pipeline_output.clear()
-        pipelineWorker.signals.outputReceived.connect(self.pipelineWriteConsole)
-        pipelineWorker.signals.stopped.connect(self.pipelineStopped)
-        self.threadpool.start(pipelineWorker)
+        builtins._print = PlanPage._print
+        builtins.print = self.pipelineWriteConsole
+        
+        self.pipelineThread = PipelineRunnerThread(self.ui.list_operations)        
+        self.pipelineThread.signals.outputReceived.connect(self.pipelineWriteConsole)
+        self.pipelineThread.signals.stopped.connect(self.pipelineStopped)        
+        self.pipelineThread.start()
+        self.ui.btn_run_pipeline.setText("Stop")
         self.pipelineRunning = True
     
-    def pipelineWriteConsole(self, text):
-        self.ui.edit_pipeline_output.append(text)
+    def pipelineWriteConsole(self, *args):
+        for arg in args:
+            self.ui.edit_pipeline_output.append(' ' + str(arg))
+        PlanPage._print(*args)
+        self.ui.edit_pipeline_output.moveCursor(QTextCursor.End)
     
     def pipelineStopped(self):
         self.pipelineRunning = False
+        builtins.print = PlanPage._print
+        self.ui.btn_run_pipeline.setText("Run")
+        # if self.pipelineThread != None:            
+        #     self.pipelineThread.terminate()
     
     def removeOperationFromList(self):
         item = self.ui.list_operations.takeItem(self.ui.list_operations.currentRow())
         item = None
     
-    def savePipeline(self):
-        filePath = getNewFilePath()
-        operations = []
+    def buildPipeline(self):
+        p = Pipeline()
         for i in range(self.ui.list_operations.count()):
-            op: Operation = self.ui.list_operations.item(i).operation
-            op_json = {}
-            op_json["name"] = op.name
-            op_json["function"] = op.func.__name__
-            op_json["args"] = []
-            for arg in op.args:
-                if type(arg) is Operation:
-                    op_json["args"].append("%" + arg.name)
-                elif type(arg) is list:
-                    continue
-                else:
-                    op_json["args"].append(arg)
-            operations.append(op_json)
-        with open(filePath, 'w') as f:
-            json.dump(operations, f)
+            p.addOperation(self.ui.list_operations.item(i).operation)
+        return p
     
+    def savePipeline(self):
+        filepath = getNewFilePath()
+        self.buildPipeline().save(filepath)
+            
     def loadPipeline(self):
         filePath = getFilePath()
-        with open(filePath, 'r') as f:
-            data = json.load(f)
-            
-        operations = {}
-        for op_json in data:
-            op = Operation()
-            op.name = op_json["name"]
-            op.func = self.functions[op_json["function"]]
-            op.args = []
-            for arg in op_json["args"]:
-                if type(arg) is str and arg[0] == '%':
-                    op.args.append(operations[arg[1:]])
-                else:
-                    op.args.append(arg)
-            operations[op.name] = op
+        p = Pipeline()
+        p.load(filePath, self.functions)
         
-        for op in operations.values():
+        for op in p.operations:
             self.ui.list_operations.addItem(ListWidgetOperation(op))
-        
-        
-        
 
 class ListWidgetOperation(QListWidgetItem):
     def __init__(self, operation: Operation):
@@ -299,15 +299,15 @@ class ListWidgetOperation(QListWidgetItem):
         self.setFont(QFont("Arial", 11))
     
     def getDisplayText(self):
-        display_text =  f'{self.operation.name}: '
+        display_text =  f'{self.operation.name} :     '
         sign = signature(self.operation.func)
         i = 0
         for param in sign.parameters:
             arg = str(self.operation.args[i])
-            if len(arg) > 50:
+            if len(arg) > 40:
                 arg = ".." + arg[-20:]
             display_text += f'{param}={arg} '
-            i += 1  
+            i += 1
         return display_text
     
     def updateText(self):
@@ -321,9 +321,9 @@ class PipelineRunnerWorkerSignals(QObject):
     outputReceived = Signal(str)
     stopped = Signal()
 
-class PipelineRunnerWorker(QRunnable):
+class PipelineRunnerThread(QThread):
     def __init__(self, operationWidgetList: QListWidget):
-        super(PipelineRunnerWorker, self).__init__()
+        super(PipelineRunnerThread, self).__init__()
         
         self.operationWidgetList = operationWidgetList
         self.signals = PipelineRunnerWorkerSignals()
@@ -341,6 +341,8 @@ class PipelineRunnerWorker(QRunnable):
         
         step = 1
         for op in operations:
+            if not op.enabled:
+                continue
             self.signals.outputReceived.emit(f'[{step}] -> {op.name}')
             op.run()
             step += 1           

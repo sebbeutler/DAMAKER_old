@@ -45,8 +45,6 @@ initial_transform = sitk.CenteredTransformInitializer(
     sitk.CenteredTransformInitializerFilter.GEOMETRY
 )
 
-chn1.data = sitk.GetArrayFromImage(mov)
-
 mov_res = sitk.Resample(
     mov,
     ref,
@@ -105,4 +103,4 @@ mov_res = sitk.Resample(
 chn1.data = sitk.GetArrayFromImage(ref)
 chn2.data = sitk.GetArrayFromImage(mov_res)
 
-plotChannelRGB(chn1, chn2)
+_plotChannelRGB(chn1, chn2)

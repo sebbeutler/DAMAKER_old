@@ -3,6 +3,7 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from PySide2.QtCore import *
 from PySide2 import *
+from damaker.utils import _plotChannelRGB
 
 from damaker_gui.widgets.PreviewWidget import PreviewWidget
 from damaker_gui.widgets.FileInfoWidget import FileInfoWidget
@@ -102,18 +103,23 @@ class AppWindow(QMainWindow):
         self.ui.treeview_workspace.setRootIndex(root)
 
 if __name__ == '__main__':
-    import sys    
-    # app = QApplication(sys.argv)
-    # window = AppWindow()    
-    # sys.exit(app.exec_())
+    import sys, os
+    os.environ["JAVA_HOME"] = "C:/Program Files/Java/jdk-18.0.1.1"
+    
+    app = QApplication(sys.argv)
+    window = AppWindow()    
+    sys.exit(app.exec_())
     
     from damaker.processing import *
     from damaker.utils import *
-    from damaker import utils
+    from damaker.pipeline import *
+    import SimpleITK as sitk
     
-    chn1 = loadChannelsFromFile("resources/registration/C1-E0.tif")[0]
-    chn2 = loadChannelsFromFile("resources/registration/C1-E1.tif")[0]
+    loadChannelsFromDir("C:/Users/PC/Desktop/DAMAKER-main/resources")
     
+    # mov = loadChannelsFromFile("resources/E1.tif")[0]
+    # ref = loadChannelsFromFile("resources/registration/C1-E0.tif")[0]
     
-    res = registration(chn1, chn2)
-    print(res.shape)
+    # out = registration(mov.copy(), ref)
+    # _plotChannelRGB(resampleLike(out, ref), None, ref)
+    

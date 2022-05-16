@@ -8,6 +8,8 @@ import vedo
 from vedo import Mesh
 from vedo.applications import *
 
+import SimpleITK as sitk
+
 from aicsimageio.types import PhysicalPixelSizes
 from scipy import ndimage
 
@@ -17,7 +19,7 @@ from py4j.java_collections import JavaArray
 from .utils import StrFilePath, plotArray, plotChannel
 from .Channel import Channel, Channels
 
-def selectChannels(input: Channel, id: int):
+def channelSelect(input: Channels, id: int):
     """
         Category: Channel filter
         Desc: Choose a specific channels
@@ -28,7 +30,7 @@ def selectChannels(input: Channel, id: int):
             channels.append(channel)
     return channels
 
-def invertChannel(input: Channel):
+def channelInvert(input: Channel):
     input.data = 255 - input.data
     return input
 
@@ -179,23 +181,37 @@ def changeBrightnessAndContrast(input: Channel, brightness: int, contrast: int):
 
 def averageChannels(input: Channels):
     data = []
+    if len(input) == 0:
+        return
+    
+    shape = input[0].shape
     for chn in input:
+        if shape != chn.shape:
+            print("[DAMAKER] averageChannels(input: Channels): channels must be the same size")
+            return
         data.append(chn.data)
     
     data = np.array(data, dtype=np.uint32)
     data = data.mean(0)
     
-    return Channel("average", data, input[0].px_sizes)
+    res: Channel = input[0].clone(data)
+    res.name = "Average"
+    res.id = 0
+    
+    return res
 
-def thresholdChannel(input: Channel, tmin:int=0, tmax:int=255, replace=True):
+def clipChannel(input: Channel, tmin: int=0, tmax: int=255, replace: bool=False):
     if not replace:
         chn = chn.copy()
     chn.data[chn.data < tmin] = 0
     chn.data[chn.data > tmax] = 0
     return chn
 
-def thresholdChannelLevel(input: Channel, nb_sample, level, replace=True, tmax=255):
-    return thresholdChannel(input, level/nb_sample * 255, tmax, replace)
+def thresholdChannels(input: Channels, level: int=1, replace: bool=False):
+    res = []
+    for channel in input:
+        res.append(clipChannel(input, level/len(input) * 255, 255, replace))
+    return res
 
 def resliceTop(input: Channel):        
     Z, Y, X = input.shape
@@ -229,7 +245,7 @@ def resliceLeft(input: Channel):
     
     return Channel("reslicedTop_" + input.name, result, PhysicalPixelSizes(input.px_sizes.X, input.px_sizes.X, input.px_sizes.Y))
 
-def reverseChannel(input: Channel):
+def channelReverse(input: Channel):
     input.data = input.data[::-1]
     return input
 
@@ -322,6 +338,7 @@ def meshCompareDistance_fiji(mesh1, mesh2):
 
 def channelFromBinary(input: Channel):
     input.data[input.data > 0] = 255
+    return input
 
 
 def wekaSegmentation(input: Channel, classifier: StrFilePath, jar_path: StrFilePath):
@@ -340,21 +357,57 @@ def wekaSegmentation(input: Channel, classifier: StrFilePath, jar_path: StrFileP
     channelFromBinary(input)
     gateway.shutdown()
     process.kill()
+    
     return input
 
-import SimpleITK as sitk
-
-def resampleChannel(input: channel, sizeX: int, sizeY: int, sizeZ: int, px_sizeX: int, px_sizeY: int, px_sizeZ: int):
+def resampleChannel(input: Channel, sizeX: int, sizeY: int, sizeZ: int, px_sizeX: int, px_sizeY: int, px_sizeZ: int):
     arr = sitk.GetImageFromArray(input.data.astype(np.float32))
-    arr.SetSpacing(tuple(input.px_sizes))
+    arr.SetSpacing(tuple(reversed(input.px_sizes)))
     
     flt = sitk.ResampleImageFilter()
     flt.SetInterpolator(sitk.sitkLinear)
     flt.SetOutputSpacing((px_sizeX, px_sizeY, px_sizeZ))
     flt.SetSize((sizeX, sizeY, sizeZ))
-    arr = flt.Execute(arr)
+    
+    input.data = sitk.GetArrayFromImage(flt.Execute(arr))
+    input.px_sizes = PhysicalPixelSizes(px_sizeZ, px_sizeY, px_sizeX)
+    return input
 
-def registration(reference: Channel, input: Channel):
+def resampleLike(input: Channel, ref: Channel):
+    arr = sitk.GetImageFromArray(input.data.astype(np.float32))
+    arr.SetSpacing(tuple(reversed(input.px_sizes)))
+    
+    ref_arr = sitk.GetImageFromArray(ref.data.astype(np.float32))
+    ref_arr.SetSpacing(tuple(reversed(ref.px_sizes)))
+    
+    flt = sitk.ResampleImageFilter()
+    flt.SetInterpolator(sitk.sitkLinear)
+    flt.SetReferenceImage(ref_arr)
+    
+    input.data = sitk.GetArrayFromImage(flt.Execute(arr))
+    return input
+
+def resampleMean(input: Channels):
+    shapes = []
+    px_sizes = []
+    for channel in input:
+        shapes.append(channel.shape)
+        px_sizes.append(tuple(channel.px_sizes))
+    
+    shape = np.array(shapes).mean(0)
+    px_size = np.array(px_sizes).mean(0)
+    
+    flt = sitk.ResampleImageFilter()
+    flt.SetInterpolator(sitk.sitkLinear)
+    flt.SetOutputSpacing(px_size[2], px_size[1], px_size[0])
+    flt.SetSize(shape[2], shape[1], shape[0])
+
+    for chn in input:
+        resampleChannel(chn, shape[2], shape[1], shape[0], px_size[2], px_size[1], px_size[0])
+    
+    return input
+
+def registration(input: Channel, reference: Channel, nb_iteration: int):
     def resample(image, transform):
         reference_image = image
         interpolator = sitk.sitkLinear
@@ -365,14 +418,14 @@ def registration(reference: Channel, input: Channel):
         plotChannel(Channel("", sitk.GetArrayFromImage(img)))
 
     ref = sitk.GetImageFromArray(reference.data.astype(np.float32))
-    ref.SetSpacing(tuple(reference.px_sizes))
+    ref.SetSpacing(tuple(reversed(reference.px_sizes)))
 
     mov = sitk.GetImageFromArray(input.data.astype(np.float32))
-    mov.SetSpacing(tuple(input.px_sizes))
+    mov.SetSpacing(tuple(reversed(input.px_sizes)))
 
     flt = sitk.ResampleImageFilter()
     flt.SetInterpolator(sitk.sitkLinear)
-    flt.SetOutputSpacing(tuple(reference.px_sizes))
+    flt.SetOutputSpacing(ref.GetSpacing())
     flt.SetSize((
         int(reference.px_sizes.X / input.px_sizes.X * input.shape[2]),
         int(reference.px_sizes.Y / input.px_sizes.Y * input.shape[1]),
@@ -382,15 +435,12 @@ def registration(reference: Channel, input: Channel):
     ref = flt.Execute(ref)
     mov = flt.Execute(mov)
 
-
     initial_transform = sitk.CenteredTransformInitializer(
         ref,
         mov,
         sitk.Euler3DTransform(),
         sitk.CenteredTransformInitializerFilter.GEOMETRY
     )
-
-    reference.data = sitk.GetArrayFromImage(mov)
 
     mov_res = sitk.Resample(
         mov,
@@ -413,7 +463,7 @@ def registration(reference: Channel, input: Channel):
     # Optimizer settings.
     registration_method.SetOptimizerAsGradientDescent(
         learningRate=1.0,
-        numberOfIterations=100,
+        numberOfIterations=nb_iteration,
         convergenceMinimumValue=1e-7,
         convergenceWindowSize=10,
     )
@@ -427,7 +477,6 @@ def registration(reference: Channel, input: Channel):
     # Don't optimize in-place, we would possibly like to run this cell multiple times.
     registration_method.SetInitialTransform(initial_transform, inPlace=False)
 
-
     final_transform = registration_method.Execute(
         ref, mov
     )
@@ -437,8 +486,7 @@ def registration(reference: Channel, input: Channel):
         f'Optimizer stopping condition, {registration_method.GetOptimizerStopConditionDescription()}'
     )
 
-
-    mov_res = sitk.Resample(
+    mov_res: sitk.Image = sitk.Resample(
         mov,
         ref,
         final_transform,
@@ -447,7 +495,12 @@ def registration(reference: Channel, input: Channel):
         mov.GetPixelID(),
     )
 
-    reference.data = sitk.GetArrayFromImage(ref)
+    # reference.data = sitk.GetArrayFromImage(ref)
     input.data = sitk.GetArrayFromImage(mov_res)
-
+    input.data = input.data.astype(np.uint8)
+    
+    res_px = mov_res.GetSpacing()
+    input.px_sizes = PhysicalPixelSizes(res_px[2], res_px[1], res_px[0])
+    
+    print(f'registration complete: {input}')
     return input

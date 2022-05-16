@@ -1342,22 +1342,47 @@ opacity: 130;
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_4">
                     <item>
-                     <widget class="QLineEdit" name="edit_operation_name">
-                      <property name="enabled">
-                       <bool>true</bool>
+                     <widget class="QFrame" name="pipline_settings_top">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
                       </property>
-                      <property name="inputMask">
-                       <string/>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                      <property name="frame">
-                       <bool>true</bool>
-                      </property>
-                      <property name="placeholderText">
-                       <string>Operation name</string>
-                      </property>
+                      <layout class="QHBoxLayout" name="pipeline_settings_layout_top">
+                       <item>
+                        <widget class="QLineEdit" name="edit_operation_name">
+                         <property name="enabled">
+                          <bool>true</bool>
+                         </property>
+                         <property name="inputMask">
+                          <string/>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                         <property name="frame">
+                          <bool>true</bool>
+                         </property>
+                         <property name="placeholderText">
+                          <string>Operation name</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="checkbox_enabled">
+                         <property name="text">
+                          <string/>
+                         </property>
+                         <property name="checked">
+                          <bool>true</bool>
+                         </property>
+                         <property name="tristate">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
                      </widget>
                     </item>
                     <item>

@@ -1,5 +1,4 @@
 import os
-from os import path
 
 from tiffile import TiffFile
 from .Channel import Channel
@@ -11,6 +10,8 @@ from aicsimageio.writers import OmeTiffWriter
 from aicsimageio.readers import bioformats_reader
 from aicsimageio.types import PhysicalPixelSizes
 
+from vedo import Mesh, Plotter
+
 class StrFilePath(str):
     pass
 
@@ -18,11 +19,11 @@ class StrFolderPath(str):
     pass
 
 def loadChannelsFromFile(filename: StrFilePath):
-    if not path.exists(filename):
+    if not os.path.isfile(filename):
         print("[DAMAKER] Warning: file '" + filename + "' not found.")
         return None
     
-    channels = loadChannels_tiffile(filename)
+    channels = loadChannels_tiffile(filename)    
     metadata = bioformats_reader.BioFile(filename).ome_metadata
     
     px_sizes = PhysicalPixelSizes(
@@ -33,12 +34,12 @@ def loadChannelsFromFile(filename: StrFilePath):
     
     for ch in channels:
         ch.px_sizes = px_sizes
-    
+        print(f'Loaded: {ch}')
     return channels
 
 def loadChannels_aicsi(filename: StrFilePath):
     # verify if the file exist
-    if not path.exists(filename):
+    if not os.path.isfile(filename):
         print("[DAMAKER] Warning: file '" + filename + "' not found.")
         return None
     
@@ -55,62 +56,39 @@ def loadChannels_aicsi(filename: StrFilePath):
 
 def loadChannels_tiffile(filename: StrFilePath):
     # verify if the file exist
-    if not path.exists(filename):
+    if not os.path.isfile(filename):
         print("[DAMAKER] Warning: file '" + filename + "' not found.")
         return None
         
     with TiffFile(filename) as file:
         data = file.asarray()
         
-        metadata = file.imagej_metadata
-        print("File loaded:", filename)
-    
-    print(data.shape)
     fn = filename.split("/")[-1]
     
     # Split the file by channel
     if len(data.shape) == 3:
-        return [Channel(fn, data, metadata)]
+        return [Channel(fn, data, id=0)]
     elif len(data.shape) == 4:
         data = data.swapaxes(0, 1)
         objs = []
         for i in range(data.shape[0]):
-            objs.append(Channel(fn, data[i, :, :, :], metadata, i))
+            objs.append(Channel(fn, data[i, :, :, :], id=i))
         return objs
 
 def loadChannelsFromDir(path: StrFolderPath, suffix: str=""):
-    channels = []
+    total_channels = []
     
     files = os.listdir(path)
     for file in files:
-        if not file.endswith(suffix):
-            continue
-        
-        for chn in loadChannelsFromFile(path + "/" + file):
-            channels.append(chn)
+        fp = path + "/" + file
+        if not file.endswith(suffix) or not os.path.isfile(fp):
+            continue        
+        total_channels += loadChannelsFromFile(fp)
     
-    return channels
+    return total_channels
 
 def channelSave(chn: Channel, folderPath: StrFolderPath):
     chn.save(folderPath)
-
-def saveChannels(filename: StrFilePath, channels: list[Channel]):
-    shape = channels[0].shape
-    
-    for ch in channels:
-        if ch.shape != shape:
-            raise TypeError("[DAMAKER] saveChannels(): channels do not have the same shape")
-    
-    data = [None] * len(channels)
-    for ch in channels:
-        data[ch.channel] = ch.data
-    
-    for ch in data:
-        if ch is None:
-            raise AttributeError("[DAMAKE] saveChannels(): channels ids are incorrect.")
-    
-    data = np.array(data)
-    OmeTiffWriter.save(data, filename, "CZYX", physical_pixel_sizes=channels[0].px_sizes)
 
 def channelSaveToObj(chn: Channel, filename: StrFilePath, stepsize=2):
     chn = chn.copy()
@@ -199,7 +177,7 @@ def _plotFrameRGB(data_r=None, data_g=None, data_b=None):
     res = red + green + blue
     res = res.clip(0, 255)
         
-    plotFrame(res)
+    _plotFrame(res)
 
 def plotArray(data, title=""):
     plt.plot(data)

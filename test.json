@@ -1,16 +1,1 @@
-[
-    {
-        "name": "channelFlipHorizontally",
-        "function": "channelFlipHorizontally",
-        "args": [
-            null
-        ]
-    },
-    {
-        "name": "channelFlipVertically",
-        "function": "channelFlipVertically",
-        "args": [
-            "%channelFlipHorizontally"
-        ]
-    }
-]
+[{"name": "load batch", "enabled": true, "function": "loadChannelsFromDir", "args": ["C:/Users/PC/Desktop/DAMAKER-main/resources", ""]}, {"name": "select channel 0", "enabled": true, "function": "channelSelect", "args": ["%load batch", 0]}, {"name": "load reference", "enabled": true, "function": "loadChannelsFromFile", "args": ["C:/Users/PC/Desktop/DAMAKER-main/resources/registration/C1-E0.tif"]}, {"name": "registration", "enabled": true, "function": "registration", "args": ["%select channel 0", "%load reference"]}, {"name": "resampleMean", "enabled": true, "function": "resampleMean", "args": ["%registration"]}, {"name": "averageChannels", "enabled": false, "function": "averageChannels", "args": ["%registration"]}, {"name": "thresholdChannels", "enabled": false, "function": "thresholdChannels", "args": ["%averageChannels", 5, null]}, {"name": "plotChannel", "enabled": false, "function": "plotChannel", "args": ["%thresholdChannels"]}]

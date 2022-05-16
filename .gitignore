@@ -9,3 +9,13 @@
 .vscode/
 __pycache__/
 /.metadata/
+
+# Eclipse #
+/.classpath
+/.project
+/.settings/
+/doc
+# Maven #
+/target/
+
+resources/

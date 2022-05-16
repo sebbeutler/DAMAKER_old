@@ -34,6 +34,9 @@ class Channel:
 
     def free(self):
         del self.data
+    
+    def __str__(self):
+        return f"'{self.name}' chn n°{self.id} dim:{self.shape} px:X=%.2f Y=%.2f Z=%.2f" % (self.px_sizes.X,self.px_sizes.Y,self.px_sizes.Z)
 
 class Channels(list):
     pass
