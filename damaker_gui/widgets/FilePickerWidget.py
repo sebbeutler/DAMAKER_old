@@ -3,64 +3,22 @@ from PySide2.QtGui import *
 from PySide2.QtCore import *
 from PySide2 import *
 
-import PySimpleGUI as sg
-sg.theme("DarkTeal2")
-
-def getFilePath(text="Choose a file:"):
-    layout = [[sg.T("")], [sg.Text(text), sg.Input(), sg.FileBrowse(key="-IN-")],[sg.Button("Submit")]]
-    window = sg.Window('Folder Picker', layout, size=(600,150))
-    file = ""
-    while True:
-        event, values = window.read()
-        if event == sg.WIN_CLOSED or event=="Exit":
-            break
-        elif event == "Submit":
-            file = values["-IN-"]
-            window.close()
-            break
-    return file
-
-def getFolderPath(text="Choose a folder:"):
-    layout = [[sg.T("")], [sg.Text(text), sg.Input(), sg.FolderBrowse(key="-IN-")],[sg.Button("Submit")]]
-    window = sg.Window('Folder Picker', layout, size=(600,150))
-    folder = ""
-    while True:
-        event, values = window.read()
-        if event == sg.WIN_CLOSED or event=="Exit":
-            break
-        elif event == "Submit":
-            folder = values["-IN-"]
-            print(folder)
-            window.close()
-            break
-    return folder
-
-def getNewFilePath(text="Choose a file:"):
-    layout = [[sg.T("")], [sg.Text(text), sg.Input(), sg.FileSaveAs(key="-IN-")],[sg.Button("Submit")]]
-    window = sg.Window('Folder Picker', layout, size=(600,150))
-    file = ""
-    while True:
-        event, values = window.read()
-        if event == sg.WIN_CLOSED or event=="Exit":
-            break
-        elif event == "Submit":
-            file = values["-IN-"]
-            window.close()
-            break
-    return file
-
 class FilePickerWidget(QWidget):
-    def __init__(self):
+    def __init__(self, workspace: str, height: int=20):
         super().__init__()
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.layout = QHBoxLayout()
         self.layout.setMargin(0)
         self.textEdit = QLineEdit()
+        self.textEdit.setFixedHeight(height)
         self.btnBrowse = QPushButton("Browse")
+        self.btnBrowse.setFixedHeight(height)
         self.btnBrowse.clicked.connect(self.changePath)
         self.layout.addWidget(self.textEdit)
         self.layout.addWidget(self.btnBrowse)
         self.setLayout(self.layout)
+        self.setFixedHeight(height)
+        self.workspace = workspace
     
     def setText(self, filePath):        
         self.textEdit.setText(filePath)
@@ -70,21 +28,28 @@ class FilePickerWidget(QWidget):
         return self.textEdit.text()
     
     def changePath(self):
-        filePath = getFilePath()
+        filePath = QFileDialog.getOpenFileName(None, 'Open file', 
+         self.workspace,"Any (*.*)")[0]
         self.setText(filePath)
 
 class FolderPickerWidget(QWidget):
-    def __init__(self):
+    def __init__(self, workspace: str, height: int=20, label: str=""):
         super().__init__()
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.layout = QHBoxLayout()
-        self.layout.setMargin(0)
+        self.layout.setMargin(0)        
+        if label != "":
+            self.layout.addWidget(QLabel(label))
         self.textEdit = QLineEdit()
+        self.textEdit.setFixedHeight(height)
         self.btnBrowse = QPushButton("Browse")
+        self.btnBrowse.setFixedHeight(height)
         self.btnBrowse.clicked.connect(self.changePath)
         self.layout.addWidget(self.textEdit)
         self.layout.addWidget(self.btnBrowse)
         self.setLayout(self.layout)
+        self.setFixedHeight(height)
+        self.workspace = workspace
     
     def setText(self, filePath):        
         self.textEdit.setText(filePath)
@@ -94,6 +59,7 @@ class FolderPickerWidget(QWidget):
         return self.textEdit.text()
     
     def changePath(self):
-        filePath = getFolderPath()
+        filePath = QFileDialog.getExistingDirectory(None, 'Open Folder', 
+         self.workspace)
         self.setText(filePath)
         

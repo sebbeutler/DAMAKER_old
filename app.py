@@ -1,28 +1,20 @@
-from email.policy import Policy
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
-from PySide2.QtCore import *
-from PySide2 import *
-from damaker.utils import _plotChannelRGB
-
-from damaker_gui.widgets.PreviewWidget import PreviewWidget
-from damaker_gui.widgets.FileInfoWidget import FileInfoWidget
-from damaker_gui.widgets.FilePickerWidget import getFolderPath
-from damaker_gui.PlanPage import PlanPage
-
-import numpy as np
-import qimage2ndarray
-
-from damaker.Channel import Channel
-
-import PySimpleGUI as sg
-sg.theme("DarkTeal2")
-
 if __name__ == '__main__':
     import os
     os.system("pyside2-uic -o ./damaker_gui/windows/UI_MainWindow.py --from-imports ./damaker_gui/windows/MainWindow.ui")
 
+from PySide2.QtWidgets import *
+from PySide2.QtGui import *
+from PySide2.QtCore import *
+from PySide2 import *
+from damaker.utils import plotChannelRGB
 
+from damaker_gui.widgets.FileInfoWidget import FileInfoWidget
+from damaker_gui.PlanPage import PlanPage
+from damaker_gui.VisualizePage import VisualizePage
+
+import numpy as np
+
+from damaker.Channel import Channel
 from damaker_gui.windows.UI_MainWindow import *
 
 class AppWindow(QMainWindow):
@@ -77,11 +69,12 @@ class AppWindow(QMainWindow):
         self.ui.btn_selectWorkspace.clicked.connect(self.selectWorkspace)
         
         self.planPage = PlanPage(self.ui)      
+        self.visualizePage = VisualizePage(self.ui)      
         
         self.setFocus()
 
     def keyPressEvent(self, event):
-        print(f"Key: {str(event.key())} Text Press: {str(event.text())}")
+        # print(f"Key: {str(event.key())} Text Press: {str(event.text())}")
         if event.key() == Qt.Key_Escape:
             self.close()
         return super(AppWindow, self).keyPressEvent(event)
@@ -98,8 +91,8 @@ class AppWindow(QMainWindow):
             event.accept()
     
     def selectWorkspace(self, event):
-        path = getFolderPath()
-        root = self.fileSystemModel.setRootPath(path)
+        path = QFileDialog.getExistingDirectory(None, 'Open folder', self.ui.fileSystemModel.rootPath())
+        root = self.ui.fileSystemModel.setRootPath(path)
         self.ui.treeview_workspace.setRootIndex(root)
 
 if __name__ == '__main__':
@@ -115,11 +108,28 @@ if __name__ == '__main__':
     from damaker.pipeline import *
     import SimpleITK as sitk
     
-    loadChannelsFromDir("C:/Users/PC/Desktop/DAMAKER-main/resources")
+    # a = BatchParameters()
+    # a.folder = "C:/Users/PC/source/DAMAKER/resources/output/out-inv"
+    # a.mod1 = ""
+    # a.mod2 = ""
+    # a.file = "*"
+    # a.load()
     
-    # mov = loadChannelsFromFile("resources/E1.tif")[0]
-    # ref = loadChannelsFromFile("resources/registration/C1-E0.tif")[0]
+    # load = loadChannelsFromDir("resources/output/registration")
+    ref = loadChannelsFromFile("resources/output/registration/E1.tif")[0]
+    out = segmentation(ref, "C:/Users/PC/source/DAMAKER/resources/segmentation/CU4.model")
+    out.save("4.tif")
+    out = segmentation(ref, "C:/Users/PC/source/DAMAKER/resources/segmentation/CU2.model")
+    out.save("2.tif")
+    #         "C:/Users/PC/source/DAMAKER/damaker/weka/bin/weka_segmentation_gateway.jar")
+    # for chn in load:
+    # channelSave(out, "resources/out-reg/")
     
-    # out = registration(mov.copy(), ref)
-    # _plotChannelRGB(resampleLike(out, ref), None, ref)
-    
+    # p = Pipeline()
+    # l = p.add(loadChannelsFromDir, "resources/out-reg/", "")
+    # out = p.add(wekaSegmentation, l, "C:/Users/PC/source/DAMAKER/resources/segmentation/CU1.model",
+    #         "C:/Users/PC/source/DAMAKER/damaker/weka/bin/weka_segmentation_gateway.jar")
+    # p.add(channelSave, out, "C:/Users/PC/source/DAMAKER/resources/out-seg/")
+    # p.run()
+    # for chn in out:
+    #     plotChannelRGB(chn, None, ref)

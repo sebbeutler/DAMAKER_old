@@ -12,17 +12,22 @@ class FileInfoWidget:
     
     def update(self):
         if self.preview is None:
-            pass
-        
-        text = f'Width: {self.preview.channel.shape[1]} \n'
-        text += f'Height: {self.preview.channel.shape[0]} \n'
-        text += f'Depth: {self.preview.channel.shape[0]} \n'
+            return
+        if self.preview.channel is None:
+            return
+        chn = self.preview.channel
+        text = f'Size: ({chn.shape[0]}, {chn.shape[1]}, {chn.shape[2]})\n'  
+        if chn.px_sizes != None:
+            text += f'Real size: (%.2f, %.2f, %.2f)\n' % (
+                chn.shape[0]*chn.px_sizes.X, 
+                chn.shape[1]*chn.px_sizes.Y, 
+                chn.shape[2]*chn.px_sizes.Z)  
+            text += f'Pixel size: '
+            text += "x:%.2f " % chn.px_sizes.X
+            text += "y:%.2f " % chn.px_sizes.Y
+            text += "z:%.2f\n" % chn.px_sizes.Z
         text += f'Position: x:{self.mx} y:{self.my} z:{self.preview.frame_id} \n'
-        
-        if self.preview.channel.px_sizes != None:
-            text += f'Pixel size:'
-            text += "x:%.2f " % self.preview.channel.px_sizes.X
-            text += "y:%.2f " % self.preview.channel.px_sizes.Y
-            text += "z:%.2f " % self.preview.channel.px_sizes.Z
+        if self.my < chn.shape[1] and self.mx < chn.shape[2]:
+            text += f'Value: {chn.data[self.preview.frame_id][self.my][self.mx]}\n'
         
         self.label.setText(text)

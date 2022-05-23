@@ -9,15 +9,27 @@ class Channel:
         self.px_sizes = physicalPixelSizes
         self.id = id
         self.lut = lut
+        
+        self.show = True
+        self.frames = None
     
     @property
     def shape(self):
         return self.data.shape
     
-    def save(self, folderPath: str=""):
+    def save(self, folderPath: str="", includeChannelId: bool=False):
         if folderPath != "" and folderPath[-1] not in "/\\":
             folderPath += "/"
-        OmeTiffWriter.save(self.data, folderPath + f'{self.name}_C{self.id}.tif', physical_pixel_sizes=self.px_sizes)    
+        if includeChannelId:
+            filename = f'{self.name}_C{self.id}.tif'
+        else:
+            filename = f'{self.name}.tif'
+        
+        if len(self.data.shape) == 3:
+            OmeTiffWriter.save(self.data, folderPath + filename, physical_pixel_sizes=self.px_sizes, dim_order="ZYX")
+        elif len(self.data.shape) == 4:
+            OmeTiffWriter.save(self.data, folderPath + filename, physical_pixel_sizes=self.px_sizes, dim_order="CZYX")
+        print(f'saved: {filename}') 
         
     def copy(self):
         return Channel(self.name, self.data.copy(), self.px_sizes, self.id, self.lut)
@@ -36,7 +48,13 @@ class Channel:
         del self.data
     
     def __str__(self):
-        return f"'{self.name}' chn n°{self.id} dim:{self.shape} px:X=%.2f Y=%.2f Z=%.2f" % (self.px_sizes.X,self.px_sizes.Y,self.px_sizes.Z)
+        if self.px_sizes != None:
+            return f"'{self.name}' chn n°{self.id} dim:{self.shape} px:X=%.2f Y=%.2f Z=%.2f" % (self.px_sizes.X,self.px_sizes.Y,self.px_sizes.Z)
+        else:
+            return f"'{self.name}' chn n°{self.id} dim:{self.shape}"
+
+class SingleChannel(Channel):
+    pass
 
 class Channels(list):
     pass

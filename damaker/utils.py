@@ -1,7 +1,8 @@
 import os
 
 from tiffile import TiffFile
-from .Channel import Channel
+
+from .Channel import Channel, Channels
 
 import numpy as np
 from skimage import measure
@@ -18,12 +19,17 @@ class StrFilePath(str):
 class StrFolderPath(str):
     pass
 
+class NamedArray:
+    name: str=""
+    data: list=[]
+
 def loadChannelsFromFile(filename: StrFilePath):
     if not os.path.isfile(filename):
         print("[DAMAKER] Warning: file '" + filename + "' not found.")
         return None
     
-    channels = loadChannels_tiffile(filename)    
+    channels = _loadChannels_tiffile(filename)    
+    # channels = _loadChannels_aicsi(filename)    
     metadata = bioformats_reader.BioFile(filename).ome_metadata
     
     px_sizes = PhysicalPixelSizes(
@@ -33,11 +39,12 @@ def loadChannelsFromFile(filename: StrFilePath):
     )
     
     for ch in channels:
-        ch.px_sizes = px_sizes
-        print(f'Loaded: {ch}')
+        if type(ch) is Channel:
+            ch.px_sizes = px_sizes
+            print(f'Loaded: {ch}')
     return channels
 
-def loadChannels_aicsi(filename: StrFilePath):
+def _loadChannels_aicsi(filename: StrFilePath):
     # verify if the file exist
     if not os.path.isfile(filename):
         print("[DAMAKER] Warning: file '" + filename + "' not found.")
@@ -47,14 +54,15 @@ def loadChannels_aicsi(filename: StrFilePath):
         
     file = bioformats_reader.BioformatsReader(filename)
     fn = filename.split("/")[-1]
+    fn = ".".join(fn.split(".")[:-1])
     
     # TODO: test get all channel at the same time then split them for better performance
-    for i in range(0, file.dims.C):
-        channels.append(Channel(fn, file.get_image_data("ZYX", C=i), file.physical_pixel_sizes, i))
+    # for i in range(0, file.dims.C):
+    channels.append(Channel(fn, file.get_image_data("CZYX"), file.physical_pixel_sizes, 0))
     
     return channels
 
-def loadChannels_tiffile(filename: StrFilePath):
+def _loadChannels_tiffile(filename: StrFilePath):
     # verify if the file exist
     if not os.path.isfile(filename):
         print("[DAMAKER] Warning: file '" + filename + "' not found.")
@@ -62,18 +70,31 @@ def loadChannels_tiffile(filename: StrFilePath):
         
     with TiffFile(filename) as file:
         data = file.asarray()
+        axes = file.series[0].axes
         
     fn = filename.split("/")[-1]
+    fn = ".".join(fn.split(".")[:-1])
+    
+    targetorder = 'CZYX'
+    axesorder = {}
+    for i in range(len(axes)):
+        axesorder[axes[i]] = i
+        
+    transpose = []
+    for char in targetorder:
+        if char in axesorder.keys():
+            transpose.append(axesorder[char])
+    
+    data = data.transpose(tuple(transpose))           
     
     # Split the file by channel
     if len(data.shape) == 3:
-        return [Channel(fn, data, id=0)]
+        return [Channel(fn, data, id=1)]
     elif len(data.shape) == 4:
-        data = data.swapaxes(0, 1)
-        objs = []
+        chns = []
         for i in range(data.shape[0]):
-            objs.append(Channel(fn, data[i, :, :, :], id=i))
-        return objs
+            chns.append(Channel(fn, data[i], id=i+1))
+        return chns
 
 def loadChannelsFromDir(path: StrFolderPath, suffix: str=""):
     total_channels = []
@@ -87,10 +108,21 @@ def loadChannelsFromDir(path: StrFolderPath, suffix: str=""):
     
     return total_channels
 
-def channelSave(chn: Channel, folderPath: StrFolderPath):
-    chn.save(folderPath)
+def channelSave(chn: Channel, folderPath: StrFolderPath, includeChannelId: bool=False):
+    chn.save(folderPath, includeChannelId)
 
-def channelSaveToObj(chn: Channel, filename: StrFilePath, stepsize=2):
+def channelsSave(channels: Channels, folderPath: StrFolderPath):    
+    if type(channels) is Channel:
+        return channels.save(folderPath)
+    if len(channels) == 1:
+        return channels[0].save(folderPath)
+    for ch in channels:
+        if type(ch) != Channel:
+            return
+    out = channels[0].clone(np.array([chn.data for chn in channels]))
+    out.save(folderPath)
+
+def channelSaveToObj(chn: Channel, stepsize: int=2, outputDir: StrFolderPath=""):
     chn = chn.copy()
 
     for i in range(stepsize):    
@@ -107,18 +139,27 @@ def channelSaveToObj(chn: Channel, filename: StrFilePath, stepsize=2):
     # plot(chn)
     vertices, triangles, normals, values = measure.marching_cubes(chn.data, 0, step_size=stepsize, spacing=(chn.px_sizes.Z, chn.px_sizes.Y, chn.px_sizes.X), method="lorensen")    
     
+    filename = outputDir + '/' + chn.name + '.obj'
     with open(filename, 'w') as file:        
         for v in vertices:
             file.write("v {} {} {}\n".format(*v))
             
         for f in triangles:
             file.write("f {} {} {}\n".format(*(f + 1)))
+    print(f'saved: {filename}')
 
-def listSaveCSV(data_list, path: StrFolderPath, filename: str=""):
-    if filename != "":
-        path += "/" + filename
-    with open(path, "w") as file:
-        file.write("\n".join(map(str, data_list)))
+def listSaveCSV(data: NamedArray, path: StrFolderPath):
+    if type(data) is NamedArray:
+        data = [data]
+    for array in data:
+        if not type(array) is NamedArray:
+            continue
+        filename = array.name
+        if not filename.endswith(".csv"):
+            filename += ".csv"        
+        with open(path + "/" + filename, "w") as file:
+            file.write("\n".join(map(str, list(array.data))))
+        print(f'saved: {filename}')
 
 def axisQuantifSaveCSV(axis_data, path: StrFolderPath, filename: str):
     if len(axis_data) != 3:
@@ -149,7 +190,7 @@ def _plotFrame(data: np.ndarray):
     _plt.add(Picture(data, flip=True))
     _plt.show()
 
-def _plotChannelRGB(ch_r: Channel=None, ch_g: Channel=None, ch_b: Channel=None):
+def plotChannelRGB(ch_r: Channel=None, ch_g: Channel=None, ch_b: Channel=None):
     def getrgb(arr, col):
         rgb = np.zeros((arr.shape[0], arr.shape[1], arr.shape[2], 3))
         rgb[:, :, :, col] = arr[:, :, :]
@@ -194,7 +235,7 @@ def plotArrays(data_list, labels=[], title=""):
     plt.legend()
     plt.show()
 
-def plotMesh(filename: StrFilePath, rotate=True, mirror=False):
+def plotMesh(filename: StrFilePath, rotate: bool=True, mirror: bool=False):
     mesh = Mesh(filename)
     if rotate:
         mesh = mesh.rotate(90)

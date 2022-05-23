@@ -1,18 +1,37 @@
 package trainableSegmentation;
 
+import java.io.Console;
 import java.util.Arrays;
 
 import ij.IJ;
-import ij.process.*;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.gui.Roi;
-import ij.process.ImageConverter;
 import py4j.GatewayServer;
+import weka.classifiers.AbstractClassifier;
 
 public class DamakerGateway {
 	
-	boolean[] enabledFeatures = new boolean[]{
+	public class CustomGateway extends GatewayServer {
+		public CustomGateway(Object entry_point) {
+			super(entry_point);
+		}
+
+		@Override
+		public void shutdown() {
+			super.shutdown();
+			System.out.println("Py4J stopped.");
+			System.exit(0);
+		}
+		
+		@Override
+		public void serverPostShutdown() {
+			super.serverPostShutdown();
+			System.out.println("Py4J post-stopped.");
+			System.exit(0);
+		}
+	}
+	
+	boolean[] enabledFeatures2D = new boolean[]{
 			false, 	/* Gaussian_blur */
 			false, 	/* Sobel_filter */
 			false, 	/* Hessian */
@@ -35,10 +54,24 @@ public class DamakerGateway {
 			false	/* Neighbors */
 	};
 	
+	boolean[] enabledFeatures3D = new boolean[]{
+			false, 	/* Gaussian_blur */
+			false, 	/* Hessian */
+			false, 	/* Derivatives */
+			false, 	/* Laplacian */
+			false,	/* Structure */
+			false,	/* Edges */
+			false,	/* Difference of Gaussian */
+			false,	/* Minimum */
+			false,	/* Maximum */
+			true,	/* Mean */
+			false,	/* Median */
+			true	/* Variance */
+	    };
+	
 	public static void main(String[] args) {		
 		DamakerGateway dg = new DamakerGateway();		
 		dg.start();
-		
 		/*
 		WekaSegmentation segmentator = new WekaSegmentation(  IJ.openImage( "../../resources/segmentation/C1-E0.tif" ) );
 		segmentator.setEnabledFeatures(dg.enabledFeatures);
@@ -73,7 +106,8 @@ public class DamakerGateway {
 	
 	GatewayServer gatewayServer;
 	public DamakerGateway() {
-		gatewayServer = new GatewayServer(this);
+		gatewayServer = new CustomGateway(this);
+
 	}
 	
 	public void start() {
@@ -93,13 +127,15 @@ public class DamakerGateway {
 	public void runSegmentation(String filepath, String modelpath, String outpath) {
 		ImagePlus input  = IJ.openImage( filepath );
 		
-		WekaSegmentation segmentator = new WekaSegmentation( input );
-		segmentator.setEnabledFeatures(enabledFeatures);
+		WekaSegmentation segmentator = new WekaSegmentation( true );
+		segmentator.setEnabledFeatures(enabledFeatures3D);
 		
 		if (!segmentator.loadClassifier(modelpath)) {
 			System.out.println("Weka - Could not load training model");
 			return;
 		}
+		
+		segmentator.loadNewImage(input);
 		
 		segmentator.applyClassifier(false);
 		ImagePlus classifiedImage = segmentator.getClassifiedImage();
@@ -110,23 +146,26 @@ public class DamakerGateway {
 	public void runSegmentation(ImagePlus img, String modelpath, String outpath) {
 		
 		WekaSegmentation segmentator = new WekaSegmentation( img );
-		segmentator.setEnabledFeatures(enabledFeatures);
+		segmentator.setEnabledFeatures(enabledFeatures3D);
 		
 		if (!segmentator.loadClassifier(modelpath)) {
 			System.out.println("Weka - Could not load training model");
 			return;
 		}
-		
-		segmentator.applyClassifier(false);
+		AbstractClassifier cl = segmentator.getClassifier();
+		System.out.println(cl.getOptions());
+		segmentator.applyClassifier(img, 0, false);
 		ImagePlus classifiedImage = segmentator.getClassifiedImage();
 		IJ.save(classifiedImage, outpath);
 		segmentator.shutDownNow();
 	}
 	
-	public byte[][] runSegmentation(ImagePlus img, String modelpath) {		
-		WekaSegmentation segmentator = new WekaSegmentation( img );
-		segmentator.setEnabledFeatures(enabledFeatures);
-
+	public byte[][] runSegmentation(ImagePlus img, String modelpath) {
+		System.out.println("Segmentation");
+		WekaSegmentation segmentator = new WekaSegmentation( true );
+		segmentator.setEnabledFeatures(enabledFeatures3D);
+		segmentator.setTrainingImage(img);
+		
 		if (!segmentator.loadClassifier(modelpath)) {
 			System.out.println("Weka - Could not load training model");
 			return null;
@@ -135,7 +174,6 @@ public class DamakerGateway {
 		segmentator.applyClassifier(false);
 		ImagePlus classifiedImage = segmentator.getClassifiedImage();
 
-		IJ.save(classifiedImage, "test.tif");
 		segmentator.shutDownNow();
 		return imagePlusToByteArray(classifiedImage);
 	}

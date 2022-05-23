@@ -21,79 +21,125 @@ lut_green[:, 1] = np.arange(256)
 lut_blue = np.zeros((256, 3), np.uint8)
 lut_blue[:, 2] = np.arange(256)
 
-luts = [lut_red, lut_green, lut_blue]
+lut_yellow = np.zeros((256, 3), np.uint8)
+lut_yellow[:, 0] = np.arange(256)
+lut_yellow[:, 1] = np.arange(256)
 
+lut_cyan = np.zeros((256, 3), np.uint8)
+lut_cyan[:, 1] = np.arange(256)
+lut_cyan[:, 2] = np.arange(256)
+
+lut_magenta = np.zeros((256, 3), np.uint8)
+lut_magenta[:, 0] = np.arange(256)
+lut_magenta[:, 2] = np.arange(256)
+
+lut_grays = np.zeros((256, 3), np.uint8)
+lut_grays[:, 0] = np.arange(256)
+lut_grays[:, 1] = np.arange(256)
+lut_grays[:, 2] = np.arange(256)
+
+luts = [lut_red, lut_green, lut_blue, lut_yellow, lut_cyan, lut_magenta, lut_grays]
+
+class PreviewWidgetSignals(QObject):
+    channelsChanged = Signal()
+    
 class PreviewWidget(QGraphicsScene):
-    def __init__(self, view: QGraphicsView, slider: QSlider, channels: list, fileInfo=None, channel_id=None, frame_id=0):
+    
+    def __init__(self, view: QGraphicsView, slider: QSlider, channels: list=[], fileInfo=None, frame_id=0):
         super().__init__()
 
+        self.signals = PreviewWidgetSignals()
+
         self.channels = channels        
-        self.slider = slider       
+        self.slider = slider  
+        
+        self.frame_id = frame_id
         
         self.fileInfo = fileInfo
-        self.channel_id = channel_id
-        self.frame_id = frame_id
         self.image = QGraphicsPixmapItem()
         self.addItem(self.image)
         
         self.view = view
-        self.view.mouseMoveEvent = lambda e: self.mouseMoved(e)
+        self.view.mouseMoveEvent = lambda e: self.viewMouseMoved(e)
         self.view.setMouseTracking(True)
-        self.view.setScene(self)
+        self.view.setScene(self)        
+        self.view.wheelEvent = self.onScroll
         
-        self.reset(channels)
-        
+        if self.slider != None:
+            self.slider.valueChanged.connect(self.update)
+            self.slider.setTracking(True)    
+            # self.slider.setTickInterval(1)   
         
         self.threadpool = QThreadPool()
         
+        
     @property
     def channel(self):
-        if self.channel_id is None:
+        if len(self.channels) > 0:
             return self.channels[0]
-        return self.channels[self.channel_id]
+        return None
 
     @property
     def frame(self):
         return self.channel.data[self.frame_id]
     
-    def reset(self, channels):  
+    def reset(self, channels):
         if channels is None:
             return
         
         self.channels = channels
         
-        self.slider.setMinimum(0)
-        self.slider.setMaximum(self.channel.shape[0]-1)
-        self.slider.setValue(0)
-        self.slider.setTracking(True)
-        # self.slider.setTickInterval(1)
-        self.slider.valueChanged.connect(self.update)        
-        
-        self.view.setFixedSize(self.channel.shape[2], self.channel.shape[1])
-        self.setFrame(self.channel.data[0])
+        if self.slider != None:
+            self.slider.setMinimum(0)
+            self.slider.setMaximum(self.channel.shape[0]-1)
+            self.slider.setValue(0)        
+            
+        self.updateFrame()
         
         if self.fileInfo != None:
             self.fileInfo.preview = self
             self.fileInfo.update()
         
+        self.image.setScale(1)
+        self.signals.channelsChanged.emit()
     
-    def setFrame(self, frame: np.ndarray):
-        self.image.setPixmap(QPixmap.fromImage(qimage2ndarray.array2qimage(frame)))
+    def updateFrame(self, id: int=None):
+        if id == None:
+            id = self.frame_id
+        frame = sum([chn.frames[id] for chn in self.channels if chn.show])
+        try:
+            self.image.setPixmap(QPixmap.fromImage(qimage2ndarray.array2qimage(frame)))
+        except:
+            pass
     
+    def recenter(self):        
+        size = self.view.size()
+        img_r = self.image.boundingRect()
+        scale = self.image.scale()
+        pos: QPointF = self.view.mapToScene(int(size.width()/2-img_r.width()*scale/2),int(size.height()/2-img_r.height()*scale/2))
+        self.image.setPos(pos.x(), pos.y())        
+        self.setSceneRect(pos.x(), pos.y(), int(img_r.width()*scale), int(img_r.height()*scale))
+        
+    def zoom(self, amount=0.1):        
+        self.image.setScale(self.image.scale() + amount)
+        self.recenter()
+    
+    def zoomIn(self):
+        self.zoom(0.1)
+    
+    def zoomOut(self):
+        self.zoom(-0.1)
+    
+    def onScroll(self, e: QGraphicsSceneWheelEvent):
+        self.zoom(e.delta()/1200)
+        
     def update(self):
-        self.frame_id = self.slider.value()
-        # self.setBackgroundBrush(Qt.darkBlue)
+        if self.slider != None:
+            self.frame_id = self.slider.value()
+        # self.setBackgroundBrush(Qt.darkBlue)   
+        if len(self.channels) > 0:
+            self.updateFrame()
         
-        frame = np.zeros((self.channel.shape[1],self.channel.shape[2], 3), np.int16)
-        
-        for chn in self.channels:
-            if chn.lut is None:
-                chn.lut = luts[chn.id]
-            frame[:, :, 0] += chn.lut[:, 0][chn.data[self.frame_id]]
-            frame[:, :, 1] += chn.lut[:, 1][chn.data[self.frame_id]]
-            frame[:, :, 2] += chn.lut[:, 2][chn.data[self.frame_id]]        
-        
-        self.setFrame(frame.clip(0, 255))
         if self.fileInfo != None:
             self.fileInfo.update()
     
@@ -102,10 +148,10 @@ class PreviewWidget(QGraphicsScene):
         fw.signals.loaded.connect(self.reset)
         self.threadpool.start(fw)
     
-    def mouseMoved(self, event):
-        m_pos: QPoint = event.pos()
-        self.fileInfo.mx = m_pos.x()
-        self.fileInfo.my = m_pos.y()
+    def viewMouseMoved(self, event):
+        m_pos: QPoint = self.view.mapToScene(event.pos())
+        self.fileInfo.mx = int(max(0, m_pos.x()))
+        self.fileInfo.my = int(max(0, m_pos.y()))
         self.fileInfo.preview = self
         self.fileInfo.update()
     

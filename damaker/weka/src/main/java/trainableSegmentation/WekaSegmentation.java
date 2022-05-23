@@ -179,7 +179,7 @@ public class WekaSegmentation {
 	/** maximum sigma to use on the filters */
 	private float maximumSigma = 16f;
 
-	private boolean isProcessing3D = false;
+	private boolean isProcessing3D = true;
 	private FeatureStack3D fs3d = null;
 
 	/** flags of filters to be used in 2D */
