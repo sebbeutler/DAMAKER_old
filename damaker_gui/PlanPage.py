@@ -38,18 +38,6 @@ class PlanPage:
         self.preview = PreviewWidget(self.ui.previewPipelineView, self.ui.previewPipelineSlider, [], self.ui.fileInfo)
         self.pipelineThread = None
         
-        # self.functions = dict(getmembers(damaker.processing, isfunction))
-        # self.functions.update(dict(getmembers(damaker.utils, isfunction)))
-        # for fname in self.functions.keys():
-        #     if fname[0] == '_':
-        #         continue
-        #     item = QListWidgetItem(fname)            
-        #     item.setToolTip(re.sub(' {2,}', '', str(self.functions[fname].__doc__)))
-        #     self.ui.list_functions.addItem(item)
-        
-        # self.ui.list_functions.itemSelectionChanged.connect(self.functionListClicked)
-        # self.ui.list_operations.itemDoubleClicked.connect(self.operationListClicked)
-        
         self.ui.btn_add_operation.clicked.connect(self.addOperation)
         self.ui.btn_modify_operation.clicked.connect(self.modifyOperation)
         
@@ -60,6 +48,7 @@ class PlanPage:
         
         self.selectedOperationItem = None
         
+        self.ui.list_operations.itemDoubleClicked.connect(self.operationListClicked)
         self.ui.btn_run_pipeline.clicked.connect(self.runPipeline)
         self.ui.btn_remove_operation.clicked.connect(self.removeOperationFromList)
         self.ui.btn_save_pipeline.clicked.connect(self.savePipeline)
@@ -390,7 +379,7 @@ class PlanPage:
         self.ui.fileSystemModel.rootPath(), "Any (*.*)")[0]
         
         p = Pipeline()
-        p.load(filePath, self.functions)
+        p.load(filePath, self.functions.functions)
         
         self.ui.list_operations.clear()
         for op in p.operations:

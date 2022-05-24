@@ -37,7 +37,8 @@ class FunctionsListWidget(QWidget):
         
     
     def loadFunctions(self):
-        self.functions = dict(getmembers(damaker.processing, isfunction))
+        self.functions = dict(getmembers(damaker.processing, isfunction))        
+        self.functions.update(dict(getmembers(damaker.utils, isfunction)))
         self.categories = {"Other": []}
         
         for func in self.functions.values():
@@ -71,7 +72,6 @@ class FunctionsListWidget(QWidget):
 
             # retain widgets in memory
             self.menus.append([menu, btn])
-            
             
         self._layout.addStretch()
     

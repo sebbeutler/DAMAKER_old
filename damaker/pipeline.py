@@ -201,7 +201,6 @@ class BatchOperation(Operation):
 class Pipeline:
     def __init__(self):
         self.operations: list[Operation] = []
-        self.functions: list[function] = []
     
     def add(self, func, *args):
         op = Operation(func, args)
@@ -222,7 +221,6 @@ class Pipeline:
             return
         with open(filepath, 'r') as f:
             data: dict = json.load(f)
-        self.functions = functions
         operations = {}
         for op_json in data:
             if "type" in op_json.keys() and op_json["type"] == "BatchOperation":
@@ -231,7 +229,7 @@ class Pipeline:
                 op = Operation()
             op.name = op_json["name"]
             op.enabled = op_json["enabled"]
-            op.func = self.functions[op_json["function"]]
+            op.func = functions[op_json["function"]]
             op.outputPath = op_json["outputPath"]
             op.args = []
             for arg in op_json["args"]:
