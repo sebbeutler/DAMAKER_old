@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="16x16">
+    <file>icons/16x16/logo_dmkr.png</file>
     <file>icons/16x16/cil-arrow-bottom.png</file>
     <file>icons/16x16/cil-arrow-top.png</file>
     <file>icons/16x16/cil-size-grip.png</file>
@@ -14,7 +15,6 @@
     <file>icons/16x16/cil-align-center.png</file>
     <file>icons/16x16/cil-align-left.png</file>
     <file>icons/16x16/cil-align-right.png</file>
-    <file>icons/16x16/cil-arrow-bottom.png</file>
     <file>icons/16x16/cil-arrow-circle-bottom.png</file>
     <file>icons/16x16/cil-arrow-circle-left.png</file>
     <file>icons/16x16/cil-arrow-circle-right.png</file>
@@ -252,10 +252,12 @@
   </qresource>
   <qresource prefix="24x24">
     <file>icons/24x24/cil-check-alt.png</file>
+    <file>icons/24x24/logo_dmkr.png</file>
     <file>icons/24x24/cil-chevron-double-up-alt.png</file>
     <file>icons/24x24/cil-menu.png</file>
   </qresource>
   <qresource prefix="20x20">
+    <file>icons/20x20/logo_dmkr.png</file>
     <file>icons/20x20/cil-3d.png</file>
     <file>icons/20x20/cil-4k.png</file>
     <file>icons/20x20/cil-airplay.png</file>

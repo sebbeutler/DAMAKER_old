@@ -24,6 +24,10 @@ class NamedArray:
     data: list=[]
 
 def loadChannelsFromFile(filename: StrFilePath):
+    """
+        Name: Import .tif
+        Category: Import
+    """ 
     if not os.path.isfile(filename):
         print("[DAMAKER] Warning: file '" + filename + "' not found.")
         return None
@@ -96,22 +100,18 @@ def _loadChannels_tiffile(filename: StrFilePath):
             chns.append(Channel(fn, data[i], id=i+1))
         return chns
 
-def loadChannelsFromDir(path: StrFolderPath, suffix: str=""):
-    total_channels = []
-    
-    files = os.listdir(path)
-    for file in files:
-        fp = path + "/" + file
-        if not file.endswith(suffix) or not os.path.isfile(fp):
-            continue        
-        total_channels += loadChannelsFromFile(fp)
-    
-    return total_channels
-
 def channelSave(chn: Channel, folderPath: StrFolderPath, includeChannelId: bool=False):
+    """
+        Name: Save channel
+        Category: Export
+    """ 
     chn.save(folderPath, includeChannelId)
 
-def channelsSave(channels: Channels, folderPath: StrFolderPath):    
+def channelsSave(channels: Channels, folderPath: StrFolderPath):
+    """
+        Name: Combine channels
+        Category: Export
+    """    
     if type(channels) is Channel:
         return channels.save(folderPath)
     if len(channels) == 1:
@@ -123,6 +123,10 @@ def channelsSave(channels: Channels, folderPath: StrFolderPath):
     out.save(folderPath)
 
 def channelSaveToObj(chn: Channel, stepsize: int=2, outputDir: StrFolderPath=""):
+    """
+        Name: Export to .obj
+        Category: Export
+    """ 
     chn = chn.copy()
 
     for i in range(stepsize):    
@@ -149,6 +153,10 @@ def channelSaveToObj(chn: Channel, stepsize: int=2, outputDir: StrFolderPath="")
     print(f'saved: {filename}')
 
 def listSaveCSV(data: NamedArray, path: StrFolderPath):
+    """
+        Name: Export to .csv
+        Category: Export
+    """ 
     if type(data) is NamedArray:
         data = [data]
     for array in data:
@@ -169,6 +177,10 @@ def axisQuantifSaveCSV(axis_data, path: StrFolderPath, filename: str):
     listSaveCSV(axis_data[2], path, filename + "_left.csv")
     
 def createDirectory(path: StrFolderPath):
+    """
+        Name: Create folder
+        Category: Export
+    """ 
     os.makedirs(path, exist_ok=True)
         
 
@@ -176,7 +188,7 @@ import matplotlib.pyplot as plt
 from vedo.applications import Browser
 from vedo.picture import Picture
 
-def plotChannel(input: Channel):    
+def _plotChannel(input: Channel):   
     actors = []
 
     for i in range(input.shape[0]):
@@ -190,7 +202,7 @@ def _plotFrame(data: np.ndarray):
     _plt.add(Picture(data, flip=True))
     _plt.show()
 
-def plotChannelRGB(ch_r: Channel=None, ch_g: Channel=None, ch_b: Channel=None):
+def _plotChannelRGB(ch_r: Channel=None, ch_g: Channel=None, ch_b: Channel=None):
     def getrgb(arr, col):
         rgb = np.zeros((arr.shape[0], arr.shape[1], arr.shape[2], 3))
         rgb[:, :, :, col] = arr[:, :, :]
@@ -220,12 +232,12 @@ def _plotFrameRGB(data_r=None, data_g=None, data_b=None):
         
     _plotFrame(res)
 
-def plotArray(data, title=""):
+def _plotArray(data, title=""):
     plt.plot(data)
     plt.title(title)
     plt.show()
 
-def plotArrays(data_list, labels=[], title=""):
+def _plotArrays(data_list, labels=[], title=""):
     if len(labels) != len(data_list):
         labels = [""] * len(data_list)
     
@@ -235,7 +247,7 @@ def plotArrays(data_list, labels=[], title=""):
     plt.legend()
     plt.show()
 
-def plotMesh(filename: StrFilePath, rotate: bool=True, mirror: bool=False):
+def _plotMesh(filename: StrFilePath, rotate: bool=True, mirror: bool=False):
     mesh = Mesh(filename)
     if rotate:
         mesh = mesh.rotate(90)
@@ -243,7 +255,7 @@ def plotMesh(filename: StrFilePath, rotate: bool=True, mirror: bool=False):
         mesh = mesh.mirror("z")
     mesh.show()
 
-def plotAxisQuantifications(data_list: list, labels=[], title=""):
+def _plotAxisQuantifications(data_list: list, labels=[], title=""):
     if len(labels) != len(data_list):
         labels = [""] * len(data_list)
         

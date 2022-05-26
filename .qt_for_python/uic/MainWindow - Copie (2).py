@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'MainWindow.ui'
+## Form generated from reading UI file 'MainWindow - Copie (2).ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.2
 ##
@@ -12,7 +12,7 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-from  . import files_rc
+import files_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -596,10 +596,10 @@ class Ui_MainWindow(object):
         self.pipeline_settings.setSizePolicy(sizePolicy6)
         self.pipeline_settings.setMaximumSize(QSize(16777215, 200))
         self.pipeline_settings.setAcceptDrops(False)
-        self.pipeline_settings_layout = QHBoxLayout(self.pipeline_settings)
-        self.pipeline_settings_layout.setSpacing(0)
-        self.pipeline_settings_layout.setObjectName(u"pipeline_settings_layout")
-        self.pipeline_settings_layout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout = QHBoxLayout(self.pipeline_settings)
+        self.horizontalLayout.setSpacing(0)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.previewPipeline = QFrame(self.pipeline_settings)
         self.previewPipeline.setObjectName(u"previewPipeline")
         self.previewPipeline.setEnabled(True)
@@ -645,7 +645,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addWidget(self.previewPipelineSlider)
 
 
-        self.pipeline_settings_layout.addWidget(self.previewPipeline)
+        self.horizontalLayout.addWidget(self.previewPipeline)
 
         self.functions_frame = QFrame(self.pipeline_settings)
         self.functions_frame.setObjectName(u"functions_frame")
@@ -690,7 +690,116 @@ class Ui_MainWindow(object):
         self.functions_layout.setObjectName(u"functions_layout")
         self.functions_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.pipeline_settings_layout.addWidget(self.functions_frame)
+        self.horizontalLayout.addWidget(self.functions_frame)
+
+        self.parameters_container = QFrame(self.pipeline_settings)
+        self.parameters_container.setObjectName(u"parameters_container")
+        sizePolicy9 = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Preferred)
+        sizePolicy9.setHorizontalStretch(0)
+        sizePolicy9.setVerticalStretch(0)
+        sizePolicy9.setHeightForWidth(self.parameters_container.sizePolicy().hasHeightForWidth())
+        self.parameters_container.setSizePolicy(sizePolicy9)
+        self.parameters_container.setMinimumSize(QSize(300, 0))
+        self.parameters_container.setStyleSheet(u"color: white;border-width: 1px;")
+        self.parameters_container.setFrameShape(QFrame.StyledPanel)
+        self.verticalLayout_4 = QVBoxLayout(self.parameters_container)
+        self.verticalLayout_4.setSpacing(1)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.currentFunction = QLabel(self.parameters_container)
+        self.currentFunction.setObjectName(u"currentFunction")
+        sizePolicy10 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+        sizePolicy10.setHorizontalStretch(0)
+        sizePolicy10.setVerticalStretch(0)
+        sizePolicy10.setHeightForWidth(self.currentFunction.sizePolicy().hasHeightForWidth())
+        self.currentFunction.setSizePolicy(sizePolicy10)
+        self.currentFunction.setMaximumSize(QSize(0, 0))
+        self.currentFunction.setLineWidth(0)
+        self.currentFunction.setTextInteractionFlags(Qt.NoTextInteraction)
+
+        self.verticalLayout_4.addWidget(self.currentFunction)
+
+        self.pipline_settings_top = QFrame(self.parameters_container)
+        self.pipline_settings_top.setObjectName(u"pipline_settings_top")
+        sizePolicy11 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        sizePolicy11.setHorizontalStretch(0)
+        sizePolicy11.setVerticalStretch(0)
+        sizePolicy11.setHeightForWidth(self.pipline_settings_top.sizePolicy().hasHeightForWidth())
+        self.pipline_settings_top.setSizePolicy(sizePolicy11)
+        self.pipline_settings_top.setStyleSheet(u"border: 0px solid rgb(32, 32, 32); margin: 2px;")
+        self.pipeline_settings_layout_top = QHBoxLayout(self.pipline_settings_top)
+        self.pipeline_settings_layout_top.setSpacing(1)
+        self.pipeline_settings_layout_top.setObjectName(u"pipeline_settings_layout_top")
+        self.pipeline_settings_layout_top.setContentsMargins(0, 0, 0, 0)
+        self.edit_operation_name = QLineEdit(self.pipline_settings_top)
+        self.edit_operation_name.setObjectName(u"edit_operation_name")
+        self.edit_operation_name.setEnabled(True)
+        self.edit_operation_name.setStyleSheet(u"")
+        self.edit_operation_name.setFrame(True)
+
+        self.pipeline_settings_layout_top.addWidget(self.edit_operation_name)
+
+        self.checkbox_enabled = QCheckBox(self.pipline_settings_top)
+        self.checkbox_enabled.setObjectName(u"checkbox_enabled")
+        self.checkbox_enabled.setIconSize(QSize(16, 16))
+        self.checkbox_enabled.setChecked(True)
+        self.checkbox_enabled.setTristate(False)
+
+        self.pipeline_settings_layout_top.addWidget(self.checkbox_enabled)
+
+
+        self.verticalLayout_4.addWidget(self.pipline_settings_top)
+
+        self.frame_settingsForm = QFrame(self.parameters_container)
+        self.frame_settingsForm.setObjectName(u"frame_settingsForm")
+        sizePolicy12 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy12.setHorizontalStretch(0)
+        sizePolicy12.setVerticalStretch(0)
+        sizePolicy12.setHeightForWidth(self.frame_settingsForm.sizePolicy().hasHeightForWidth())
+        self.frame_settingsForm.setSizePolicy(sizePolicy12)
+        self.frame_settingsForm.setStyleSheet(u"border: 0px solid rgb(32, 32, 32);")
+        self.horizontalLayout_2 = QHBoxLayout(self.frame_settingsForm)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.layout_fnames = QVBoxLayout()
+        self.layout_fnames.setObjectName(u"layout_fnames")
+
+        self.horizontalLayout_2.addLayout(self.layout_fnames)
+
+        self.layout_fargs = QVBoxLayout()
+        self.layout_fargs.setObjectName(u"layout_fargs")
+
+        self.horizontalLayout_2.addLayout(self.layout_fargs)
+
+
+        self.verticalLayout_4.addWidget(self.frame_settingsForm)
+
+        self.frame_outputDir = QFrame(self.parameters_container)
+        self.frame_outputDir.setObjectName(u"frame_outputDir")
+        sizePolicy11.setHeightForWidth(self.frame_outputDir.sizePolicy().hasHeightForWidth())
+        self.frame_outputDir.setSizePolicy(sizePolicy11)
+        self.frame_outputDir.setStyleSheet(u"border: 0px solid rgb(32, 32, 32);")
+        self.horizontalLayout_6 = QHBoxLayout(self.frame_outputDir)
+        self.horizontalLayout_6.setSpacing(0)
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.horizontalLayout_6.setSizeConstraint(QLayout.SetDefaultConstraint)
+
+        self.verticalLayout_4.addWidget(self.frame_outputDir)
+
+        self.btn_modify_operation = QPushButton(self.parameters_container)
+        self.btn_modify_operation.setObjectName(u"btn_modify_operation")
+        self.btn_modify_operation.setAutoFillBackground(False)
+        self.btn_modify_operation.setStyleSheet(u"border-width: 1px 0px 0px 0px;")
+
+        self.verticalLayout_4.addWidget(self.btn_modify_operation)
+
+        self.btn_add_operation = QPushButton(self.parameters_container)
+        self.btn_add_operation.setObjectName(u"btn_add_operation")
+        self.btn_add_operation.setStyleSheet(u"color: white; border-width: 1px 0px 0px 0px;")
+
+        self.verticalLayout_4.addWidget(self.btn_add_operation)
+
+
+        self.horizontalLayout.addWidget(self.parameters_container)
 
 
         self.layout_page_plan.addWidget(self.pipeline_settings)
@@ -728,11 +837,11 @@ class Ui_MainWindow(object):
 
         self.btn_run_pipeline = QPushButton(self.operation_list_btns)
         self.btn_run_pipeline.setObjectName(u"btn_run_pipeline")
-        sizePolicy9 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.MinimumExpanding)
-        sizePolicy9.setHorizontalStretch(0)
-        sizePolicy9.setVerticalStretch(0)
-        sizePolicy9.setHeightForWidth(self.btn_run_pipeline.sizePolicy().hasHeightForWidth())
-        self.btn_run_pipeline.setSizePolicy(sizePolicy9)
+        sizePolicy13 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.MinimumExpanding)
+        sizePolicy13.setHorizontalStretch(0)
+        sizePolicy13.setVerticalStretch(0)
+        sizePolicy13.setHeightForWidth(self.btn_run_pipeline.sizePolicy().hasHeightForWidth())
+        self.btn_run_pipeline.setSizePolicy(sizePolicy13)
         self.btn_run_pipeline.setStyleSheet(u"border: 1px solid rgb(125, 125, 125);")
         icon3 = QIcon()
         icon3.addFile(u":/16x16/icons/16x16/cil-media-play.png", QSize(), QIcon.Normal, QIcon.Off)
@@ -743,8 +852,8 @@ class Ui_MainWindow(object):
 
         self.btn_save_pipeline = QPushButton(self.operation_list_btns)
         self.btn_save_pipeline.setObjectName(u"btn_save_pipeline")
-        sizePolicy9.setHeightForWidth(self.btn_save_pipeline.sizePolicy().hasHeightForWidth())
-        self.btn_save_pipeline.setSizePolicy(sizePolicy9)
+        sizePolicy13.setHeightForWidth(self.btn_save_pipeline.sizePolicy().hasHeightForWidth())
+        self.btn_save_pipeline.setSizePolicy(sizePolicy13)
         self.btn_save_pipeline.setStyleSheet(u"border: 1px solid rgb(125, 125, 125);")
         icon4 = QIcon()
         icon4.addFile(u":/16x16/icons/16x16/cil-save.png", QSize(), QIcon.Normal, QIcon.Off)
@@ -754,8 +863,8 @@ class Ui_MainWindow(object):
 
         self.btn_load_pipeline = QPushButton(self.operation_list_btns)
         self.btn_load_pipeline.setObjectName(u"btn_load_pipeline")
-        sizePolicy9.setHeightForWidth(self.btn_load_pipeline.sizePolicy().hasHeightForWidth())
-        self.btn_load_pipeline.setSizePolicy(sizePolicy9)
+        sizePolicy13.setHeightForWidth(self.btn_load_pipeline.sizePolicy().hasHeightForWidth())
+        self.btn_load_pipeline.setSizePolicy(sizePolicy13)
         self.btn_load_pipeline.setStyleSheet(u"border: 1px solid rgb(125, 125, 125);\n"
 "padding: 3px;")
 
@@ -763,8 +872,8 @@ class Ui_MainWindow(object):
 
         self.btn_remove_operation = QPushButton(self.operation_list_btns)
         self.btn_remove_operation.setObjectName(u"btn_remove_operation")
-        sizePolicy9.setHeightForWidth(self.btn_remove_operation.sizePolicy().hasHeightForWidth())
-        self.btn_remove_operation.setSizePolicy(sizePolicy9)
+        sizePolicy13.setHeightForWidth(self.btn_remove_operation.sizePolicy().hasHeightForWidth())
+        self.btn_remove_operation.setSizePolicy(sizePolicy13)
         self.btn_remove_operation.setStyleSheet(u"border: 1px solid rgb(125, 125, 125);\n"
 "padding: 3px;")
 
@@ -808,11 +917,8 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.mainView = QGraphicsView(self.visualize_preview_verticalframe)
         self.mainView.setObjectName(u"mainView")
-        sizePolicy10 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-        sizePolicy10.setHorizontalStretch(0)
-        sizePolicy10.setVerticalStretch(0)
-        sizePolicy10.setHeightForWidth(self.mainView.sizePolicy().hasHeightForWidth())
-        self.mainView.setSizePolicy(sizePolicy10)
+        sizePolicy12.setHeightForWidth(self.mainView.sizePolicy().hasHeightForWidth())
+        self.mainView.setSizePolicy(sizePolicy12)
         self.mainView.setMinimumSize(QSize(500, 0))
         self.mainView.setLayoutDirection(Qt.LeftToRight)
         self.mainView.setStyleSheet(u"QGraphicsView {\n"
@@ -925,33 +1031,6 @@ class Ui_MainWindow(object):
         self.channelList_layout.setSpacing(0)
         self.channelList_layout.setObjectName(u"channelList_layout")
         self.channelList_layout.setContentsMargins(0, 0, 0, 0)
-        self.visualize_layout_channelList = QHBoxLayout()
-        self.visualize_layout_channelList.setSpacing(0)
-        self.visualize_layout_channelList.setObjectName(u"visualize_layout_channelList")
-
-        self.channelList_layout.addLayout(self.visualize_layout_channelList)
-
-        self.visualize_addChannel = QHBoxLayout()
-        self.visualize_addChannel.setSpacing(0)
-        self.visualize_addChannel.setObjectName(u"visualize_addChannel")
-        self.visualize_btn_addChannel = QPushButton(self.channelList_frame)
-        self.visualize_btn_addChannel.setObjectName(u"visualize_btn_addChannel")
-        sizePolicy2.setHeightForWidth(self.visualize_btn_addChannel.sizePolicy().hasHeightForWidth())
-        self.visualize_btn_addChannel.setSizePolicy(sizePolicy2)
-        self.visualize_btn_addChannel.setStyleSheet(u"border: 1px solid black;")
-        icon5 = QIcon()
-        icon5.addFile(u":/16x16/icons/16x16/cil-plus.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.visualize_btn_addChannel.setIcon(icon5)
-
-        self.visualize_addChannel.addWidget(self.visualize_btn_addChannel)
-
-        self.visualize_space_addChannel = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.visualize_addChannel.addItem(self.visualize_space_addChannel)
-
-
-        self.channelList_layout.addLayout(self.visualize_addChannel)
-
 
         self.verticalLayout_3.addWidget(self.channelList_frame)
 
@@ -963,7 +1042,7 @@ class Ui_MainWindow(object):
         self.visualize_functionListFrame.setMinimumSize(QSize(0, 200))
         self.visualize_functionListFrame.setMaximumSize(QSize(16777215, 200))
         self.visualize_functionListLayout = QHBoxLayout(self.visualize_functionListFrame)
-        self.visualize_functionListLayout.setSpacing(0)
+        self.visualize_functionListLayout.setSpacing(1)
         self.visualize_functionListLayout.setObjectName(u"visualize_functionListLayout")
         self.visualize_functionListLayout.setContentsMargins(0, 0, 0, 0)
 
@@ -982,11 +1061,11 @@ class Ui_MainWindow(object):
         self.verticalLayout_6.setContentsMargins(0, 0, 0, 0)
         self.topView = QGraphicsView(self.visualize_leftpanel)
         self.topView.setObjectName(u"topView")
-        sizePolicy11 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
-        sizePolicy11.setHorizontalStretch(0)
-        sizePolicy11.setVerticalStretch(0)
-        sizePolicy11.setHeightForWidth(self.topView.sizePolicy().hasHeightForWidth())
-        self.topView.setSizePolicy(sizePolicy11)
+        sizePolicy14 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
+        sizePolicy14.setHorizontalStretch(0)
+        sizePolicy14.setVerticalStretch(0)
+        sizePolicy14.setHeightForWidth(self.topView.sizePolicy().hasHeightForWidth())
+        self.topView.setSizePolicy(sizePolicy14)
         self.topView.setMinimumSize(QSize(200, 0))
         self.topView.setStyleSheet(u"QGraphicsView {\n"
 "background-color: rgb(32, 32, 32);\n"
@@ -997,8 +1076,8 @@ class Ui_MainWindow(object):
 
         self.leftView = QGraphicsView(self.visualize_leftpanel)
         self.leftView.setObjectName(u"leftView")
-        sizePolicy11.setHeightForWidth(self.leftView.sizePolicy().hasHeightForWidth())
-        self.leftView.setSizePolicy(sizePolicy11)
+        sizePolicy14.setHeightForWidth(self.leftView.sizePolicy().hasHeightForWidth())
+        self.leftView.setSizePolicy(sizePolicy14)
         self.leftView.setMinimumSize(QSize(200, 0))
         self.leftView.setStyleSheet(u"QGraphicsView {\n"
 "background-color: rgb(32, 32, 32);\n"
@@ -1089,11 +1168,6 @@ class Ui_MainWindow(object):
         self.frame_bottom_layout = QHBoxLayout(self.frame_bottom)
         self.frame_bottom_layout.setObjectName(u"frame_bottom_layout")
         self.frame_bottom_layout.setContentsMargins(0, 0, 0, 0)
-        self.label_appState = QLabel(self.frame_bottom)
-        self.label_appState.setObjectName(u"label_appState")
-
-        self.frame_bottom_layout.addWidget(self.label_appState)
-
         self.spring_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.frame_bottom_layout.addItem(self.spring_2)
@@ -1118,9 +1192,9 @@ class Ui_MainWindow(object):
 "QPushButton:pressed {\n"
 "	background-color: rgb(222, 222, 222);\n"
 "}")
-        icon6 = QIcon()
-        icon6.addFile(u":/16x16/icons/16x16/cil-size-grip.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.btn_resize_grip.setIcon(icon6)
+        icon5 = QIcon()
+        icon5.addFile(u":/16x16/icons/16x16/cil-size-grip.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.btn_resize_grip.setIcon(icon5)
 
         self.frame_bottom_layout.addWidget(self.btn_resize_grip)
 
@@ -1157,6 +1231,13 @@ class Ui_MainWindow(object):
         self.btn_importFolder.setText(QCoreApplication.translate("MainWindow", u"Import Folder", None))
         self.btn_selectWorkspace.setText(QCoreApplication.translate("MainWindow", u"Select Workspace", None))
         self.label_fileInfo.setText(QCoreApplication.translate("MainWindow", u"File Info", None))
+        self.currentFunction.setText(QCoreApplication.translate("MainWindow", u"CurrentFunction", None))
+        self.edit_operation_name.setInputMask("")
+        self.edit_operation_name.setText("")
+        self.edit_operation_name.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Operation name", None))
+        self.checkbox_enabled.setText("")
+        self.btn_modify_operation.setText(QCoreApplication.translate("MainWindow", u"Apply", None))
+        self.btn_add_operation.setText(QCoreApplication.translate("MainWindow", u"Add", None))
 #if QT_CONFIG(tooltip)
         self.btn_run_pipeline.setToolTip(QCoreApplication.translate("MainWindow", u"Run", None))
 #endif // QT_CONFIG(tooltip)
@@ -1175,10 +1256,8 @@ class Ui_MainWindow(object):
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;\" bgcolor=\"#202020\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#202020;\"><br /></p></body></html>", None))
-        self.visualize_btn_addChannel.setText("")
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabWidgetPage2), QCoreApplication.translate("MainWindow", u" Brightness Con...", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"Page", None))
-        self.label_appState.setText("")
         self.btn_resize_grip.setText("")
     # retranslateUi
 

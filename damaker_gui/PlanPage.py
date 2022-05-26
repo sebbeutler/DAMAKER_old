@@ -12,6 +12,7 @@ from PySide2 import *
 from vedo import Mesh
 
 from damaker_gui.widgets.FunctionListWidget import FunctionsListWidget
+from damaker_gui.widgets.FunctionParametersWidget import FunctionParametersWidget
 
 from .widgets.PreviewWidget import PreviewWidget
 from .widgets.FilePickerWidget import FilePickerWidget, FolderPickerWidget
@@ -37,15 +38,7 @@ class PlanPage:
         self.ui = ui
         self.preview = PreviewWidget(self.ui.previewPipelineView, self.ui.previewPipelineSlider, [], self.ui.fileInfo)
         self.pipelineThread = None
-        
-        self.ui.btn_add_operation.clicked.connect(self.addOperation)
-        self.ui.btn_modify_operation.clicked.connect(self.modifyOperation)
-        
-        self.ui.btn_add_operation.setHidden(True)
-        self.ui.btn_modify_operation.setHidden(True)
-        self.ui.edit_operation_name.setHidden(True)
-        self.ui.checkbox_enabled.setHidden(True)
-        
+    
         self.selectedOperationItem = None
         
         self.ui.list_operations.itemDoubleClicked.connect(self.operationListClicked)
@@ -56,13 +49,15 @@ class PlanPage:
         
         self.pipelineRunning = False
         
-        self.outputDir = FolderPickerWidget(self.ui.fileSystemModel.rootPath(), 18, "Output path: ")
-        self.outputDir.setHidden(True)
-        self.ui.frame_outputDir.layout().addWidget(self.outputDir)
-        
         self.functions = FunctionsListWidget()
         self.functions.operationTriggered.connect(lambda name: self.functionListClicked(name))
         self.ui.functions_layout.addWidget(self.functions)
+        
+        self.functionParameters = FunctionParametersWidget()
+        self.ui.pipeline_settings_layout.addWidget(self.functionParameters)
+        
+        self.functionParameters.ui.btn_add_operation.clicked.connect(self.addOperation)
+        self.functionParameters.ui.btn_modify_operation.clicked.connect(self.modifyOperation)        
         
         # pr = BatchParameters()
         # pr.folder = "C:/Users/PC/source/DAMAKER/resources/batch"
@@ -76,17 +71,25 @@ class PlanPage:
         #                        "registration", True, "")))
 
     def addOperation(self, event):
-        func = self.functions.getFunction(self.ui.currentFunction.text())
+        func = self.functions.getFunction(self.functionParameters.ui.currentFunction.text())
         if func is None:
             return
         
-        name = self.ui.edit_operation_name.text()
-        enabled = self.ui.checkbox_enabled.isChecked()
-        outputPath = self.outputDir.text()
+        name = self.functionParameters.ui.edit_operation_name.text()
+        name_counter = 0
+        for i in range(self.ui.list_operations.count()):
+            item = self.ui.list_operations.item(i)
+            if item.name == name:
+                name_counter += 1
+        if name_counter > 0:
+            name += f'_{name_counter}'
+
+        enabled = self.functionParameters.ui.checkbox_enabled.isChecked()
+        outputPath = self.functionParameters.outputDir.text()
         
         args = []        
-        for i in range(self.ui.layout_fargs.count()):
-            widget = self.ui.layout_fargs.itemAt(i).widget()
+        for i in range(self.functionParameters.ui.layout_fargs.count()):
+            widget = self.functionParameters.ui.layout_fargs.itemAt(i).widget()
             
             if type(widget) is QSpinBox:
                 args.append(int(widget.value()))
@@ -115,13 +118,13 @@ class PlanPage:
         if self.selectedOperationItem is None:
             return
         
-        name = self.ui.edit_operation_name.text()
-        enabled = self.ui.checkbox_enabled.isChecked()
-        outputPath = self.outputDir.text()
+        name = self.functionParameters.ui.edit_operation_name.text()
+        enabled = self.functionParameters.ui.checkbox_enabled.isChecked()
+        outputPath = self.functionParameters.outputDir.text()
         
         args = []        
-        for i in range(self.ui.layout_fargs.count()):
-            widget = self.ui.layout_fargs.itemAt(i).widget()
+        for i in range(self.functionParameters.ui.layout_fargs.count()):
+            widget = self.functionParameters.ui.layout_fargs.itemAt(i).widget()
             
             if type(widget) is QSpinBox:
                 args.append(int(widget.value()))
@@ -154,27 +157,26 @@ class PlanPage:
                 return item.operation
         return None
     
-    def functionListClicked(self, name):        
-        clearLayout(self.ui.layout_fnames)
-        clearLayout(self.ui.layout_fargs)
-        self.ui.edit_operation_name.setHidden(False)
-        self.ui.checkbox_enabled.setHidden(False)
-        self.ui.btn_add_operation.setHidden(False)
-        self.ui.btn_modify_operation.setHidden(True)
+    def functionListClicked(self, name):
+        self.functionParameters.clearLayouts()
+        self.functionParameters.ui.edit_operation_name.setHidden(False)
+        self.functionParameters.ui.checkbox_enabled.setHidden(False)
+        self.functionParameters.ui.btn_add_operation.setHidden(False)
+        self.functionParameters.ui.btn_modify_operation.setHidden(True)
         
         func = self.functions.getFunction(name)
         if func == None:
             return
-        self.ui.currentFunction.setText(name)
+        self.functionParameters.ui.currentFunction.setText(name)
         sign = signature(func)
-        self.ui.edit_operation_name.setText(func.__name__)
-        self.ui.checkbox_enabled.setChecked(True)
+        self.functionParameters.ui.edit_operation_name.setText(func.__name__)
+        self.functionParameters.ui.checkbox_enabled.setChecked(True)
         
         if sign.return_annotation in [Channel, Channels, NamedArray]:
-            self.outputDir.setHidden(False)
-            self.outputDir.setText("")
+            self.functionParameters.outputDir.setHidden(False)
+            self.functionParameters.outputDir.setText("")
         else:
-            self.outputDir.setHidden(True)
+            self.functionParameters.outputDir.setHidden(True)
         
         for name in sign.parameters:
             param = sign.parameters[name]
@@ -188,7 +190,7 @@ class PlanPage:
             label = QLabel(name)
             label.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
             label.setFixedHeight(25)
-            self.ui.layout_fnames.addWidget(label)
+            self.functionParameters.ui.layout_fnames.addWidget(label)
                 
             if param.annotation is int:
                 spinBox = QSpinBox()
@@ -198,7 +200,7 @@ class PlanPage:
                     spinBox.setValue(int(default_arg))
                 else:
                     spinBox.setValue(0)
-                self.ui.layout_fargs.addWidget(spinBox)
+                self.functionParameters.ui.layout_fargs.addWidget(spinBox)
             if param.annotation is float:
                 spinBox = QDoubleSpinBox()
                 spinBox.setRange(-1000, 1000)
@@ -207,56 +209,55 @@ class PlanPage:
                     spinBox.setValue(float(default_arg))
                 else:
                     spinBox.setValue(0.0)
-                self.ui.layout_fargs.addWidget(spinBox)
+                self.functionParameters.ui.layout_fargs.addWidget(spinBox)
             elif param.annotation in [Channel, Channels, BatchParameters, Mesh]:
-                self.ui.layout_fargs.addWidget(BatchSelectionWidget(self.ui.fileSystemModel.rootPath()))
+                self.functionParameters.ui.layout_fargs.addWidget(BatchSelectionWidget(self.ui.fileSystemModel.rootPath()))
             elif param.annotation is SingleChannel:
-                self.ui.layout_fargs.addWidget(FilePickerWidget(self.ui.fileSystemModel.rootPath()))
+                self.functionParameters.ui.layout_fargs.addWidget(FilePickerWidget(self.ui.fileSystemModel.rootPath()))
             elif param.annotation is StrFilePath:
-                self.ui.layout_fargs.addWidget(FilePickerWidget(self.ui.fileSystemModel.rootPath()))
+                self.functionParameters.ui.layout_fargs.addWidget(FilePickerWidget(self.ui.fileSystemModel.rootPath()))
             elif param.annotation is StrFolderPath:
-                self.ui.layout_fargs.addWidget(FolderPickerWidget(self.ui.fileSystemModel.rootPath()))
+                self.functionParameters.ui.layout_fargs.addWidget(FolderPickerWidget(self.ui.fileSystemModel.rootPath()))
             elif param.annotation is str:
                 textEdit = QLineEdit()
                 textEdit.setFixedHeight(18)
                 if default_arg != None:
                     textEdit.setText(default_arg)
                 textEdit.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-                self.ui.layout_fargs.addWidget(textEdit)
+                self.functionParameters.ui.layout_fargs.addWidget(textEdit)
             elif type(param.annotation) is type(enum.Enum):
-                self.ui.layout_fargs.addWidget(EnumComboBox(param.annotation))
+                self.functionParameters.ui.layout_fargs.addWidget(EnumComboBox(param.annotation))
             elif param.annotation is bool:
                 checkBox = QCheckBox("")
                 if default_arg != None:
                     checkBox.setChecked(default_arg)
-                self.ui.layout_fargs.addWidget(checkBox)
+                self.functionParameters.ui.layout_fargs.addWidget(checkBox)
             # else:
             #     label = QLabel("Unknown type")
             #     label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
             #     self.ui.layout_fargs.addWidget(label)
     
     def operationListClicked(self):
-        clearLayout(self.ui.layout_fnames)
-        clearLayout(self.ui.layout_fargs)
-        self.ui.edit_operation_name.setHidden(False)
-        self.ui.checkbox_enabled.setHidden(False)
-        self.ui.btn_add_operation.setHidden(True)
-        self.ui.btn_modify_operation.setHidden(False)
+        self.functionParameters.clearLayouts()
+        self.functionParameters.ui.edit_operation_name.setHidden(False)
+        self.functionParameters.ui.checkbox_enabled.setHidden(False)
+        self.functionParameters.ui.btn_add_operation.setHidden(True)
+        self.functionParameters.ui.btn_modify_operation.setHidden(False)
         
         operation_items = self.ui.list_operations.selectedItems()
         if len(operation_items) == 0:
             return None
         self.selectedOperationItem = operation_items[0]
         operation: Operation = operation_items[0].operation
-        self.ui.edit_operation_name.setText(operation.name)   
-        self.ui.checkbox_enabled.setChecked(operation.enabled)
+        self.functionParameters.ui.edit_operation_name.setText(operation.name)   
+        self.functionParameters.ui.checkbox_enabled.setChecked(operation.enabled)
         
         sign = signature(operation.func)
         if sign.return_annotation in [Channel, Channels, NamedArray]:
-            self.outputDir.setHidden(False)
-            self.outputDir.setText(operation.outputPath)
+            self.functionParameters.outputDir.setHidden(False)
+            self.functionParameters.outputDir.setText(operation.outputPath)
         else:
-            self.outputDir.setHidden(True)
+            self.functionParameters.outputDir.setHidden(True)
         
         arg_id=0
         for name in sign.parameters:
@@ -269,53 +270,49 @@ class PlanPage:
             label = QLabel(name)
             label.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)            
             label.setFixedHeight(25)
-            self.ui.layout_fnames.addWidget(label)
+            self.functionParameters.ui.layout_fnames.addWidget(label)
             
             if param.annotation is int:
                 spinBox = QSpinBox()
                 spinBox.setFixedHeight(18)
                 spinBox.setRange(-1000, 1000)
                 spinBox.setValue(int(arg))
-                self.ui.layout_fargs.addWidget(spinBox)
+                self.functionParameters.ui.layout_fargs.addWidget(spinBox)
             elif param.annotation is float:
                 spinBox = QDoubleSpinBox()
                 spinBox.setFixedHeight(18)
                 spinBox.setRange(-1000, 1000)
                 spinBox.setFixedHeight(25)
                 spinBox.setValue(float(arg))
-                self.ui.layout_fargs.addWidget(spinBox)
+                self.functionParameters.ui.layout_fargs.addWidget(spinBox)
             elif param.annotation in [Channel, Channels, BatchParameters, Mesh]:    
-                self.ui.layout_fargs.addWidget(BatchSelectionWidget(self.ui.fileSystemModel.rootPath(), arg))
+                self.functionParameters.ui.layout_fargs.addWidget(BatchSelectionWidget(self.ui.fileSystemModel.rootPath(), arg))
             elif param.annotation is SingleChannel:
                 filePicker = FilePickerWidget(self.ui.fileSystemModel.rootPath())
                 filePicker.setText(arg)   
-                self.ui.layout_fargs.addWidget(filePicker)    
+                self.functionParameters.ui.layout_fargs.addWidget(filePicker)    
             elif param.annotation is StrFilePath:
                 filePicker = FilePickerWidget(self.ui.fileSystemModel.rootPath())
                 filePicker.setText(arg)
-                self.ui.layout_fargs.addWidget(filePicker)           
+                self.functionParameters.ui.layout_fargs.addWidget(filePicker)           
             elif param.annotation is StrFolderPath:
                 folderPicker = FolderPickerWidget(self.ui.fileSystemModel.rootPath())
                 folderPicker.setText(arg)
-                self.ui.layout_fargs.addWidget(folderPicker)
+                self.functionParameters.ui.layout_fargs.addWidget(folderPicker)
             elif param.annotation is str:
                 textEdit = QLineEdit()
                 textEdit.setFixedHeight(18)
                 textEdit.setText(arg)
                 textEdit.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-                self.ui.layout_fargs.addWidget(textEdit)            
+                self.functionParameters.ui.layout_fargs.addWidget(textEdit)            
             elif type(param.annotation) is type(enum.Enum):
                 combBox = EnumComboBox(param.annotation)
                 combBox.setCurrentText(arg.name)
-                self.ui.layout_fargs.addWidget(combBox)
+                self.functionParameters.ui.layout_fargs.addWidget(combBox)
             elif param.annotation is bool:
                 checkBox = QCheckBox("")
                 checkBox.setChecked(arg)
-                self.ui.layout_fargs.addWidget(checkBox)
-            # else:
-            #     label = QLabel("Unknown type")
-            #     label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-            #     self.ui.layout_fargs.addWidget(label)
+                self.functionParameters.ui.layout_fargs.addWidget(checkBox)
             arg_id += 1
         
     def newOperationComboBox(self):

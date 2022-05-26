@@ -1,12 +1,12 @@
 if __name__ == '__main__':
     import os
     os.system("pyside2-uic -o ./damaker_gui/windows/UI_MainWindow.py --from-imports ./damaker_gui/windows/MainWindow.ui")
+    os.system("pyside2-uic -o ./damaker_gui/windows/UI_FunctionParametersWidget.py --from-imports ./damaker_gui/windows/FunctionParametersWidget.ui")
 
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from PySide2.QtCore import *
 from PySide2 import *
-from damaker.utils import plotChannelRGB
 
 from damaker_gui.widgets.FileInfoWidget import FileInfoWidget
 from damaker_gui.PlanPage import PlanPage
@@ -40,17 +40,18 @@ class AppWindow(QMainWindow):
         self.ui.frame_main.setGraphicsEffect(self.shadow)
         
         self.ui.frame_top.mouseMoveEvent = self.evt_moveWindow
-        self.ui.btn_exit.mouseReleaseEvent = lambda e : super(AppWindow, self).mouseReleaseEvent(e) if self.close() or 1 else None
-        self.ui.btn_minimize.mouseReleaseEvent = lambda e : super(AppWindow, self).mouseReleaseEvent(e) if self.showMinimized() or 1 else None
+        self.ui.btn_exit.clicked.connect(lambda e : self.close())
+        self.ui.btn_minimize.clicked.connect(lambda e : self.showMinimized())
+        self.ui.btn_maximize.clicked.connect(lambda e : self.showNormal() if self.isMaximized() else self.showMaximized())
         
         self.sizegrip = QSizeGrip(self.ui.btn_resize_grip)
         
         # ------------------------------------------------------------------------------------------------
         
         # -Top bar-
-        self.ui.btn_plan.clicked.connect(lambda e : self.ui.content_tabs.setCurrentIndex(0))
-        self.ui.btn_visualize.clicked.connect(lambda e : self.ui.content_tabs.setCurrentIndex(1))
-        self.ui.btn_analyse.clicked.connect(lambda e : self.ui.content_tabs.setCurrentIndex(2))
+        self.ui.btn_plan.clicked.connect(lambda e : self.switchTab(0))
+        self.ui.btn_visualize.clicked.connect(lambda e : self.switchTab(1))
+        self.ui.btn_analyse.clicked.connect(lambda e : self.switchTab(2))
         
         # -Left bar-
         self.ui.fileInfo = FileInfoWidget(self.ui.label_fileInfo)
@@ -71,7 +72,15 @@ class AppWindow(QMainWindow):
         self.planPage = PlanPage(self.ui)      
         self.visualizePage = VisualizePage(self.ui)      
         
+        # self.switchTab(0)
         self.setFocus()
+    
+    def switchTab(self, index):
+        self.ui.content_tabs.setCurrentIndex(index)
+        tabs_btn = [self.ui.btn_plan, self.ui.btn_visualize, self.ui.btn_analyse]
+        for btn in tabs_btn:
+            btn.setChecked(False)
+        tabs_btn[index].setChecked(True)
 
     def keyPressEvent(self, event):
         # print(f"Key: {str(event.key())} Text Press: {str(event.text())}")
@@ -86,7 +95,10 @@ class AppWindow(QMainWindow):
     def evt_moveWindow(self, event):
         # MOVE WINDOW
         if event.buttons() == Qt.LeftButton:
-            self.move(self.pos() + event.globalPos() - self.dragPos)
+            new_pos: QPoint = self.pos() + event.globalPos() - self.dragPos
+            # new_pos.setX(max(0, new_pos.x()))
+            new_pos.setY(max(0, new_pos.y()))
+            self.move(new_pos)
             self.dragPos = event.globalPos()
             event.accept()
     
@@ -98,6 +110,7 @@ class AppWindow(QMainWindow):
 if __name__ == '__main__':
     import sys, os
     os.environ["JAVA_HOME"] = "C:/Program Files/Java/jdk-18.0.1.1"
+    os.environ["JAVA_HOME"] = "C:/Program Files/Java/jdk-11.0.13"
     
     app = QApplication(sys.argv)
     window = AppWindow()    
@@ -116,11 +129,15 @@ if __name__ == '__main__':
     # a.load()
     
     # load = loadChannelsFromDir("resources/output/registration")
-    ref = loadChannelsFromFile("resources/output/registration/E1.tif")[0]
-    out = segmentation(ref, "C:/Users/PC/source/DAMAKER/resources/segmentation/CU4.model")
-    out.save("4.tif")
-    out = segmentation(ref, "C:/Users/PC/source/DAMAKER/resources/segmentation/CU2.model")
-    out.save("2.tif")
+    # ref = loadChannelsFromFile("resources/batch/User1C2E1.tif")[0]
+    # ref2 = resliceTop(ref)
+    # plotChannel(ref)
+    # plotChannel(ref2)
+    
+    # out = segmentation(ref, "C:/Users/PC/source/DAMAKER/resources/segmentation/CU4.model")
+    # out.save("4.tif")
+    # out = segmentation(ref, "C:/Users/PC/source/DAMAKER/resources/segmentation/CU2.model")
+    # out.save("2.tif")
     #         "C:/Users/PC/source/DAMAKER/damaker/weka/bin/weka_segmentation_gateway.jar")
     # for chn in load:
     # channelSave(out, "resources/out-reg/")

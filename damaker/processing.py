@@ -4,6 +4,7 @@ import subprocess
 import math
 from time import time
 import cv2
+from cv2 import Mat
 import numpy as np
 import time
 
@@ -21,12 +22,12 @@ from py4j.java_collections import JavaArray
 
 from damaker.pipeline import BatchParameters
 
-from .utils import StrFilePath, StrFolderPath, channelsSave, plotArray, plotChannel, NamedArray
+from .utils import StrFilePath, StrFolderPath, channelsSave, _plotChannel, NamedArray
 from .Channel import Channel, Channels, SingleChannel
 
 def channelSelect(input: Channels, id: int=1) -> Channels:
     """
-        Name: Channel Filter
+        Name: Select channel by id
         Category: Operations
         Desc: Choose a specific channel among the inputs.
     """
@@ -48,6 +49,10 @@ def channelInvert(input: Channel) -> Channel:
     return input
 
 def channelCrop(input: Channel, p1, p2) -> Channel:
+    """
+        Name: Crop
+        Category: Operations
+    """
     input.data = input.data[:, p1[1]:p2[1], p1[0]:p2[0]]
     return input
 
@@ -58,7 +63,11 @@ class cv_Interpolation(enum.Enum):
     area = cv2.INTER_AREA
     lanczos4 = cv2.INTER_LANCZOS4
 
-def channelRotate(input: Channel, degrees: float, inter: cv_Interpolation=cv_Interpolation.bilinear) -> Channel:    
+def channelRotate(input: Channel, degrees: float, inter: cv_Interpolation=cv_Interpolation.bilinear) -> Channel:
+    """
+        Name: Rotation angle
+        Category: Operations
+    """    
     # create a rotation matric
     w, h = (input.shape[2], input.shape[1])
     img_center = (input.shape[2]/2, input.shape[1]/2)
@@ -85,7 +94,16 @@ def channelRotate(input: Channel, degrees: float, inter: cv_Interpolation=cv_Int
     input.data = new_data
     return input
 
-def channelRotateType(input: Channel, rotType) -> Channel:
+class RotationTypes(enum.Enum):
+    clockwise_90 =  cv2.ROTATE_90_CLOCKWISE
+    counter_clockwise_90 = cv2.ROTATE_90_COUNTERCLOCKWISE
+    rotate_180 = cv2.ROTATE_180
+
+def channelRotateType(input: Channel, rotType: RotationTypes=RotationTypes.clockwise_90) -> Channel:
+    """
+        Name: Rotation
+        Category: Operations
+    """    
     if rotType == cv2.ROTATE_180:
         new_data = np.zeros(shape=input.shape, dtype=np.int32)
     else:
@@ -96,29 +114,24 @@ def channelRotateType(input: Channel, rotType) -> Channel:
     input.data = new_data
     return input
 
-def channelRotate90(input: Channel) -> Channel:
-    channelRotateType(input, cv2.ROTATE_90_CLOCKWISE)
-    return input
+class FlipTypes(enum.Enum):
+    vertically = 0
+    horizontally = 1
 
-def channelRotate180(input: Channel) -> Channel:
-    channelRotateType(input, cv2.ROTATE_180)
-    return input
-
-def channelRotate270(input: Channel) -> Channel:
-    channelRotateType(input, cv2.ROTATE_90_COUNTERCLOCKWISE)
-    return input
-    
-def channelFlipHorizontally(input: Channel) -> Channel:
+def channelFlip(input: Channel, flipType: FlipTypes=FlipTypes.horizontally) -> Channel:
+    """
+        Name: Flip
+        Category: Operations
+    """    
     for i in range(input.shape[0]):
-        input.data[i] = cv2.flip(input.data[i], 1)
+        input.data[i] = cv2.flip(input.data[i], flipType)
     return input
 
-def channelFlipVertically(input: Channel) -> Channel:
-    for i in range(input.shape[0]):
-        input.data[i] = cv2.flip(input.data[i], 0)
-    return input
-
-def pixelIntensity(input: Channel, frameId: int=-1) -> Channel:
+def pixelIntensity(input: Channel, frameId: int=-1) -> NamedArray:
+    """
+        Name: Pixel intensity
+        Category: Quantification
+    """    
     if frameId < 0:
         data = input.data
     else:
@@ -128,33 +141,65 @@ def pixelIntensity(input: Channel, frameId: int=-1) -> Channel:
     
     for px in data:
         px_intensity[px] += 1
-    
-    return px_intensity
 
-def zProjectionMax(input: Channel) -> Channel:
-    return input.data.max(0)
+    res = NamedArray()
+    res.name = input.name
+    res.data = px_intensity
+    return res
 
-def zProjectionMean(input: Channel) -> Channel:
-    return input.data.mean(0)
+class ZProjectionTypes(enum.Enum):
+    max = 0
+    min = 1
+    mean = 2
 
-def zProjectionMin(input: Channel) -> Channel:
-    return input.data.min(0)
+def zProjection(input: Channel, projectionType: ZProjectionTypes= ZProjectionTypes.max) -> Channel:
+    """
+        Name: Z Projection
+        Category: Operations
+    """
+    if projectionType == ZProjectionTypes.max:
+        return input.data.max(0)
+    elif projectionType == ZProjectionTypes.min:
+        return input.data.min(0)
+    elif projectionType == ZProjectionTypes.mean:
+        return input.data.mean(0)
 
 
 # TODO: Verify types of the channels to be Channel
-def operatorAND(input: Channels, threshold: int=1) -> Channel:
+
+class MathOperationTypes(enum.Enum):
+    AND = 0
+    OR = 1
+    ADD = 2
+    SUB = 3
+
+def mathOperators(input1: Channel, input2: Channel, opType: MathOperationTypes= MathOperationTypes.SUB):
+    """
+        Name: Math 
+        Category: Operations
+    """ 
+    if opType == MathOperationTypes.ADD:
+        return _operatorADD(None)
+    elif opType == MathOperationTypes.AND:
+        pass
+    elif opType == MathOperationTypes.OR:
+        pass
+    elif opType == MathOperationTypes.SUB:
+        return _operatorSUB(input1, input2)
+
+def _operatorAND(input: Channels, threshold: int=1) -> Channel:
     result = input[0].copy()
     for channel in input:
         result.data = np.where(channel.data >= threshold, result.data, 0)
     return result
 
-def operatorOR(input: Channels) -> Channel:
+def _operatorOR(input: Channels) -> Channel:
     datas = input.data
     for channel in input:
         datas.append(channel.data)
     return input[0].clone(np.maximum.reduce(datas))
 
-def operatorADD(input: Channels) -> Channel:
+def _operatorADD(input: Channels) -> Channel:
     result = input[0].copy()
     result.data = result.data.astype(np.uint16)
     for channel in input:
@@ -163,7 +208,7 @@ def operatorADD(input: Channels) -> Channel:
     result.data = result.data.astype(np.uint8)
     return result
 
-def operatorSUB(input1: Channel, input2: Channel) -> Channel:
+def _operatorSUB(input1: Channel, input2: Channel) -> Channel: 
     result = input1.copy()
     result.data = result.data.astype(np.int16)
     result.data -= input2.data
@@ -172,6 +217,10 @@ def operatorSUB(input1: Channel, input2: Channel) -> Channel:
     return result
 
 def changeBrightnessAndContrast(input: Channel, brightness: int, contrast: int) -> Channel:
+    """
+        Name: Brightness & Contrast
+        Category: Operations
+    """    
     def contrastFactor(c):
         return (259*(c + 255)) / (255*(259 - c))
 
@@ -186,7 +235,11 @@ def changeBrightnessAndContrast(input: Channel, brightness: int, contrast: int) 
     return input
 
 avg_counter = 0
-def averageChannels(input: Channels) -> Channel:
+def averageChannels(input: Channels, consensusSelection: int=0) -> Channel:
+    """
+        Name: Average
+        Category: Operations
+    """    
     global avg_counter
     avg_counter += 1
     data = []
@@ -206,19 +259,44 @@ def averageChannels(input: Channels) -> Channel:
     res: Channel = input[0].clone(data)
     res.name = "Average_" + str(avg_counter)
     
+    if consensusSelection > 0:
+        res = clipChannel(res, consensusSelection/len(input) * 255, 255)
+    
     return res
 
 def clipChannel(input: Channel, tmin: int=0, tmax: int=255, replace: bool=False) -> Channel:
+    """
+        Name: Clip intensity
+        Category: Operations
+    """    
     if not replace:
         input = input.copy()
     input.data[input.data < tmin] = 0
     input.data[input.data > tmax] = 0
     return input
 
-def consensusSelection(input: Channels, amount: int=1) -> Channel:
-    return clipChannel(averageChannels(input), amount/len(input) * 255, 255)
-  
-def resliceTop(input: Channel) -> Channel:      
+class ResliceType(enum.Enum):
+    top = 0
+    bottom = 1
+    left = 2
+    right = 3
+
+def resliceChannel(input: Channel, resliceType: ResliceType=ResliceType.top):
+    """
+        Name: Reslice
+        Category: Operations
+    """          
+    if resliceType == ResliceType.top:
+        return _resliceTop(input)
+    elif resliceType == ResliceType.bottom:
+        return channelReverse(_resliceTop(input))
+    elif resliceType == ResliceType.left:
+        return _resliceLeft(input)
+    elif resliceType == ResliceType.right:
+        return channelReverse(_resliceLeft(input))
+    
+
+def _resliceTop(input: Channel) -> Channel:
     input = input.copy()  
     Z, Y, X = input.shape
     
@@ -231,7 +309,7 @@ def resliceTop(input: Channel) -> Channel:
     result = np.zeros((Y, new_Z, X))
     
     for i in range(Y):
-        result[i, :, :] =  cv2.resize(reslice[i], (X, new_Z), interpolation=cv2.INTER_CUBIC)
+        result[i, :, :] =  cv2.resize(reslice[i], (X, new_Z), interpolation=cv2.INTER_NEAREST)
     
     input.name = "reslicedTop_" + input.name
     input.data = result.astype(np.uint8)
@@ -239,7 +317,7 @@ def resliceTop(input: Channel) -> Channel:
     return input
 
 
-def resliceLeft(input: Channel) -> Channel:
+def _resliceLeft(input: Channel) -> Channel:
     input = input.copy()
     Z, Y, X = input.shape
     
@@ -253,7 +331,7 @@ def resliceLeft(input: Channel) -> Channel:
     result = np.zeros((X, new_Z, Y))
     
     for i in range(X):
-        result[i, :, :] =  cv2.resize(reslice[i], (Y, new_Z), interpolation=cv2.INTER_CUBIC)
+        result[i, :, :] =  cv2.resize(reslice[i], (Y, new_Z), interpolation=cv2.INTER_NEAREST)
         
     input.name = "reslicedLeft_" + input.name
     input.data = result.astype(np.uint8)
@@ -261,6 +339,10 @@ def resliceLeft(input: Channel) -> Channel:
     return input
 
 def channelReverse(input: Channel) -> Channel:
+    """
+        Name: Reverse stack
+        Category: Operations
+    """    
     input.data = input.data[::-1]
     return input
 
@@ -268,6 +350,10 @@ def sliceVolume(data, s_z, s_y, s_x, threshold=0):
     return np.count_nonzero(data[data >= threshold]) * s_z * s_y * s_x
 
 def channelTotalVolume(input: Channel, minObjSize: int=0) -> NamedArray:
+    """
+        Name: Global volume
+        Category: Quantification
+    """    
     l, n = ndimage.label(input.data, np.ones((3, 3, 3)))
     
     f = ndimage.find_objects(l)
@@ -286,6 +372,10 @@ def channelTotalVolume(input: Channel, minObjSize: int=0) -> NamedArray:
     return res
 
 def channelVolumeArray(input: Channel) -> NamedArray:
+    """
+        Name: Volume distribution
+        Category: Quantification
+    """    
     z, y, x = input.shape
     
     volumes = []
@@ -299,13 +389,21 @@ def channelVolumeArray(input: Channel) -> NamedArray:
     return res
 
 def channelAxisQuantification(input: Channel) -> NamedArray:
+    """
+        Name: Volume distribution per axis
+        Category: Quantification
+    """    
     axisFront = channelVolumeArray(input)
-    axisTop = channelVolumeArray(resliceTop(input))
-    axisLeft = channelVolumeArray(resliceLeft(input))
+    axisTop = channelVolumeArray(_resliceTop(input))
+    axisLeft = channelVolumeArray(_resliceLeft(input))
     
     return [axisFront, axisTop, axisLeft]
 
 def meshCompareDistance(mesh1: Mesh, mesh2: Mesh, largest_region: bool=False) -> NamedArray:
+    """
+        Name: Mesh distance
+        Category: Quantification
+    """    
     colors = []
     for i in np.linspace(-80, 80):
         c = vedo.colorMap(i, name='seismic', vmin=-80, vmax=80)
@@ -329,8 +427,6 @@ def meshCompareDistance(mesh1: Mesh, mesh2: Mesh, largest_region: bool=False) ->
     obj1.distanceTo(obj2, signed=True)
     obj1.cmap(input_array="Distance", cname=lut)
     obj1.addScalarBar(title='Distance')
-    
-    vedo.show(obj1, new=True)
     
     return obj1.pointdata["Distance"]
 
@@ -360,11 +456,19 @@ def _meshCompareDistance_fiji(mesh1, mesh2):
     return obj1.pointdata["Distance"]
 
 def channelFromBinary(input: Channel) -> Channel:
+    """
+        Name: Binary to channel
+        Category: Import
+    """    
     input.data[input.data > 0] = 255
     return input
 
 _jar_path = 'C:/Users/PC/source/DAMAKER/damaker/weka/bin/weka_segmentation_gateway.jar'
 def segmentation(input: Channel, classifier: StrFilePath) -> Channel:
+    """
+        Name: Apply Trainable Weka Segmentation 3D
+        Category: Segmentation
+    """    
     input = input.copy()
     # process = subprocess.Pope
     # n("java -Xms200M -Xmx8G -jar " + _jar_path)
@@ -394,6 +498,10 @@ def segmentationMultiClassifier(input: Channel, classifiers: BatchParameters, ou
         segmentation(input, classifiers.folder + "/" + file).save(outputDir)
 
 def resampleChannel(input: Channel, sizeX: int, sizeY: int, sizeZ: int, px_sizeX: int, px_sizeY: int, px_sizeZ: int) -> Channel:
+    """
+        Name: Resample
+        Category: Import
+    """    
     arr = sitk.GetImageFromArray(input.data.astype(np.float32))
     arr.SetSpacing(tuple(reversed(input.px_sizes)))
     
@@ -407,6 +515,10 @@ def resampleChannel(input: Channel, sizeX: int, sizeY: int, sizeZ: int, px_sizeX
     return input
 
 def resampleLike(input: Channel, ref: Channel) -> Channel:
+    """
+        Name: Homogenize with reference
+        Category: Import
+    """    
     arr = sitk.GetImageFromArray(input.data.astype(np.float32))
     arr.SetSpacing(tuple(reversed(input.px_sizes)))
     
@@ -421,6 +533,10 @@ def resampleLike(input: Channel, ref: Channel) -> Channel:
     return input
 
 def resampleMean(input: Channels) -> Channel:
+    """
+        Name: Homogenize Mean
+        Category: Import
+    """    
     shapes = []
     px_sizes = []
     for channel in input:
@@ -454,7 +570,11 @@ def _imageToChannel(img, chn=None):
     chn.px_sizes = PhysicalPixelSizes(res_px[2], res_px[1], res_px[0])
     return chn
         
-def registration(input: Channel, reference: SingleChannel, nb_iteration: int=200, retTransform=None) -> Channel:            
+def registration(input: Channel, reference: SingleChannel, nb_iteration: int=200, retTransform=None) -> Channel:
+    """
+        Name: SITK Registration direct
+        Category: Registration
+    """            
     def resample(image, transform):
         reference_image = image
         interpolator = sitk.sitkLinear
@@ -462,7 +582,7 @@ def registration(input: Channel, reference: SingleChannel, nb_iteration: int=200
         return sitk.Resample(image, reference_image, transform, interpolator, default_value)
 
     def _plotImage(img):
-        plotChannel(Channel("", sitk.GetArrayFromImage(img)))
+        _plotChannel(Channel("", sitk.GetArrayFromImage(img)))
 
     ref = _channelToImage(reference)
 
@@ -536,6 +656,10 @@ def registration(input: Channel, reference: SingleChannel, nb_iteration: int=200
     return input
 
 def registrationMultiChannel(input: BatchParameters, reference: SingleChannel, refChannel: int=1, nb_iteration: int=200, outputPath: StrFolderPath="") -> None:
+    """
+        Name: SITK Registration though reference
+        Category: Registration
+    """ 
     input.load()
     ref = _channelToImage(reference[0])
     
@@ -565,3 +689,11 @@ def registrationMultiChannel(input: BatchParameters, reference: SingleChannel, r
             
             final.append(_imageToChannel(mov_res, chn))
         channelsSave(final, outputPath)
+
+def loadChannelsFromDir(input: BatchParameters):
+    """
+        Name: Load from folder
+        Category: Import
+    """ 
+    input.load()
+    return input.all()

@@ -862,7 +862,7 @@ QPushButton:pressed {
            <number>0</number>
           </property>
           <item>
-           <widget class="QFrame" name="horizontalFrame">
+           <widget class="QFrame" name="frame_pageSelect">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
               <horstretch>0</horstretch>
@@ -875,12 +875,18 @@ QPushButton:pressed {
               <height>0</height>
              </size>
             </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton:checked {
+	
+	background-color: rgb(106, 106, 106);
+}</string>
+            </property>
             <layout class="QHBoxLayout" name="layout_pageSelect">
              <property name="spacing">
-              <number>3</number>
+              <number>1</number>
              </property>
              <property name="leftMargin">
-              <number>5</number>
+              <number>2</number>
              </property>
              <property name="topMargin">
               <number>0</number>
@@ -892,9 +898,28 @@ QPushButton:pressed {
               <number>0</number>
              </property>
              <item>
+              <widget class="QLabel" name="label">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="pixmap">
+                <pixmap resource="../resources/files.qrc">:/20x20/icons/20x20/logo_dmkr.png</pixmap>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QPushButton" name="btn_plan">
                <property name="text">
                 <string>Plan</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -902,6 +927,9 @@ QPushButton:pressed {
               <widget class="QPushButton" name="btn_visualize">
                <property name="text">
                 <string>Visualize</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -963,6 +991,9 @@ QPushButton:pressed {
               <height>60</height>
              </size>
             </property>
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
 	border-radius: 2px;
@@ -988,7 +1019,50 @@ background-color: rgb(255, 255, 255);
             </property>
             <property name="icon">
              <iconset resource="../resources/files.qrc">
-              <normaloff>:/16x16/icons/16x16/cil-arrow-bottom.png</normaloff>:/16x16/icons/16x16/cil-arrow-bottom.png</iconset>
+              <normaloff>:/16x16/icons/16x16/cil-minus.png</normaloff>:/16x16/icons/16x16/cil-minus.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_maximize">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>15</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>60</width>
+              <height>60</height>
+             </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+	border-radius: 2px;
+	
+	background-color: rgba(104, 104, 124, 125);
+}
+
+QPushButton:hover {
+	background-color: rgba(212, 212, 212, 40);
+}</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources/files.qrc">
+              <normaloff>:/16x16/icons/16x16/cil-media-stop.png</normaloff>:/16x16/icons/16x16/cil-media-stop.png</iconset>
             </property>
            </widget>
           </item>
@@ -1005,6 +1079,9 @@ background-color: rgb(255, 255, 255);
               <width>60</width>
               <height>60</height>
              </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
             </property>
             <property name="styleSheet">
              <string notr="true">#btn_exit {
@@ -1224,7 +1301,7 @@ border-color: rgb(32, 32, 32);</string>
                 <property name="acceptDrops">
                  <bool>false</bool>
                 </property>
-                <layout class="QHBoxLayout" name="horizontalLayout">
+                <layout class="QHBoxLayout" name="pipeline_settings_layout">
                  <property name="spacing">
                   <number>0</number>
                  </property>
@@ -1418,206 +1495,6 @@ QMenu::item::selected {
                     <property name="bottomMargin">
                      <number>0</number>
                     </property>
-                   </layout>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QFrame" name="parameters_container">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>300</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="styleSheet">
-                    <string notr="true">color: white;border-width: 1px;</string>
-                   </property>
-                   <property name="frameShape">
-                    <enum>QFrame::StyledPanel</enum>
-                   </property>
-                   <layout class="QVBoxLayout" name="verticalLayout_4">
-                    <property name="spacing">
-                     <number>1</number>
-                    </property>
-                    <property name="leftMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="bottomMargin">
-                     <number>0</number>
-                    </property>
-                    <item>
-                     <widget class="QLabel" name="currentFunction">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>0</width>
-                        <height>0</height>
-                       </size>
-                      </property>
-                      <property name="lineWidth">
-                       <number>0</number>
-                      </property>
-                      <property name="text">
-                       <string>CurrentFunction</string>
-                      </property>
-                      <property name="textInteractionFlags">
-                       <set>Qt::NoTextInteraction</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QFrame" name="pipline_settings_top">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="styleSheet">
-                       <string notr="true">border: 0px solid rgb(32, 32, 32); margin: 2px;</string>
-                      </property>
-                      <layout class="QHBoxLayout" name="pipeline_settings_layout_top">
-                       <property name="spacing">
-                        <number>1</number>
-                       </property>
-                       <property name="leftMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="topMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="rightMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="bottomMargin">
-                        <number>0</number>
-                       </property>
-                       <item>
-                        <widget class="QLineEdit" name="edit_operation_name">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true"/>
-                         </property>
-                         <property name="inputMask">
-                          <string/>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="frame">
-                          <bool>true</bool>
-                         </property>
-                         <property name="placeholderText">
-                          <string>Operation name</string>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QCheckBox" name="checkbox_enabled">
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="iconSize">
-                          <size>
-                           <width>16</width>
-                           <height>16</height>
-                          </size>
-                         </property>
-                         <property name="checked">
-                          <bool>true</bool>
-                         </property>
-                         <property name="tristate">
-                          <bool>false</bool>
-                         </property>
-                        </widget>
-                       </item>
-                      </layout>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QFrame" name="frame_settingsForm">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="styleSheet">
-                       <string notr="true">border: 0px solid rgb(32, 32, 32);</string>
-                      </property>
-                      <layout class="QHBoxLayout" name="horizontalLayout_2">
-                       <item>
-                        <layout class="QVBoxLayout" name="layout_fnames"/>
-                       </item>
-                       <item>
-                        <layout class="QVBoxLayout" name="layout_fargs"/>
-                       </item>
-                      </layout>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QFrame" name="frame_outputDir">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="styleSheet">
-                       <string notr="true">border: 0px solid rgb(32, 32, 32);</string>
-                      </property>
-                      <layout class="QHBoxLayout" name="horizontalLayout_6">
-                       <property name="spacing">
-                        <number>0</number>
-                       </property>
-                       <property name="sizeConstraint">
-                        <enum>QLayout::SetDefaultConstraint</enum>
-                       </property>
-                      </layout>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QPushButton" name="btn_modify_operation">
-                      <property name="autoFillBackground">
-                       <bool>false</bool>
-                      </property>
-                      <property name="styleSheet">
-                       <string notr="true">border-width: 1px 0px 0px 0px;</string>
-                      </property>
-                      <property name="text">
-                       <string>Apply</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QPushButton" name="btn_add_operation">
-                      <property name="styleSheet">
-                       <string notr="true">color: white; border-width: 1px 0px 0px 0px;</string>
-                      </property>
-                      <property name="text">
-                       <string>Add</string>
-                      </property>
-                     </widget>
-                    </item>
                    </layout>
                   </widget>
                  </item>
@@ -1892,6 +1769,12 @@ p, li { white-space: pre-wrap; }
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>500</width>
+                       <height>0</height>
+                      </size>
+                     </property>
                      <property name="layoutDirection">
                       <enum>Qt::LeftToRight</enum>
                      </property>
@@ -2034,6 +1917,53 @@ QPushButton:unchecked {
                       <property name="bottomMargin">
                        <number>0</number>
                       </property>
+                      <item>
+                       <layout class="QHBoxLayout" name="visualize_layout_channelList">
+                        <property name="spacing">
+                         <number>0</number>
+                        </property>
+                       </layout>
+                      </item>
+                      <item>
+                       <layout class="QHBoxLayout" name="visualize_addChannel" stretch="0,0">
+                        <property name="spacing">
+                         <number>0</number>
+                        </property>
+                        <item>
+                         <widget class="QPushButton" name="visualize_btn_addChannel">
+                          <property name="sizePolicy">
+                           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                           </sizepolicy>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">border: 1px solid black;</string>
+                          </property>
+                          <property name="text">
+                           <string/>
+                          </property>
+                          <property name="icon">
+                           <iconset resource="../resources/files.qrc">
+                            <normaloff>:/16x16/icons/16x16/cil-plus.png</normaloff>:/16x16/icons/16x16/cil-plus.png</iconset>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <spacer name="visualize_space_addChannel">
+                          <property name="orientation">
+                           <enum>Qt::Horizontal</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>40</width>
+                            <height>20</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                       </layout>
+                      </item>
                      </layout>
                     </widget>
                    </item>
@@ -2041,25 +1971,42 @@ QPushButton:unchecked {
                  </widget>
                 </item>
                 <item>
-                 <widget class="QFrame" name="channelFunctionList">
+                 <widget class="QFrame" name="visualize_functionListFrame">
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
                     <height>200</height>
                    </size>
                   </property>
-                  <property name="frameShape">
-                   <enum>QFrame::StyledPanel</enum>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>200</height>
+                   </size>
                   </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
-                  </property>
+                  <layout class="QHBoxLayout" name="visualize_functionListLayout">
+                   <property name="spacing">
+                    <number>0</number>
+                   </property>
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                  </layout>
                  </widget>
                 </item>
                </layout>
               </item>
               <item>
-               <widget class="QFrame" name="frame">
+               <widget class="QFrame" name="visualize_leftpanel">
                 <property name="frameShape">
                  <enum>QFrame::StyledPanel</enum>
                 </property>
@@ -2092,7 +2039,7 @@ QPushButton:unchecked {
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>280</width>
+                     <width>200</width>
                      <height>0</height>
                     </size>
                    </property>
@@ -2114,7 +2061,7 @@ border: 1px solid rgb(132, 132, 132);
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>280</width>
+                     <width>200</width>
                      <height>0</height>
                     </size>
                    </property>
@@ -2131,7 +2078,7 @@ border-width:  0px 1px 1px 1px ;
                   <widget class="QTabWidget" name="tabWidget">
                    <property name="maximumSize">
                     <size>
-                     <width>280</width>
+                     <width>2807</width>
                      <height>16777215</height>
                     </size>
                    </property>
@@ -2220,23 +2167,6 @@ alternate-background-color: rgb(0, 0, 0);</string>
               <property name="bottomMargin">
                <number>0</number>
               </property>
-              <item>
-               <widget class="QTextEdit" name="textEdit">
-                <property name="maximumSize">
-                 <size>
-                  <width>200</width>
-                  <height>200</height>
-                 </size>
-                </property>
-                <property name="html">
-                 <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;br /&gt;SSALUTE&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-               </widget>
-              </item>
              </layout>
             </widget>
            </widget>
@@ -2280,6 +2210,13 @@ p, li { white-space: pre-wrap; }
           <property name="bottomMargin">
            <number>0</number>
           </property>
+          <item>
+           <widget class="QLabel" name="label_appState">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
           <item>
            <spacer name="spring_2">
             <property name="orientation">
@@ -2367,7 +2304,6 @@ QPushButton:pressed {
   </action>
  </widget>
  <resources>
-  <include location="../resources/files.qrc"/>
   <include location="../resources/files.qrc"/>
  </resources>
  <connections/>

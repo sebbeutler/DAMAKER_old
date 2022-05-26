@@ -6,17 +6,14 @@ from PySide2 import *
 import numpy as np
 import qimage2ndarray
 
-import sys
-sys.path.insert(1, '../')
-
 from damaker.Channel import Channel
 from damaker.utils import loadChannelsFromFile
 
-lut_red = np.zeros((256, 3), np.uint8)
-lut_red[:, 0] = np.arange(256)
-
 lut_green = np.zeros((256, 3), np.uint8)
 lut_green[:, 1] = np.arange(256)
+
+lut_red = np.zeros((256, 3), np.uint8)
+lut_red[:, 0] = np.arange(256)
 
 lut_blue = np.zeros((256, 3), np.uint8)
 lut_blue[:, 2] = np.arange(256)
@@ -38,7 +35,7 @@ lut_grays[:, 0] = np.arange(256)
 lut_grays[:, 1] = np.arange(256)
 lut_grays[:, 2] = np.arange(256)
 
-luts = [lut_red, lut_green, lut_blue, lut_yellow, lut_cyan, lut_magenta, lut_grays]
+luts = [lut_green, lut_red, lut_blue, lut_yellow, lut_cyan, lut_magenta, lut_grays]
 
 class PreviewWidgetSignals(QObject):
     channelsChanged = Signal()
@@ -89,6 +86,10 @@ class PreviewWidget(QGraphicsScene):
         
         self.channels = channels
         
+        for chn in channels:            
+            if chn.lut is None:
+                chn.lut = luts[chn.id-1]
+        
         if self.slider != None:
             self.slider.setMinimum(0)
             self.slider.setMaximum(self.channel.shape[0]-1)
@@ -103,14 +104,28 @@ class PreviewWidget(QGraphicsScene):
         self.image.setScale(1)
         self.signals.channelsChanged.emit()
     
+    # def updateFrame(self, id: int=None):
+    #     if id == None:
+    #         id = self.frame_id
+    #     frame = sum([chn.frames[id] for chn in self.channels if chn.show])
+    #     if type(frame) is int:
+    #         frame = np.zeros(self.channel.shape[1:])
+    #     try:
+    #         self.image.setPixmap(QPixmap.fromImage(qimage2ndarray.array2qimage(frame)))
+    #     except Exception as e:
+    #         print("Preview update frame error: ", e)
+            
     def updateFrame(self, id: int=None):
         if id == None:
             id = self.frame_id
-        frame = sum([chn.frames[id] for chn in self.channels if chn.show])
+        frame = sum([chn.lut[chn.data[id]] for chn in self.channels if chn.show])
+        
+        if type(frame) is int:
+            frame = np.zeros(self.channel.shape[1:])
         try:
             self.image.setPixmap(QPixmap.fromImage(qimage2ndarray.array2qimage(frame)))
-        except:
-            pass
+        except Exception as e:
+            print("Preview update frame error: ", e)
     
     def recenter(self):        
         size = self.view.size()
@@ -197,4 +212,3 @@ class FileLoaderWorker(QRunnable):
             self.signals.error.emit()
         else:
             self.signals.loaded.emit(channels)
-        

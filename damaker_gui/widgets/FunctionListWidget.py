@@ -29,7 +29,9 @@ class FunctionsListWidget(QWidget):
         self._layout = QVBoxLayout()
         self._layout.setMargin(0)
         self._layout.setSpacing(0)
+        self.setMinimumWidth(150)
         self.setLayout(self._layout)
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
         
         self.categories = {}
         self.functions = {}
@@ -60,20 +62,24 @@ class FunctionsListWidget(QWidget):
         
         for cat, funcs in self.categories.items():
             menu = QMenu(cat)
+            menu.setToolTipsVisible(True)
             menu.setStyleSheet(_menuStyleSheet)
             for func in funcs:
-                menu.addAction(func.alias)
+                action: QAction = menu.addAction(func.alias)
+                action.setToolTip(func.__doc__)
             menu.triggered.connect(lambda action: self.operationTriggered.emit(action.text()))
             btn = QPushButton(cat)
+            btn.setMinimumHeight(15)
+            btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
             btn.setStyleSheet("color: white;")
             btn.setMenu(menu)
             btn.clicked.connect(btn.showMenu)
             self._layout.addWidget(btn)
-
+            
             # retain widgets in memory
             self.menus.append([menu, btn])
             
-        self._layout.addStretch()
+        # self._layout.addStretch()
     
     def getFunction(self, alias):
         for functions in self.categories.values():

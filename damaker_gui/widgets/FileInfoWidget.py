@@ -16,7 +16,7 @@ class FileInfoWidget:
         if self.preview.channel is None:
             return
         chn = self.preview.channel
-        text = f'Size: ({chn.shape[0]}, {chn.shape[1]}, {chn.shape[2]})\n'  
+        text = f'Size: ({chn.shape[2]}, {chn.shape[1]}, {chn.shape[0]})\n'  
         if chn.px_sizes != None:
             text += f'Real size: (%.2f, %.2f, %.2f)\n' % (
                 chn.shape[0]*chn.px_sizes.X, 
