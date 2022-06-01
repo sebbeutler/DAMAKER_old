@@ -11,11 +11,9 @@ class FileInfoWidget:
         self.my = 0
     
     def update(self):
-        if self.preview is None:
+        if self.preview is None or len(self.preview.channels.keys()) == 0:
             return
-        if self.preview.channel is None:
-            return
-        chn = self.preview.channel
+        chn = list(self.preview.channels.keys())[0]
         text = f'Size: ({chn.shape[2]}, {chn.shape[1]}, {chn.shape[0]})\n'  
         if chn.px_sizes != None:
             text += f'Real size: (%.2f, %.2f, %.2f)\n' % (
@@ -26,8 +24,10 @@ class FileInfoWidget:
             text += "x:%.2f " % chn.px_sizes.X
             text += "y:%.2f " % chn.px_sizes.Y
             text += "z:%.2f\n" % chn.px_sizes.Z
-        text += f'Position: x:{self.mx} y:{self.my} z:{self.preview.frame_id} \n'
+        text += f'Position: x:{self.mx} y:{self.my} z:{self.preview.frameId} \n'
         if self.my < chn.shape[1] and self.mx < chn.shape[2]:
-            text += f'Value: {chn.data[self.preview.frame_id][self.my][self.mx]}\n'
+            text += f'Value: {chn.data[self.preview.frameId][self.my][self.mx]}'
+        else:
+            text += 'Value:'
         
         self.label.setText(text)

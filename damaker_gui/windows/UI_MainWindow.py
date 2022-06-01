@@ -18,7 +18,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(995, 768)
+        MainWindow.resize(1086, 761)
         MainWindow.setMinimumSize(QSize(500, 200))
         palette = QPalette()
         brush = QBrush(QColor(255, 255, 255, 255))
@@ -265,7 +265,7 @@ class Ui_MainWindow(object):
 "/* COMBOBOX */\n"
 "QComboBox{\n"
 "	background-color: rgb(27, 29, 35);\n"
-"	border-radius: 5px;\n"
+"	border-radius: 2px;\n"
 "	border: 2px solid rgb(27, 29, 35);\n"
 "	padding: 5px;\n"
 "	padding-left: 10px;\n"
@@ -281,8 +281,8 @@ class Ui_MainWindow(object):
                         "	border-left-width: 3px;\n"
 "	border-left-color: rgba(39, 44, 54, 150);\n"
 "	border-left-style: solid;\n"
-"	border-top-right-radius: 3px;\n"
-"	border-bottom-right-radius: 3px;	\n"
+"	border-top-right-radius: 1px;\n"
+"	border-bottom-right-radius: 1px;	\n"
 "	background-image: url(:/16x16/icons/16x16/cil-arrow-bottom.png);\n"
 "	background-position: center;\n"
 "	background-repeat: no-reperat;\n"
@@ -347,6 +347,12 @@ class Ui_MainWindow(object):
 "QPushButton:pressed {	\n"
 "	background-color: rgb(62, 62, 62);\n"
 "	border: 1px solid rgb(43, 50, 61);\n"
+"}\n"
+"\n"
+"/* SPIN BOX */\n"
+"QSpinBox, QDoubleSpinBox {\n"
+"	background-color: rgb(32, 32, 32);\n"
+"	\n"
 "}")
         self.frame_main.setFrameShape(QFrame.NoFrame)
         self.frame_main.setFrameShadow(QFrame.Raised)
@@ -532,7 +538,7 @@ class Ui_MainWindow(object):
         self.pannel_left_layout = QVBoxLayout(self.left_pannel)
         self.pannel_left_layout.setSpacing(0)
         self.pannel_left_layout.setObjectName(u"pannel_left_layout")
-        self.pannel_left_layout.setContentsMargins(2, 1, 0, 0)
+        self.pannel_left_layout.setContentsMargins(0, 0, 0, 0)
         self.btn_importFile = QPushButton(self.left_pannel)
         self.btn_importFile.setObjectName(u"btn_importFile")
         self.btn_importFile.setStyleSheet(u"border-width: 1px 1px 0px 1px;")
@@ -566,11 +572,13 @@ class Ui_MainWindow(object):
         self.treeview_workspace = QTreeView(self.left_pannel)
         self.treeview_workspace.setObjectName(u"treeview_workspace")
         self.treeview_workspace.setAcceptDrops(True)
-        self.treeview_workspace.setStyleSheet(u"color: black;\n"
-"border-color: rgb(32, 32, 32);")
+        self.treeview_workspace.setStyleSheet(u"border-color: rgb(32, 32, 32);")
         self.treeview_workspace.setDragEnabled(True)
         self.treeview_workspace.setDragDropMode(QAbstractItemView.DragOnly)
         self.treeview_workspace.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.treeview_workspace.setIndentation(15)
+        self.treeview_workspace.setWordWrap(True)
+        self.treeview_workspace.header().setVisible(False)
 
         self.pannel_left_layout.addWidget(self.treeview_workspace)
 
@@ -613,24 +621,16 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setSpacing(0)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.previewPipelineView = QGraphicsView(self.previewPipeline)
-        self.previewPipelineView.setObjectName(u"previewPipelineView")
-        sizePolicy2.setHeightForWidth(self.previewPipelineView.sizePolicy().hasHeightForWidth())
-        self.previewPipelineView.setSizePolicy(sizePolicy2)
-        self.previewPipelineView.setMinimumSize(QSize(0, 0))
-        self.previewPipelineView.setMaximumSize(QSize(300, 300))
-        self.previewPipelineView.setMouseTracking(True)
-        self.previewPipelineView.setAutoFillBackground(True)
-        self.previewPipelineView.setStyleSheet(u"background-color: rgb(32, 32, 32);")
-        self.previewPipelineView.setLineWidth(1)
-        self.previewPipelineView.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.previewPipelineView.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        brush15 = QBrush(QColor(32, 32, 32, 255))
-        brush15.setStyle(Qt.NoBrush)
-        self.previewPipelineView.setBackgroundBrush(brush15)
-        self.previewPipelineView.setDragMode(QGraphicsView.NoDrag)
+        self.plan_preview = QFrame(self.previewPipeline)
+        self.plan_preview.setObjectName(u"plan_preview")
+        self.plan_preview.setFrameShape(QFrame.StyledPanel)
+        self.plan_preview.setFrameShadow(QFrame.Raised)
+        self.plan_layout_preview = QVBoxLayout(self.plan_preview)
+        self.plan_layout_preview.setSpacing(0)
+        self.plan_layout_preview.setObjectName(u"plan_layout_preview")
+        self.plan_layout_preview.setContentsMargins(0, 0, 0, 0)
 
-        self.verticalLayout_2.addWidget(self.previewPipelineView)
+        self.verticalLayout_2.addWidget(self.plan_preview)
 
         self.previewPipelineSlider = QSlider(self.previewPipeline)
         self.previewPipelineSlider.setObjectName(u"previewPipelineSlider")
@@ -806,74 +806,25 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.setSpacing(0)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.mainView = QGraphicsView(self.visualize_preview_verticalframe)
-        self.mainView.setObjectName(u"mainView")
+        self.frame_mainPreview = QFrame(self.visualize_preview_verticalframe)
+        self.frame_mainPreview.setObjectName(u"frame_mainPreview")
         sizePolicy10 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         sizePolicy10.setHorizontalStretch(0)
         sizePolicy10.setVerticalStretch(0)
-        sizePolicy10.setHeightForWidth(self.mainView.sizePolicy().hasHeightForWidth())
-        self.mainView.setSizePolicy(sizePolicy10)
-        self.mainView.setMinimumSize(QSize(500, 0))
-        self.mainView.setLayoutDirection(Qt.LeftToRight)
-        self.mainView.setStyleSheet(u"QGraphicsView {\n"
-"	background: rgb(32, 32, 32);\n"
-"}\n"
-"QScrollBar:horizontal {\n"
-"    border: none;\n"
-"    background: rgb(62, 62, 62);\n"
-"    height: 14px;\n"
-"}\n"
-"QScrollBar::handle:horizontal {\n"
-"    background: rgb(32, 32, 32);\n"
-"    min-width: 20px;\n"
-"	border-radius: 1px\n"
-"}\n"
-" QScrollBar:vertical {\n"
-"	border: none;\n"
-"    background: rgb(62, 62, 62);\n"
-"    width: 14px;\n"
-" }\n"
-" QScrollBar::handle:vertical {	\n"
-"	background: rgb(32, 32, 32);\n"
-"    min-height: 25px;\n"
-"	border-radius: 1px\n"
-" }\n"
-"\n"
-"QScrollBar::add-line:horizontal {\n"
-"    border: none;\n"
-"    width: 0px;\n"
-"}\n"
-"QScrollBar::sub-line:horizontal {\n"
-"    border: none;\n"
-"    width: 0px;\n"
-"}\n"
-"QScrollBar::up-arrow:horizontal, QScrollBar::down-arrow:horizontal\n"
-"{\n"
-"     background: none;\n"
-"}\n"
-"QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal\n"
-"{\n"
-"     background: none;\n"
-"}\n"
-" QScrollBar::add-line:vertical {\n"
-"	border: none;\n"
-"     height: 0px;\n"
-" }\n"
-" QSc"
-                        "rollBar::sub-line:vertical {\n"
-"	border: none;\n"
-"    height: 0px;\n"
-" }\n"
-" QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {\n"
-"     background: none;\n"
-" }\n"
-" QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {\n"
-"     background: none;\n"
-" }")
-        self.mainView.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.mainView.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        sizePolicy10.setHeightForWidth(self.frame_mainPreview.sizePolicy().hasHeightForWidth())
+        self.frame_mainPreview.setSizePolicy(sizePolicy10)
+        self.frame_mainPreview.setMinimumSize(QSize(0, 400))
+        self.frame_mainPreview.setAcceptDrops(True)
+        self.frame_mainPreview.setStyleSheet(u"QFrame#frame_mainPreview {\n"
+"background-color: rgb(32, 32, 32);\n"
+"border: 1px solid rgb(132, 132, 132);\n"
+"}")
+        self.layout_mainPreview = QVBoxLayout(self.frame_mainPreview)
+        self.layout_mainPreview.setSpacing(0)
+        self.layout_mainPreview.setObjectName(u"layout_mainPreview")
+        self.layout_mainPreview.setContentsMargins(0, 0, 0, 0)
 
-        self.verticalLayout_3.addWidget(self.mainView)
+        self.verticalLayout_3.addWidget(self.frame_mainPreview)
 
         self.slider_frame = QSlider(self.visualize_preview_verticalframe)
         self.slider_frame.setObjectName(u"slider_frame")
@@ -974,44 +925,8 @@ class Ui_MainWindow(object):
 
         self.visualize_leftpanel = QFrame(self.page_visualize)
         self.visualize_leftpanel.setObjectName(u"visualize_leftpanel")
-        self.visualize_leftpanel.setFrameShape(QFrame.StyledPanel)
-        self.visualize_leftpanel.setFrameShadow(QFrame.Raised)
-        self.verticalLayout_6 = QVBoxLayout(self.visualize_leftpanel)
-        self.verticalLayout_6.setSpacing(0)
-        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
-        self.verticalLayout_6.setContentsMargins(0, 0, 0, 0)
-        self.topView = QGraphicsView(self.visualize_leftpanel)
-        self.topView.setObjectName(u"topView")
-        sizePolicy11 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
-        sizePolicy11.setHorizontalStretch(0)
-        sizePolicy11.setVerticalStretch(0)
-        sizePolicy11.setHeightForWidth(self.topView.sizePolicy().hasHeightForWidth())
-        self.topView.setSizePolicy(sizePolicy11)
-        self.topView.setMinimumSize(QSize(200, 0))
-        self.topView.setStyleSheet(u"QGraphicsView {\n"
-"background-color: rgb(32, 32, 32);\n"
-"border: 1px solid rgb(132, 132, 132);\n"
-"}")
-
-        self.verticalLayout_6.addWidget(self.topView)
-
-        self.leftView = QGraphicsView(self.visualize_leftpanel)
-        self.leftView.setObjectName(u"leftView")
-        sizePolicy11.setHeightForWidth(self.leftView.sizePolicy().hasHeightForWidth())
-        self.leftView.setSizePolicy(sizePolicy11)
-        self.leftView.setMinimumSize(QSize(200, 0))
-        self.leftView.setStyleSheet(u"QGraphicsView {\n"
-"background-color: rgb(32, 32, 32);\n"
-"border: 1px solid rgb(132, 132, 132);\n"
-"border-width:  0px 1px 1px 1px ;\n"
-"}")
-
-        self.verticalLayout_6.addWidget(self.leftView)
-
-        self.tabWidget = QTabWidget(self.visualize_leftpanel)
-        self.tabWidget.setObjectName(u"tabWidget")
-        self.tabWidget.setMaximumSize(QSize(2807, 16777215))
-        self.tabWidget.setStyleSheet(u"QTabWidget {\n"
+        self.visualize_leftpanel.setMaximumSize(QSize(350, 16777215))
+        self.visualize_leftpanel.setStyleSheet(u"QTabWidget {\n"
 "	background-color: rgb(62, 62, 62);\n"
 "	padding: 0px;\n"
 "	margin: 0px;\n"
@@ -1049,11 +964,157 @@ class Ui_MainWindow(object):
 "  background-color: rgb(42, 42, 42);\n"
 "  margin-bottom: -1px; \n"
 "}")
-        self.tabWidgetPage2 = QWidget()
-        self.tabWidgetPage2.setObjectName(u"tabWidgetPage2")
-        self.tabWidgetPage2.setStyleSheet(u"background-color: rgb(62, 62, 62);\n"
-"alternate-background-color: rgb(0, 0, 0);")
-        self.tabWidget.addTab(self.tabWidgetPage2, "")
+        self.visualize_leftpanel.setFrameShape(QFrame.StyledPanel)
+        self.visualize_leftpanel.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_6 = QVBoxLayout(self.visualize_leftpanel)
+        self.verticalLayout_6.setSpacing(0)
+        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.verticalLayout_6.setContentsMargins(0, 0, 0, 0)
+        self.visualize_altPreviewsTabs = QTabWidget(self.visualize_leftpanel)
+        self.visualize_altPreviewsTabs.setObjectName(u"visualize_altPreviewsTabs")
+        self.visualize_altPreviewsTabs.setTabPosition(QTabWidget.North)
+        self.visualize_tab_orthogonalPreviews = QWidget()
+        self.visualize_tab_orthogonalPreviews.setObjectName(u"visualize_tab_orthogonalPreviews")
+        self.verticalLayout_4 = QVBoxLayout(self.visualize_tab_orthogonalPreviews)
+        self.verticalLayout_4.setSpacing(0)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.topPreview = QFrame(self.visualize_tab_orthogonalPreviews)
+        self.topPreview.setObjectName(u"topPreview")
+        sizePolicy11 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
+        sizePolicy11.setHorizontalStretch(0)
+        sizePolicy11.setVerticalStretch(0)
+        sizePolicy11.setHeightForWidth(self.topPreview.sizePolicy().hasHeightForWidth())
+        self.topPreview.setSizePolicy(sizePolicy11)
+        self.topPreview.setMinimumSize(QSize(200, 0))
+        self.topPreview.setStyleSheet(u"QFrame#topPreview {\n"
+"background-color: rgb(32, 32, 32);\n"
+"border: 1px solid rgb(132, 132, 132);\n"
+"}")
+        self.layout_topPreview = QVBoxLayout(self.topPreview)
+        self.layout_topPreview.setSpacing(0)
+        self.layout_topPreview.setObjectName(u"layout_topPreview")
+        self.layout_topPreview.setContentsMargins(0, 0, 0, 0)
+
+        self.verticalLayout_4.addWidget(self.topPreview)
+
+        self.leftPreview = QFrame(self.visualize_tab_orthogonalPreviews)
+        self.leftPreview.setObjectName(u"leftPreview")
+        sizePolicy11.setHeightForWidth(self.leftPreview.sizePolicy().hasHeightForWidth())
+        self.leftPreview.setSizePolicy(sizePolicy11)
+        self.leftPreview.setMinimumSize(QSize(200, 0))
+        self.leftPreview.setStyleSheet(u"QFrame#leftPreview {\n"
+"background-color: rgb(32, 32, 32);\n"
+"border: 1px solid rgb(132, 132, 132);\n"
+"border-width:  0px 1px 1px 1px ;\n"
+"}")
+        self.layout_leftPreview = QVBoxLayout(self.leftPreview)
+        self.layout_leftPreview.setSpacing(0)
+        self.layout_leftPreview.setObjectName(u"layout_leftPreview")
+        self.layout_leftPreview.setContentsMargins(0, 0, 0, 0)
+
+        self.verticalLayout_4.addWidget(self.leftPreview)
+
+        self.visualize_altPreviewsTabs.addTab(self.visualize_tab_orthogonalPreviews, "")
+        self.visualize_tab_annexes = QWidget()
+        self.visualize_tab_annexes.setObjectName(u"visualize_tab_annexes")
+        self.horizontalLayout = QHBoxLayout(self.visualize_tab_annexes)
+        self.horizontalLayout.setSpacing(0)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.visualize_annexesTabs = QTabWidget(self.visualize_tab_annexes)
+        self.visualize_annexesTabs.setObjectName(u"visualize_annexesTabs")
+        self.visualize_annexesTabs.setTabPosition(QTabWidget.East)
+
+        self.horizontalLayout.addWidget(self.visualize_annexesTabs)
+
+        self.visualize_altPreviewsTabs.addTab(self.visualize_tab_annexes, "")
+
+        self.verticalLayout_6.addWidget(self.visualize_altPreviewsTabs)
+
+        self.tabWidget = QTabWidget(self.visualize_leftpanel)
+        self.tabWidget.setObjectName(u"tabWidget")
+        sizePolicy12 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        sizePolicy12.setHorizontalStretch(0)
+        sizePolicy12.setVerticalStretch(0)
+        sizePolicy12.setHeightForWidth(self.tabWidget.sizePolicy().hasHeightForWidth())
+        self.tabWidget.setSizePolicy(sizePolicy12)
+        self.tabWidget.setMinimumSize(QSize(0, 300))
+        self.tabWidget.setStyleSheet(u"")
+        self.tab_views = QWidget()
+        self.tab_views.setObjectName(u"tab_views")
+        self.tab_views_layout = QVBoxLayout(self.tab_views)
+        self.tab_views_layout.setSpacing(3)
+        self.tab_views_layout.setObjectName(u"tab_views_layout")
+        self.tab_views_layout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalLayout_2.setContentsMargins(-1, -1, -1, 0)
+        self.tab_views_addBtn = QPushButton(self.tab_views)
+        self.tab_views_addBtn.setObjectName(u"tab_views_addBtn")
+
+        self.horizontalLayout_2.addWidget(self.tab_views_addBtn)
+
+
+        self.tab_views_layout.addLayout(self.horizontalLayout_2)
+
+        self.visualize_viewsList = QListWidget(self.tab_views)
+        self.visualize_viewsList.setObjectName(u"visualize_viewsList")
+
+        self.tab_views_layout.addWidget(self.visualize_viewsList)
+
+        self.tabWidget.addTab(self.tab_views, "")
+        self.tab_brightnesscontrast = QWidget()
+        self.tab_brightnesscontrast.setObjectName(u"tab_brightnesscontrast")
+        self.tab_brightnesscontrast.setStyleSheet(u"QSlider {\n"
+"	border: 1px solid rgb(20, 20, 20);\n"
+"    padding: 2px;\n"
+"    height: 13px;\n"
+"}\n"
+"\n"
+"QSlider::groove:horizontal {\n"
+"    height: 12px;\n"
+"}\n"
+"\n"
+"\n"
+"QSlider::handle {\n"
+"    background-color: rgb(32, 32, 32);\n"
+"    border: none;\n"
+"    height: 5px;\n"
+"    width: 20px;\n"
+"    margin: 0px;\n"
+"	border-radius: 2px;\n"
+"}")
+        self.tab_brightnesscontrast_layout = QVBoxLayout(self.tab_brightnesscontrast)
+        self.tab_brightnesscontrast_layout.setSpacing(0)
+        self.tab_brightnesscontrast_layout.setObjectName(u"tab_brightnesscontrast_layout")
+        self.tab_brightnesscontrast_layout.setContentsMargins(20, 0, 20, 0)
+        self.horizontalSlider = QSlider(self.tab_brightnesscontrast)
+        self.horizontalSlider.setObjectName(u"horizontalSlider")
+        self.horizontalSlider.setMaximumSize(QSize(16777215, 20))
+        self.horizontalSlider.setOrientation(Qt.Horizontal)
+
+        self.tab_brightnesscontrast_layout.addWidget(self.horizontalSlider)
+
+        self.horizontalSlider_3 = QSlider(self.tab_brightnesscontrast)
+        self.horizontalSlider_3.setObjectName(u"horizontalSlider_3")
+        self.horizontalSlider_3.setOrientation(Qt.Horizontal)
+
+        self.tab_brightnesscontrast_layout.addWidget(self.horizontalSlider_3)
+
+        self.horizontalSlider_4 = QSlider(self.tab_brightnesscontrast)
+        self.horizontalSlider_4.setObjectName(u"horizontalSlider_4")
+        self.horizontalSlider_4.setOrientation(Qt.Horizontal)
+
+        self.tab_brightnesscontrast_layout.addWidget(self.horizontalSlider_4)
+
+        self.horizontalSlider_2 = QSlider(self.tab_brightnesscontrast)
+        self.horizontalSlider_2.setObjectName(u"horizontalSlider_2")
+        self.horizontalSlider_2.setOrientation(Qt.Horizontal)
+
+        self.tab_brightnesscontrast_layout.addWidget(self.horizontalSlider_2)
+
+        self.tabWidget.addTab(self.tab_brightnesscontrast, "")
         self.tab = QWidget()
         self.tab.setObjectName(u"tab")
         self.tab.setStyleSheet(u"background-color: rgb(62, 62, 62);\n"
@@ -1134,7 +1195,8 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.content_tabs.setCurrentIndex(1)
+        self.content_tabs.setCurrentIndex(0)
+        self.visualize_altPreviewsTabs.setCurrentIndex(0)
         self.tabWidget.setCurrentIndex(0)
 
 
@@ -1176,7 +1238,11 @@ class Ui_MainWindow(object):
 "</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;\" bgcolor=\"#202020\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#202020;\"><br /></p></body></html>", None))
         self.visualize_btn_addChannel.setText("")
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabWidgetPage2), QCoreApplication.translate("MainWindow", u" Brightness Con...", None))
+        self.visualize_altPreviewsTabs.setTabText(self.visualize_altPreviewsTabs.indexOf(self.visualize_tab_orthogonalPreviews), QCoreApplication.translate("MainWindow", u"Orthogonal View", None))
+        self.visualize_altPreviewsTabs.setTabText(self.visualize_altPreviewsTabs.indexOf(self.visualize_tab_annexes), QCoreApplication.translate("MainWindow", u"Annexes", None))
+        self.tab_views_addBtn.setText(QCoreApplication.translate("MainWindow", u"New", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_views), QCoreApplication.translate("MainWindow", u"Views", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_brightnesscontrast), QCoreApplication.translate("MainWindow", u" Brightness/Contrast", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"Page", None))
         self.label_appState.setText("")
         self.btn_resize_grip.setText("")

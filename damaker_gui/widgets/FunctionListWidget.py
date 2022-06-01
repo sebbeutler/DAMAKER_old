@@ -61,12 +61,14 @@ class FunctionsListWidget(QWidget):
                 self.categories["Other"].append(func)
         
         for cat, funcs in self.categories.items():
+            if len(funcs) == 0:
+                continue
             menu = QMenu(cat)
             menu.setToolTipsVisible(True)
             menu.setStyleSheet(_menuStyleSheet)
             for func in funcs:
                 action: QAction = menu.addAction(func.alias)
-                action.setToolTip(func.__doc__)
+                # action.setToolTip(func.__doc__)
             menu.triggered.connect(lambda action: self.operationTriggered.emit(action.text()))
             btn = QPushButton(cat)
             btn.setMinimumHeight(15)

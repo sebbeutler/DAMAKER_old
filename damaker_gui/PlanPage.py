@@ -1,5 +1,6 @@
 from email import utils
 import inspect, enum
+from math import comb
 import numpy as np
 import re
 from inspect import getmembers, isfunction, signature   
@@ -13,6 +14,7 @@ from vedo import Mesh
 
 from damaker_gui.widgets.FunctionListWidget import FunctionsListWidget
 from damaker_gui.widgets.FunctionParametersWidget import FunctionParametersWidget
+from damaker_gui.widgets.OperationInputWidget import OperationInputWidget
 
 from .widgets.PreviewWidget import PreviewWidget
 from .widgets.FilePickerWidget import FilePickerWidget, FolderPickerWidget
@@ -36,7 +38,8 @@ def clearLayout(layout):
 class PlanPage:
     def __init__(self, ui: Ui_MainWindow):
         self.ui = ui
-        self.preview = PreviewWidget(self.ui.previewPipelineView, self.ui.previewPipelineSlider, [], self.ui.fileInfo)
+        self.preview = PreviewWidget(slider=self.ui.previewPipelineSlider, fileInfo=self.ui.fileInfo)
+        self.ui.plan_layout_preview.addWidget(self.preview)
         self.pipelineThread = None
     
         self.selectedOperationItem = None
@@ -50,36 +53,189 @@ class PlanPage:
         self.pipelineRunning = False
         
         self.functions = FunctionsListWidget()
-        self.functions.operationTriggered.connect(lambda name: self.functionListClicked(name))
+        self.functions.operationTriggered.connect(lambda name: self.functionMenuClicked(name))
         self.ui.functions_layout.addWidget(self.functions)
         
         self.functionParameters = FunctionParametersWidget()
+        self.functionParameters.ui.btn_batchMode.clicked.connect(self.operationSwitchMode)
         self.ui.pipeline_settings_layout.addWidget(self.functionParameters)
         
         self.functionParameters.ui.btn_add_operation.clicked.connect(self.addOperation)
         self.functionParameters.ui.btn_modify_operation.clicked.connect(self.modifyOperation)        
+    
+    def functionMenuClicked(self, name):
+        self.functionParameters.clearForm()
+        self.functionParameters.setHiddenAll(False)
+        self.functionParameters.ui.btn_modify_operation.setHidden(True)
         
-        # pr = BatchParameters()
-        # pr.folder = "C:/Users/PC/source/DAMAKER/resources/batch"
-        # pr.mod1 = "E1;E2"
-        # pr.mod2 = ""
-        # pr.file = "{1}.tif"
-        # self.ui.list_operations.addItem(
-        #     ListWidgetOperation(
-        #         BatchOperation(damaker.processing.registrationMultiChannel, 
-        #                        [pr, "C:/Users/PC/source/DAMAKER/resources/registration/C1-E0.tif", 1, 100, "C:/Users/PC/source/DAMAKER/resources/output/out-reg"], 
-        #                        "registration", True, "")))
+        func = self.functions.getFunction(name)
+        if func == None:
+            return
+        self.functionParameters.function = func
+        self.functionParameters.ui.edit_operation_name.setText(name)
+        self.functionParameters.ui.checkbox_enabled.setChecked(True)
+        
+        sign = signature(func)
+        if sign.return_annotation in [Channel, Channels, NamedArray] and self.functionParameters.batchModeEnabled:
+            self.functionParameters.outputDir.setHidden(False)
+            self.functionParameters.outputDir.setText("")
+        else:
+            self.functionParameters.outputDir.setHidden(True)
+        
+        for argName in sign.parameters:
+            param = sign.parameters[argName]
+            if param.annotation == inspect._empty:
+                continue
+            
+            default_arg = None
+            if param.default != inspect._empty:
+                default_arg = param.default
+            
+            formWidget = None
+                
+            if param.annotation is int:
+                spinBox = QSpinBox()
+                spinBox.setRange(-1000, 1000)
+                spinBox.setFixedHeight(18)
+                if default_arg != None:
+                    spinBox.setValue(int(default_arg))
+                else:
+                    spinBox.setValue(0)
+                formWidget = spinBox
+            if param.annotation is float:
+                spinBox = QDoubleSpinBox()
+                spinBox.setRange(-1000, 1000)
+                spinBox.setFixedHeight(18)
+                if default_arg != None:
+                    spinBox.setValue(float(default_arg))
+                else:
+                    spinBox.setValue(0.0)
+                formWidget = spinBox
+            elif param.annotation in [Channel, Channels, BatchParameters, Mesh]:
+                if self.functionParameters.batchModeEnabled:
+                    formWidget = BatchSelectionWidget(self.ui.fileSystemModel.rootPath())
+                else:
+                    formWidget = self.newOperationComboBox()
+            elif param.annotation is SingleChannel:
+                formWidget = FilePickerWidget(self.ui.fileSystemModel.rootPath())
+            elif param.annotation is StrFilePath:
+                formWidget = FilePickerWidget(self.ui.fileSystemModel.rootPath())
+            elif param.annotation is StrFolderPath:
+                formWidget = FolderPickerWidget(self.ui.fileSystemModel.rootPath())
+            elif param.annotation is str:
+                textEdit = QLineEdit()
+                textEdit.setFixedHeight(18)
+                if default_arg != None:
+                    textEdit.setText(default_arg)
+                textEdit.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+                formWidget = textEdit
+            elif type(param.annotation) is type(enum.Enum):
+                formWidget = EnumComboBox(param.annotation)
+            elif param.annotation is bool:
+                checkBox = QCheckBox("")
+                if default_arg != None:
+                    checkBox.setChecked(default_arg)
+                formWidget = checkBox
+            if formWidget != None:
+                self.functionParameters.ui.layout_settingsForm.addRow(argName+":", formWidget)
+    
+    def operationListClicked(self):
+        self.functionParameters.clearForm()
+        self.functionParameters.setHiddenAll(False)        
+        self.functionParameters.ui.btn_add_operation.setHidden(True)
+        
+        operation_items = self.ui.list_operations.selectedItems()
+        if len(operation_items) == 0:
+            return None
+        self.selectedOperationItem = operation_items[0]
+        operation: Operation = operation_items[0].operation
+        self.functionParameters.function = operation.func
+        self.functionParameters.ui.edit_operation_name.setText(operation.name)   
+        self.functionParameters.ui.checkbox_enabled.setChecked(operation.enabled)
+        self.functionParameters.ui.btn_batchMode.setChecked(type(operation) is BatchOperation)
+        
+        sign = signature(operation.func)
+        if type(operation) is BatchOperation and sign.return_annotation in [Channel, Channels, NamedArray]:
+                self.functionParameters.outputDir.setHidden(False)
+                self.functionParameters.outputDir.setText(operation.outputPath)
+        else:
+            self.functionParameters.outputDir.setHidden(True)
+        
+        arg_id=0
+        for argName in sign.parameters:
+            param = sign.parameters[argName]
+            if arg_id >= len(operation.args):
+                arg = param.default
+            else:                
+                arg = operation.args[arg_id]
 
+            formWidget = None
+            
+            if param.annotation is int:
+                spinBox = QSpinBox()
+                spinBox.setFixedHeight(18)
+                spinBox.setRange(-1000, 1000)
+                spinBox.setValue(int(arg))
+                formWidget = spinBox
+            elif param.annotation is float:
+                spinBox = QDoubleSpinBox()
+                spinBox.setFixedHeight(18)
+                spinBox.setRange(-1000, 1000)
+                spinBox.setFixedHeight(25)
+                spinBox.setValue(float(arg))
+                formWidget = spinBox
+            elif param.annotation in [Channel, Channels, BatchParameters, Mesh]:
+                if self.functionParameters.batchModeEnabled:
+                    formWidget = BatchSelectionWidget(self.ui.fileSystemModel.rootPath(), arg)
+                else:
+                    comboBox = self.newOperationComboBox()
+                    if type(arg) is Operation:
+                        comboBox.setCurrentText(arg.name)
+                    else:
+                        comboBox.setCurrentText("None")
+                    comboBox.removeItem(comboBox.findText(operation.name))
+                    formWidget = comboBox
+            elif param.annotation is SingleChannel:
+                filePicker = FilePickerWidget(self.ui.fileSystemModel.rootPath())
+                filePicker.setText(arg)   
+                formWidget = filePicker   
+            elif param.annotation is StrFilePath:
+                filePicker = FilePickerWidget(self.ui.fileSystemModel.rootPath())
+                filePicker.setText(arg)
+                formWidget = filePicker         
+            elif param.annotation is StrFolderPath:
+                folderPicker = FolderPickerWidget(self.ui.fileSystemModel.rootPath())
+                folderPicker.setText(arg)
+                formWidget = folderPicker
+            elif param.annotation is str:
+                textEdit = QLineEdit()
+                textEdit.setFixedHeight(18)
+                textEdit.setText(arg)
+                textEdit.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+                formWidget = textEdit         
+            elif type(param.annotation) is type(enum.Enum):
+                combBox = EnumComboBox(param.annotation)
+                combBox.setCurrentText(arg.name)
+                formWidget = combBox
+            elif param.annotation is bool:
+                checkBox = QCheckBox("")
+                checkBox.setChecked(arg)
+                formWidget = checkBox
+            
+            if formWidget != None:
+                self.functionParameters.ui.layout_settingsForm.addRow(argName+":", formWidget)
+            arg_id += 1
+    
     def addOperation(self, event):
-        func = self.functions.getFunction(self.functionParameters.ui.currentFunction.text())
+        func = self.functionParameters.function
         if func is None:
             return
         
-        name = self.functionParameters.ui.edit_operation_name.text()
+        name: str = self.functionParameters.ui.edit_operation_name.text()
         name_counter = 0
         for i in range(self.ui.list_operations.count()):
             item = self.ui.list_operations.item(i)
-            if item.name == name:
+            if item.name.startswith(name):
                 name_counter += 1
         if name_counter > 0:
             name += f'_{name_counter}'
@@ -87,9 +243,9 @@ class PlanPage:
         enabled = self.functionParameters.ui.checkbox_enabled.isChecked()
         outputPath = self.functionParameters.outputDir.text()
         
-        args = []        
-        for i in range(self.functionParameters.ui.layout_fargs.count()):
-            widget = self.functionParameters.ui.layout_fargs.itemAt(i).widget()
+        args = []
+        for i in range(self.functionParameters.ui.layout_settingsForm.rowCount()):
+            widget = self.functionParameters.ui.layout_settingsForm.itemAt(i, QFormLayout.ItemRole.FieldRole).widget()
             
             if type(widget) is QSpinBox:
                 args.append(int(widget.value()))
@@ -102,14 +258,22 @@ class PlanPage:
                         args.append(e)
                         break
             elif type(widget) is BatchSelectionWidget:
-                args.append(widget.getBatch())
+                args.append(widget.getBatch())     
+            elif type(widget) is OperationInputWidget:
+                op = self.getOperationFromList(widget.currentText())
+                args.append(op)
             elif type(widget) in [QLineEdit, FilePickerWidget, FolderPickerWidget]:
                 args.append(widget.text())
             elif type(widget) is QCheckBox:
                 args.append(widget.isChecked())
             else:
                 args.append(None)
-        listwidget = ListWidgetOperation(BatchOperation(func, args, name, enabled, outputPath))
+                
+        if self.functionParameters.batchModeEnabled:
+            listwidget = ListWidgetOperation(BatchOperation(func, args, name, enabled, outputPath))
+        else:
+            listwidget = ListWidgetOperation(Operation(func, args, name, enabled))
+            
         self.ui.list_operations.addItem(listwidget)
         self.ui.list_operations.setCurrentItem(listwidget)
         self.operationListClicked()
@@ -122,9 +286,9 @@ class PlanPage:
         enabled = self.functionParameters.ui.checkbox_enabled.isChecked()
         outputPath = self.functionParameters.outputDir.text()
         
-        args = []        
-        for i in range(self.functionParameters.ui.layout_fargs.count()):
-            widget = self.functionParameters.ui.layout_fargs.itemAt(i).widget()
+        args = []
+        for i in range(self.functionParameters.ui.layout_settingsForm.rowCount()):
+            widget = self.functionParameters.ui.layout_settingsForm.itemAt(i, QFormLayout.ItemRole.FieldRole).widget()
             
             if type(widget) is QSpinBox:
                 args.append(int(widget.value()))
@@ -137,17 +301,26 @@ class PlanPage:
                         args.append(e)
                         break
             elif type(widget) is BatchSelectionWidget:
-                args.append(widget.getBatch())
+                args.append(widget.getBatch())                 
+            elif type(widget) is OperationInputWidget:
+                op = self.getOperationFromList(widget.currentText())
+                args.append(op) 
             elif type(widget) in [QLineEdit, FilePickerWidget, FolderPickerWidget]:
                 args.append(widget.text())
             elif type(widget) is QCheckBox:
                 args.append(widget.isChecked())
             else:
                 args.append(None)
-        self.selectedOperationItem.operation.args = args
-        self.selectedOperationItem.operation.name = name
-        self.selectedOperationItem.operation.enabled = enabled
-        self.selectedOperationItem.operation.outputPath = outputPath
+        
+        if self.functionParameters.batchModeEnabled and type(self.selectedOperationItem.operation) != BatchOperation:
+            self.selectedOperationItem.operation = BatchOperation(self.selectedOperationItem.operation.func, args, name, enabled, outputPath)
+        elif not self.functionParameters.batchModeEnabled and type(self.selectedOperationItem.operation) == BatchOperation:
+            self.selectedOperationItem.operation = Operation(self.selectedOperationItem.operation.func, args, name, enabled)
+        else:            
+            self.selectedOperationItem.operation.args = args
+            self.selectedOperationItem.operation.name = name
+            self.selectedOperationItem.operation.enabled = enabled
+            self.selectedOperationItem.operation.outputPath = outputPath
         self.selectedOperationItem.updateText()
 
     def getOperationFromList(self, name: str):
@@ -157,177 +330,31 @@ class PlanPage:
                 return item.operation
         return None
     
-    def functionListClicked(self, name):
-        self.functionParameters.clearLayouts()
-        self.functionParameters.ui.edit_operation_name.setHidden(False)
-        self.functionParameters.ui.checkbox_enabled.setHidden(False)
-        self.functionParameters.ui.btn_add_operation.setHidden(False)
-        self.functionParameters.ui.btn_modify_operation.setHidden(True)
-        
-        func = self.functions.getFunction(name)
-        if func == None:
-            return
-        self.functionParameters.ui.currentFunction.setText(name)
-        sign = signature(func)
-        self.functionParameters.ui.edit_operation_name.setText(func.__name__)
-        self.functionParameters.ui.checkbox_enabled.setChecked(True)
-        
-        if sign.return_annotation in [Channel, Channels, NamedArray]:
-            self.functionParameters.outputDir.setHidden(False)
-            self.functionParameters.outputDir.setText("")
-        else:
-            self.functionParameters.outputDir.setHidden(True)
-        
-        for name in sign.parameters:
-            param = sign.parameters[name]
-            if param.annotation == inspect._empty:
-                continue
-            
-            default_arg = None
-            if param.default != inspect._empty:
-                default_arg = param.default   
-            
-            label = QLabel(name)
-            label.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
-            label.setFixedHeight(25)
-            self.functionParameters.ui.layout_fnames.addWidget(label)
-                
-            if param.annotation is int:
-                spinBox = QSpinBox()
-                spinBox.setRange(-1000, 1000)
-                spinBox.setFixedHeight(18)
-                if default_arg != None:
-                    spinBox.setValue(int(default_arg))
-                else:
-                    spinBox.setValue(0)
-                self.functionParameters.ui.layout_fargs.addWidget(spinBox)
-            if param.annotation is float:
-                spinBox = QDoubleSpinBox()
-                spinBox.setRange(-1000, 1000)
-                spinBox.setFixedHeight(18)
-                if default_arg != None:
-                    spinBox.setValue(float(default_arg))
-                else:
-                    spinBox.setValue(0.0)
-                self.functionParameters.ui.layout_fargs.addWidget(spinBox)
-            elif param.annotation in [Channel, Channels, BatchParameters, Mesh]:
-                self.functionParameters.ui.layout_fargs.addWidget(BatchSelectionWidget(self.ui.fileSystemModel.rootPath()))
-            elif param.annotation is SingleChannel:
-                self.functionParameters.ui.layout_fargs.addWidget(FilePickerWidget(self.ui.fileSystemModel.rootPath()))
-            elif param.annotation is StrFilePath:
-                self.functionParameters.ui.layout_fargs.addWidget(FilePickerWidget(self.ui.fileSystemModel.rootPath()))
-            elif param.annotation is StrFolderPath:
-                self.functionParameters.ui.layout_fargs.addWidget(FolderPickerWidget(self.ui.fileSystemModel.rootPath()))
-            elif param.annotation is str:
-                textEdit = QLineEdit()
-                textEdit.setFixedHeight(18)
-                if default_arg != None:
-                    textEdit.setText(default_arg)
-                textEdit.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-                self.functionParameters.ui.layout_fargs.addWidget(textEdit)
-            elif type(param.annotation) is type(enum.Enum):
-                self.functionParameters.ui.layout_fargs.addWidget(EnumComboBox(param.annotation))
-            elif param.annotation is bool:
-                checkBox = QCheckBox("")
-                if default_arg != None:
-                    checkBox.setChecked(default_arg)
-                self.functionParameters.ui.layout_fargs.addWidget(checkBox)
-            # else:
-            #     label = QLabel("Unknown type")
-            #     label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-            #     self.ui.layout_fargs.addWidget(label)
-    
-    def operationListClicked(self):
-        self.functionParameters.clearLayouts()
-        self.functionParameters.ui.edit_operation_name.setHidden(False)
-        self.functionParameters.ui.checkbox_enabled.setHidden(False)
-        self.functionParameters.ui.btn_add_operation.setHidden(True)
-        self.functionParameters.ui.btn_modify_operation.setHidden(False)
-        
-        operation_items = self.ui.list_operations.selectedItems()
-        if len(operation_items) == 0:
-            return None
-        self.selectedOperationItem = operation_items[0]
-        operation: Operation = operation_items[0].operation
-        self.functionParameters.ui.edit_operation_name.setText(operation.name)   
-        self.functionParameters.ui.checkbox_enabled.setChecked(operation.enabled)
-        
-        sign = signature(operation.func)
-        if sign.return_annotation in [Channel, Channels, NamedArray]:
-            self.functionParameters.outputDir.setHidden(False)
-            self.functionParameters.outputDir.setText(operation.outputPath)
-        else:
-            self.functionParameters.outputDir.setHidden(True)
-        
-        arg_id=0
-        for name in sign.parameters:
-            param = sign.parameters[name]
-            if arg_id >= len(operation.args):
-                arg = param.default
-            else:                
-                arg = operation.args[arg_id]
-                      
-            label = QLabel(name)
-            label.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)            
-            label.setFixedHeight(25)
-            self.functionParameters.ui.layout_fnames.addWidget(label)
-            
-            if param.annotation is int:
-                spinBox = QSpinBox()
-                spinBox.setFixedHeight(18)
-                spinBox.setRange(-1000, 1000)
-                spinBox.setValue(int(arg))
-                self.functionParameters.ui.layout_fargs.addWidget(spinBox)
-            elif param.annotation is float:
-                spinBox = QDoubleSpinBox()
-                spinBox.setFixedHeight(18)
-                spinBox.setRange(-1000, 1000)
-                spinBox.setFixedHeight(25)
-                spinBox.setValue(float(arg))
-                self.functionParameters.ui.layout_fargs.addWidget(spinBox)
-            elif param.annotation in [Channel, Channels, BatchParameters, Mesh]:    
-                self.functionParameters.ui.layout_fargs.addWidget(BatchSelectionWidget(self.ui.fileSystemModel.rootPath(), arg))
-            elif param.annotation is SingleChannel:
-                filePicker = FilePickerWidget(self.ui.fileSystemModel.rootPath())
-                filePicker.setText(arg)   
-                self.functionParameters.ui.layout_fargs.addWidget(filePicker)    
-            elif param.annotation is StrFilePath:
-                filePicker = FilePickerWidget(self.ui.fileSystemModel.rootPath())
-                filePicker.setText(arg)
-                self.functionParameters.ui.layout_fargs.addWidget(filePicker)           
-            elif param.annotation is StrFolderPath:
-                folderPicker = FolderPickerWidget(self.ui.fileSystemModel.rootPath())
-                folderPicker.setText(arg)
-                self.functionParameters.ui.layout_fargs.addWidget(folderPicker)
-            elif param.annotation is str:
-                textEdit = QLineEdit()
-                textEdit.setFixedHeight(18)
-                textEdit.setText(arg)
-                textEdit.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-                self.functionParameters.ui.layout_fargs.addWidget(textEdit)            
-            elif type(param.annotation) is type(enum.Enum):
-                combBox = EnumComboBox(param.annotation)
-                combBox.setCurrentText(arg.name)
-                self.functionParameters.ui.layout_fargs.addWidget(combBox)
-            elif param.annotation is bool:
-                checkBox = QCheckBox("")
-                checkBox.setChecked(arg)
-                self.functionParameters.ui.layout_fargs.addWidget(checkBox)
-            arg_id += 1
-        
+    #TODO: see if using operation as item data is useful
     def newOperationComboBox(self):
-        comboBox = QComboBox()
-        op_count = self.ui.list_operations.count()
-        for i in range(op_count):
+        operations = []
+        for i in range(self.ui.list_operations.count()):
             item = self.ui.list_operations.item(i)
-            comboBox.addItem(item.name)
-        comboBox.addItem("None")
-        comboBox.setCurrentText("None")                    
-        comboBox.setDuplicatesEnabled(False)
-        comboBox.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
-        comboBox.setFixedHeight(25)
-        return comboBox
-
+            if type(item.operation) != BatchOperation:
+                operations.append(item.name)
+        return OperationInputWidget(operations)
+    
+    def operationSwitchMode(self):
+        for i in range(self.functionParameters.ui.layout_settingsForm.rowCount()):
+            label = self.functionParameters.ui.layout_settingsForm.itemAt(i, QFormLayout.ItemRole.LabelRole).widget().text()
+            widget = self.functionParameters.ui.layout_settingsForm.itemAt(i, QFormLayout.ItemRole.FieldRole).widget()
+            if type(widget) == OperationInputWidget:
+                self.functionParameters.ui.layout_settingsForm.removeRow(i)
+                self.functionParameters.ui.layout_settingsForm.insertRow(i, label, BatchSelectionWidget(self.ui.fileSystemModel.rootPath()))
+                if signature(self.functionParameters.function).return_annotation in [Channel, Channels, NamedArray]:
+                    self.functionParameters.outputDir.setHidden(False)
+                else:
+                    self.functionParameters.outputDir.setHidden(True)
+            elif type(widget) == BatchSelectionWidget:                
+                self.functionParameters.ui.layout_settingsForm.removeRow(i)
+                self.functionParameters.ui.layout_settingsForm.insertRow(i, label, self.newOperationComboBox())
+                self.functionParameters.outputDir.setHidden(True)
+            
     def runPipeline(self):
         if self.pipelineRunning:
             self.pipelineStopped()

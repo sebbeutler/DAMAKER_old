@@ -2,6 +2,7 @@ if __name__ == '__main__':
     import os
     os.system("pyside2-uic -o ./damaker_gui/windows/UI_MainWindow.py --from-imports ./damaker_gui/windows/MainWindow.ui")
     os.system("pyside2-uic -o ./damaker_gui/windows/UI_FunctionParametersWidget.py --from-imports ./damaker_gui/windows/FunctionParametersWidget.ui")
+    os.system("pyside2-uic -o ./damaker_gui/windows/UI_BatchParametersWidget.py --from-imports ./damaker_gui/windows/BatchParametersWidget.ui")
 
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
@@ -69,8 +70,8 @@ class AppWindow(QMainWindow):
         
         self.ui.btn_selectWorkspace.clicked.connect(self.selectWorkspace)
         
-        self.planPage = PlanPage(self.ui)      
-        self.visualizePage = VisualizePage(self.ui)      
+        self.planPage = PlanPage(self.ui)
+        self.visualizePage = VisualizePage(self.ui)     
         
         # self.switchTab(0)
         self.setFocus()
@@ -122,10 +123,10 @@ if __name__ == '__main__':
     import SimpleITK as sitk
     
     # a = BatchParameters()
-    # a.folder = "C:/Users/PC/source/DAMAKER/resources/output/out-inv"
-    # a.mod1 = ""
-    # a.mod2 = ""
-    # a.file = "*"
+    # a.folder = "C:/Users/Seb/Documents/docs/uni/stage/DAMAKER/resources/batch"
+    # a.mod1 = "1;2;3;4;5"
+    # a.mod2 = "1;2"
+    # a.file = "User{1}C{2}E1.tif"
     # a.load()
     
     # load = loadChannelsFromDir("resources/output/registration")

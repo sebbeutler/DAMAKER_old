@@ -1,5 +1,5 @@
-# TODO: take **kwargs into account
 from inspect import signature
+from lib2to3.pytree import type_repr
 import os, json
 import os.path
 import re
@@ -14,6 +14,7 @@ class Operation:
         self.name = name
         self.output = None
         self.enabled = enabled
+        self.type = Operation
         self.outputPath = ""
 
     def run(self):       
@@ -143,6 +144,7 @@ class BatchOperation(Operation):
         self.args = args
         self.name = name
         self.enabled = enabled
+        self.type = BatchOperation
         self.outputPath = outputPath
     
     def run(self):
@@ -223,10 +225,13 @@ class Pipeline:
             data: dict = json.load(f)
         operations = {}
         for op_json in data:
-            if "type" in op_json.keys() and op_json["type"] == "BatchOperation":
-                op = BatchOperation()
-            else:
-                op = Operation()
+            if "type" in op_json.keys():
+                if op_json["type"] == "BatchOperation":
+                    op = BatchOperation()
+                elif op_json["type"] == "Operation":
+                    op = Operation()
+                else:
+                    print("Unknown operation type while loading file: " + filepath)
             op.name = op_json["name"]
             op.enabled = op_json["enabled"]
             op.func = functions[op_json["function"]]
@@ -248,8 +253,12 @@ class Pipeline:
         operations_json = []
         for op in self.operations:
             op_json = {}
-            if type(op) is BatchOperation:
+            if op.type is BatchOperation:
                 op_json["type"] = "BatchOperation"
+            elif op.type is Operation:
+                op_json["type"] = "Operation"
+            else:
+                print("Unknown operation type: " + str(op.type))
             op_json["name"] = op.name
             op_json["enabled"] = op.enabled
             op_json["function"] = op.func.__name__

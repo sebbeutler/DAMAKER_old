@@ -18,16 +18,26 @@ class FunctionParametersWidget(QFrame):
         self.ui.setupUi(self)
         
         self.outputDir = FolderPickerWidget("", 18, "Output path: ")
-        self.outputDir.setHidden(True)
         self.ui.frame_outputDir.layout().addWidget(self.outputDir)
         
-        self.ui.btn_add_operation.setHidden(True)
-        self.ui.btn_modify_operation.setHidden(True)
-        self.ui.edit_operation_name.setHidden(True)
-        self.ui.checkbox_enabled.setHidden(True)
+        self.setHiddenAll(True)
+        self.function = None
     
-    def clearLayouts(self):            
-        clearLayout(self.ui.layout_fnames)
-        clearLayout(self.ui.layout_fargs)
+    @property
+    def batchModeEnabled(self):
+        return self.ui.btn_batchMode.isChecked()
+    
+    def setHiddenAll(self, hide=True):
+        self.outputDir.setHidden(hide)
+        self.ui.btn_batchMode.setHidden(hide)
+        self.ui.btn_add_operation.setHidden(hide)
+        self.ui.btn_modify_operation.setHidden(hide)
+        self.ui.edit_operation_name.setHidden(hide)
+        self.ui.checkbox_enabled.setHidden(hide)            
+    
+    def clearForm(self):
+        for i in reversed(range(self.ui.layout_settingsForm.rowCount())): 
+            self.ui.layout_settingsForm.removeRow(i)
+        
     
     

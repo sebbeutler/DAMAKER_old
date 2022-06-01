@@ -3,6 +3,8 @@ from PySide2.QtGui import *
 from PySide2.QtCore import *
 from PySide2 import *
 
+import pyqtgraph as pg
+
 import numpy as np
 import qimage2ndarray
 
@@ -35,141 +37,151 @@ lut_grays[:, 0] = np.arange(256)
 lut_grays[:, 1] = np.arange(256)
 lut_grays[:, 2] = np.arange(256)
 
-luts = [lut_green, lut_red, lut_blue, lut_yellow, lut_cyan, lut_magenta, lut_grays]
+lut_pos = np.arange(0, 1+1/255, 1/255)
+
+_luts = [pg.ColorMap(lut_pos, lut_green), 
+         pg.ColorMap(lut_pos, lut_red), 
+         pg.ColorMap(lut_pos, lut_blue), 
+         pg.ColorMap(lut_pos, lut_yellow), 
+         pg.ColorMap(lut_pos, lut_cyan), 
+         pg.ColorMap(lut_pos, lut_magenta),
+         pg.ColorMap(lut_pos, lut_grays) ]
 
 class PreviewWidgetSignals(QObject):
     channelsChanged = Signal()
-    
-class PreviewWidget(QGraphicsScene):
-    
-    def __init__(self, view: QGraphicsView, slider: QSlider, channels: list=[], fileInfo=None, frame_id=0):
+ 
+class PreviewWidget(pg.ImageView):  
+    mouseMoved = Signal(QMouseEvent, QPointF)
+      
+    def __init__(self, channels: list=[], fileInfo=None, slider: QSlider=None):
         super().__init__()
 
         self.signals = PreviewWidgetSignals()
+        self.threadpool = QThreadPool()
 
-        self.channels = channels        
-        self.slider = slider  
-        
-        self.frame_id = frame_id
-        
         self.fileInfo = fileInfo
-        self.image = QGraphicsPixmapItem()
-        self.addItem(self.image)
-        
-        self.view = view
-        self.view.mouseMoveEvent = lambda e: self.viewMouseMoved(e)
-        self.view.setMouseTracking(True)
-        self.view.setScene(self)        
-        self.view.wheelEvent = self.onScroll
+        self.slider = slider
+        self.frameId = 0
+        self.shape = (0, 0, 0)
         
         if self.slider != None:
-            self.slider.valueChanged.connect(self.update)
-            self.slider.setTracking(True)    
-            # self.slider.setTickInterval(1)   
+            self.slider.setRange(0, 1)
+            self.slider.valueChanged.connect(self.updateFrame)
+            self.slider.setTracking(True)     
         
-        self.threadpool = QThreadPool()
+        self.channels: dict[Channel, pg.ImageItem] = {}
         
+        self.ui.histogram.hide()
+        self.ui.roiBtn.hide()
+        self.ui.menuBtn.hide()
+        self.ui.roiPlot.setVisible(False)
+        self.ui.roiPlot.hide()
+        self.setAcceptDrops(True)
+        # self.view.setBackgroundColor((32, 32, 32))   
         
-    @property
-    def channel(self):
-        if len(self.channels) > 0:
-            return self.channels[0]
-        return None
-
-    @property
-    def frame(self):
-        return self.channel.data[self.frame_id]
+        self.textInfo = QLabel("Slide: ", self)
+        self.textInfo.setMinimumWidth(100)
+        self.textInfo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.textInfo.setStyleSheet("color: rgb(125, 125, 125);")
+        self.vLine = pg.InfiniteLine(angle=90, movable=False)
+        self.hLine = pg.InfiniteLine(angle=0, movable=False)
     
-    def reset(self, channels):
-        if channels is None:
+        self.scene._mouseMoveEvent = self.scene.mouseMoveEvent
+        self.scene.mouseMoveEvent = self.mouseMoveEvent
+        
+        self.updateFrame()
+    
+    def enableCross(self, enable: bool):
+        if enable:    
+            self.addItem(self.vLine)
+            self.addItem(self.hLine)
+        else:            
+            self.removeItem(self.vLine)
+            self.removeItem(self.hLine)
+    
+    def updateFramePercentage(self, percentage):
+        self.updateFrame(int(max(min(percentage, 1),0)*(self.shape[0]-1)))
+        
+    def updateFrame(self, frameId=None):        
+        if self.slider != None:  
+            self.frameId = self.slider.value()
+        
+        if frameId != None:
+            self.frameId = frameId
+        
+        for chn, img in self.channels.items():
+            img.setImage(chn.data[self.frameId], autoLevels=False)
+        
+        if self.fileInfo != None:
+            self.fileInfo.update()
+        
+        self.updateTextInfo()
+    
+    def addChannels(self, channels: list[Channel]):
+        if type(channels) == Channel:
+            channels = [channels]
+        if len(channels) == 0:
+            return
+        if self.shape == (0,0,0):
+            self.shape = channels[0].shape
+        for chn in channels:
+            if chn.shape[1:] != self.shape[1:]:
+                print("Channel dimension not valid")
+                continue
+            img = pg.ImageItem()
+            img.axisOrder = 'row-major'
+            img.setColorMap(_luts[chn.id-1])
+            img.setCompositionMode(QPainter.CompositionMode.CompositionMode_Plus)
+            self.addItem(img)
+            self.channels[chn] = img 
+        
+        # self.view.autoRange()
+    
+    def clear(self):
+        for chn, img in self.channels.items():
+            self.removeItem(img)
+        
+        self.channels.clear()
+        self.shape = (0,0,0)
+    
+    def reset(self, channels=[]):
+        if channels is None or len(channels) == 0:
             return
         
-        self.channels = channels
+        self.clear()
+        self.addChannels(channels)
         
-        for chn in channels:            
-            if chn.lut is None:
-                chn.lut = luts[chn.id-1]
-        
-        if self.slider != None:
-            self.slider.setMinimum(0)
-            self.slider.setMaximum(self.channel.shape[0]-1)
-            self.slider.setValue(0)        
-            
-        self.updateFrame()
-        
+        self.sliderUpdateRange()
+
         if self.fileInfo != None:
             self.fileInfo.preview = self
             self.fileInfo.update()
         
-        self.image.setScale(1)
+        self.updateFrame(0) 
         self.signals.channelsChanged.emit()
     
-    # def updateFrame(self, id: int=None):
-    #     if id == None:
-    #         id = self.frame_id
-    #     frame = sum([chn.frames[id] for chn in self.channels if chn.show])
-    #     if type(frame) is int:
-    #         frame = np.zeros(self.channel.shape[1:])
-    #     try:
-    #         self.image.setPixmap(QPixmap.fromImage(qimage2ndarray.array2qimage(frame)))
-    #     except Exception as e:
-    #         print("Preview update frame error: ", e)
-            
-    def updateFrame(self, id: int=None):
-        if id == None:
-            id = self.frame_id
-        frame = sum([chn.lut[chn.data[id]] for chn in self.channels if chn.show])
-        
-        if type(frame) is int:
-            frame = np.zeros(self.channel.shape[1:])
-        try:
-            self.image.setPixmap(QPixmap.fromImage(qimage2ndarray.array2qimage(frame)))
-        except Exception as e:
-            print("Preview update frame error: ", e)
-    
-    def recenter(self):        
-        size = self.view.size()
-        img_r = self.image.boundingRect()
-        scale = self.image.scale()
-        pos: QPointF = self.view.mapToScene(int(size.width()/2-img_r.width()*scale/2),int(size.height()/2-img_r.height()*scale/2))
-        self.image.setPos(pos.x(), pos.y())        
-        self.setSceneRect(pos.x(), pos.y(), int(img_r.width()*scale), int(img_r.height()*scale))
-        
-    def zoom(self, amount=0.1):        
-        self.image.setScale(self.image.scale() + amount)
-        self.recenter()
-    
-    def zoomIn(self):
-        self.zoom(0.1)
-    
-    def zoomOut(self):
-        self.zoom(-0.1)
-    
-    def onScroll(self, e: QGraphicsSceneWheelEvent):
-        self.zoom(e.delta()/1200)
-        
-    def update(self):
-        if self.slider != None:
-            self.frame_id = self.slider.value()
-        # self.setBackgroundBrush(Qt.darkBlue)   
-        if len(self.channels) > 0:
-            self.updateFrame()
-        
-        if self.fileInfo != None:
-            self.fileInfo.update()
+    def removeChannel(self, channel: Channel):
+        if channel not in self.channels.keys():
+            return
+        self.removeItem(self.channels[channel])
+        del self.channels[channel]      
     
     def loadChannels(self, filename: str):
         fw = FileLoaderWorker(filename)
         fw.signals.loaded.connect(self.reset)
         self.threadpool.start(fw)
     
-    def viewMouseMoved(self, event):
-        m_pos: QPoint = self.view.mapToScene(event.pos())
+    def mouseMoveEvent(self, e: QGraphicsSceneMouseEvent):
+        self.scene._mouseMoveEvent(e)        
+        if len(self.channels) == 0:
+            return
+        m_pos = self.view.mapSceneToView(e.scenePos())
         self.fileInfo.mx = int(max(0, m_pos.x()))
         self.fileInfo.my = int(max(0, m_pos.y()))
         self.fileInfo.preview = self
         self.fileInfo.update()
-    
+        self.mouseMoved.emit(e, m_pos)
+        
     def dropEvent(self, event: QGraphicsSceneDragDropEvent):
         super().dropEvent(event)
         
@@ -183,16 +195,44 @@ class PreviewWidget(QGraphicsScene):
             event.ignore()
     
     def dragEnterEvent(self, event):
+        super().dragEnterEvent(event)
         if event.mimeData().hasUrls:
             event.accept()
         else:
             event.ignore()
 
     def dragMoveEvent(self, event):
+        super().dragMoveEvent(event)
         if event.mimeData().hasUrls:
             event.accept()
         else:
             event.ignore()
+    
+    def updateTextInfo(self):
+        self.textInfo.setText(f"Slide: {self.frameId+1}/{self.shape[0]}")
+        self.textInfo.adjustSize()
+    
+    def viewMouseMoved(self, event: QMouseEvent):
+        if self.sceneRect().contains(event.pos().x(), event.pos().y()):
+            m_pos: QPoint = self.mapViewToScene(event.pos())
+        else:
+            m_pos = QPoint(0,0)
+        self.fileInfo.mx = int(max(0, m_pos.x()))
+        self.fileInfo.my = int(max(0, m_pos.y()))
+        self.fileInfo.preview = self
+        self.fileInfo.update()
+        
+        self.mouseMoved.emit(event, m_pos.x(), m_pos.y())
+    
+    def sliderUpdateRange(self):
+        if self.slider != None:
+            self.slider.setMinimum(0)
+            self.slider.setMaximum(self.shape[0]-1)
+            self.slider.setValue(0)
+    
+    @property
+    def count(self):
+        return len(self.channels.keys())
     
 class FileLoaderSignals(QObject):
     loaded = Signal(list)

@@ -22,13 +22,13 @@ from py4j.java_collections import JavaArray
 
 from damaker.pipeline import BatchParameters
 
-from .utils import StrFilePath, StrFolderPath, channelsSave, _plotChannel, NamedArray
+from .utils import StrFilePath, StrFolderPath, channelsSave, _plotChannel, NamedArray, _axisQuantifSaveCSV
 from .Channel import Channel, Channels, SingleChannel
 
 def channelSelect(input: Channels, id: int=1) -> Channels:
     """
         Name: Select channel by id
-        Category: Operations
+        Category: Import
         Desc: Choose a specific channel among the inputs.
     """
     channels = []
@@ -42,7 +42,7 @@ def channelSelect(input: Channels, id: int=1) -> Channels:
 def channelInvert(input: Channel) -> Channel:
     """
         Name: Invert colors
-        Category: Operations
+        Category: Transform
         Desc: Every black pixels become white and vice versa.
     """
     input.data = 255 - input.data
@@ -51,7 +51,7 @@ def channelInvert(input: Channel) -> Channel:
 def channelCrop(input: Channel, p1, p2) -> Channel:
     """
         Name: Crop
-        Category: Operations
+        Category: Transform
     """
     input.data = input.data[:, p1[1]:p2[1], p1[0]:p2[0]]
     return input
@@ -66,7 +66,7 @@ class cv_Interpolation(enum.Enum):
 def channelRotate(input: Channel, degrees: float, inter: cv_Interpolation=cv_Interpolation.bilinear) -> Channel:
     """
         Name: Rotation angle
-        Category: Operations
+        Category: Transform
     """    
     # create a rotation matric
     w, h = (input.shape[2], input.shape[1])
@@ -91,7 +91,7 @@ def channelRotate(input: Channel, degrees: float, inter: cv_Interpolation=cv_Int
     for i in range(input.shape[0]):
         new_data[i] = cv2.warpAffine(input.data[i], rot, (b_w, b_h), flags=inter.value)
     
-    input.data = new_data
+    input.data = new_data.astype(np.uint8)
     return input
 
 class RotationTypes(enum.Enum):
@@ -102,16 +102,16 @@ class RotationTypes(enum.Enum):
 def channelRotateType(input: Channel, rotType: RotationTypes=RotationTypes.clockwise_90) -> Channel:
     """
         Name: Rotation
-        Category: Operations
+        Category: Transform
     """    
-    if rotType == cv2.ROTATE_180:
+    if rotType.value == cv2.ROTATE_180:
         new_data = np.zeros(shape=input.shape, dtype=np.int32)
     else:
         new_data = np.zeros(shape=(input.shape[0], input.shape[2], input.shape[1]), dtype=np.int32)
     
     for i in range(input.shape[0]):
-        new_data[i] = cv2.rotate(input.data[i], rotType)
-    input.data = new_data
+        new_data[i] = cv2.rotate(input.data[i], rotType.value)
+    input.data = new_data.astype(np.uint8)
     return input
 
 class FlipTypes(enum.Enum):
@@ -121,17 +121,17 @@ class FlipTypes(enum.Enum):
 def channelFlip(input: Channel, flipType: FlipTypes=FlipTypes.horizontally) -> Channel:
     """
         Name: Flip
-        Category: Operations
+        Category: Transform
     """    
     for i in range(input.shape[0]):
-        input.data[i] = cv2.flip(input.data[i], flipType)
+        input.data[i] = cv2.flip(input.data[i], flipType.value)
     return input
 
 def pixelIntensity(input: Channel, frameId: int=-1) -> NamedArray:
     """
         Name: Pixel intensity
         Category: Quantification
-    """    
+    """
     if frameId < 0:
         data = input.data
     else:
@@ -155,14 +155,14 @@ class ZProjectionTypes(enum.Enum):
 def zProjection(input: Channel, projectionType: ZProjectionTypes= ZProjectionTypes.max) -> Channel:
     """
         Name: Z Projection
-        Category: Operations
+        Category: Process
     """
     if projectionType == ZProjectionTypes.max:
-        return input.data.max(0)
+        return input.clone(input.data.max(0)[np.newaxis])
     elif projectionType == ZProjectionTypes.min:
-        return input.data.min(0)
+        return input.clone(input.data.min(0)[np.newaxis])
     elif projectionType == ZProjectionTypes.mean:
-        return input.data.mean(0)
+        return input.clone(input.data.mean(0)[np.newaxis])
 
 
 # TODO: Verify types of the channels to be Channel
@@ -173,19 +173,20 @@ class MathOperationTypes(enum.Enum):
     ADD = 2
     SUB = 3
 
-def mathOperators(input1: Channel, input2: Channel, opType: MathOperationTypes= MathOperationTypes.SUB):
+def mathOperators(input1: Channel, input2: Channel, opType: MathOperationTypes= MathOperationTypes.SUB) -> Channel:
     """
         Name: Math 
-        Category: Operations
+        Category: Process
     """ 
+    inputs = [input1, input2]
     if opType == MathOperationTypes.ADD:
-        return _operatorADD(None)
+        return _operatorADD(inputs)
     elif opType == MathOperationTypes.AND:
-        pass
+        return _operatorAND(inputs)
     elif opType == MathOperationTypes.OR:
-        pass
+        return _operatorOR(inputs)
     elif opType == MathOperationTypes.SUB:
-        return _operatorSUB(input1, input2)
+        return _operatorSUB(inputs)
 
 def _operatorAND(input: Channels, threshold: int=1) -> Channel:
     result = input[0].copy()
@@ -208,10 +209,11 @@ def _operatorADD(input: Channels) -> Channel:
     result.data = result.data.astype(np.uint8)
     return result
 
-def _operatorSUB(input1: Channel, input2: Channel) -> Channel: 
-    result = input1.copy()
+def _operatorSUB(input: Channels) -> Channel: 
+    result = input[0].copy()
     result.data = result.data.astype(np.int16)
-    result.data -= input2.data
+    for channel in input:
+        result.data -= channel.data
     result.data = result.data.clip(0, 255)
     result.data = result.data.astype(np.uint8)
     return result
@@ -219,7 +221,7 @@ def _operatorSUB(input1: Channel, input2: Channel) -> Channel:
 def changeBrightnessAndContrast(input: Channel, brightness: int, contrast: int) -> Channel:
     """
         Name: Brightness & Contrast
-        Category: Operations
+        Category: Transform
     """    
     def contrastFactor(c):
         return (259*(c + 255)) / (255*(259 - c))
@@ -235,10 +237,13 @@ def changeBrightnessAndContrast(input: Channel, brightness: int, contrast: int) 
     return input
 
 avg_counter = 0
+def _resetAvg():
+    global avg_counter
+    avg_counter = 0
 def averageChannels(input: Channels, consensusSelection: int=0) -> Channel:
     """
         Name: Average
-        Category: Operations
+        Category: Process
     """    
     global avg_counter
     avg_counter += 1
@@ -253,8 +258,9 @@ def averageChannels(input: Channels, consensusSelection: int=0) -> Channel:
             return
         data.append(chn.data)
     
-    data = np.array(data, dtype=np.uint32)
+    data = np.array(data, dtype=np.float32)
     data = data.mean(0)
+    data = data.astype(np.uint8)
     
     res: Channel = input[0].clone(data)
     res.name = "Average_" + str(avg_counter)
@@ -267,7 +273,7 @@ def averageChannels(input: Channels, consensusSelection: int=0) -> Channel:
 def clipChannel(input: Channel, tmin: int=0, tmax: int=255, replace: bool=False) -> Channel:
     """
         Name: Clip intensity
-        Category: Operations
+        Category: Transform
     """    
     if not replace:
         input = input.copy()
@@ -281,10 +287,10 @@ class ResliceType(enum.Enum):
     left = 2
     right = 3
 
-def resliceChannel(input: Channel, resliceType: ResliceType=ResliceType.top):
+def resliceChannel(input: Channel, resliceType: ResliceType=ResliceType.top) -> Channel:
     """
         Name: Reslice
-        Category: Operations
+        Category: Process
     """          
     if resliceType == ResliceType.top:
         return _resliceTop(input)
@@ -308,9 +314,13 @@ def _resliceTop(input: Channel) -> Channel:
     
     result = np.zeros((Y, new_Z, X))
     
-    for i in range(Y):
-        result[i, :, :] =  cv2.resize(reslice[i], (X, new_Z), interpolation=cv2.INTER_NEAREST)
+    try:
+        for i in range(Y):
+            result[i, :, :] =  cv2.resize(reslice[i], (X, new_Z), interpolation=cv2.INTER_NEAREST)
+    except:
+        return input
     
+    input.px_sizes = PhysicalPixelSizes(Y, Y, X)
     input.name = "reslicedTop_" + input.name
     input.data = result.astype(np.uint8)
     
@@ -330,23 +340,27 @@ def _resliceLeft(input: Channel) -> Channel:
     
     result = np.zeros((X, new_Z, Y))
     
-    for i in range(X):
-        result[i, :, :] =  cv2.resize(reslice[i], (Y, new_Z), interpolation=cv2.INTER_NEAREST)
-        
+    try:
+        for i in range(X):
+            result[i, :, :] =  cv2.resize(reslice[i], (Y, new_Z), interpolation=cv2.INTER_NEAREST)
+    except:
+        return input
+    
     input.name = "reslicedLeft_" + input.name
     input.data = result.astype(np.uint8)
+    input.px_sizes = PhysicalPixelSizes(X, X, Y)
     
     return input
 
 def channelReverse(input: Channel) -> Channel:
     """
         Name: Reverse stack
-        Category: Operations
+        Category: Transform
     """    
     input.data = input.data[::-1]
     return input
 
-def sliceVolume(data, s_z, s_y, s_x, threshold=0):
+def _sliceVolume(data, s_z, s_y, s_x, threshold=0):
     return np.count_nonzero(data[data >= threshold]) * s_z * s_y * s_x
 
 def channelTotalVolume(input: Channel, minObjSize: int=0) -> NamedArray:
@@ -381,14 +395,14 @@ def channelVolumeArray(input: Channel) -> NamedArray:
     volumes = []
     
     for i in range(z):
-        volumes.append(sliceVolume(input.data[i], input.px_sizes.Z, input.px_sizes.Y, input.px_sizes.X))
+        volumes.append(_sliceVolume(input.data[i], input.px_sizes.Z, input.px_sizes.Y, input.px_sizes.X))
     
     res = NamedArray()
     res.name = "AxisQuantif_" + input.name
     res.data = volumes
     return res
 
-def channelAxisQuantification(input: Channel) -> NamedArray:
+def channelAxisQuantification(input: Channel, outputPath: StrFolderPath):
     """
         Name: Volume distribution per axis
         Category: Quantification
@@ -397,7 +411,7 @@ def channelAxisQuantification(input: Channel) -> NamedArray:
     axisTop = channelVolumeArray(_resliceTop(input))
     axisLeft = channelVolumeArray(_resliceLeft(input))
     
-    return [axisFront, axisTop, axisLeft]
+    _axisQuantifSaveCSV([axisFront, axisTop, axisLeft], outputPath, input.name)
 
 def meshCompareDistance(mesh1: Mesh, mesh2: Mesh, largest_region: bool=False) -> NamedArray:
     """
@@ -492,6 +506,10 @@ def segmentation(input: Channel, classifier: StrFilePath) -> Channel:
     return input
 
 def segmentationMultiClassifier(input: Channel, classifiers: BatchParameters, outputDir: StrFolderPath):
+    """
+        Name: Apply Trainable Weka Segmentation 3D (Multiple Classifiers)
+        Category: Segmentation
+    """    
     classifiers.load()
     print(classifiers.fileList)
     for file in classifiers.fileList:
@@ -690,10 +708,17 @@ def registrationMultiChannel(input: BatchParameters, reference: SingleChannel, r
             final.append(_imageToChannel(mov_res, chn))
         channelsSave(final, outputPath)
 
-def loadChannelsFromDir(input: BatchParameters):
+def loadChannelsFromDir(input: BatchParameters) -> Channels:
     """
         Name: Load from folder
         Category: Import
     """ 
     input.load()
     return input.all()
+
+def myOperation(input: Channel) -> Channel:
+    """
+        Name: It is my operation
+        Category: Export
+    """ 
+    print("Hello")

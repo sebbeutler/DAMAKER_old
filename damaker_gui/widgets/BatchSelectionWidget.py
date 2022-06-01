@@ -7,19 +7,28 @@ from .FilePickerWidget import FolderPickerWidget
 
 from damaker.pipeline import BatchParameters
 
-class BatchSelectionWidget(QPushButton):
+from damaker_gui.windows.UI_BatchParametersWidget import Ui_BatchParameters
+
+class BatchSelectionWidget(QFrame):
     def __init__(self, workspace: str, parameters: BatchParameters=None):
-        super().__init__("Batch parameters")
-        self.workspace = workspace
-        self.clicked.connect(self.onClick)
-        self.window = BatchSelectionWindow(self.workspace)
-        if parameters is None:
-            self.output = BatchParameters()    
-        else:
-            self.output = parameters
-        self.window.setText(self.output)
-        self.window.onApply.connect(self.applyEvent)
+        super().__init__()
+        self.ui = Ui_BatchParameters()
+        self.ui.setupUi(self)
+        
+        self.ui.btn_deploy.clicked.connect(self.deploy)
     
+    def deploy(self):
+        self.hideAnimation = QPropertyAnimation(self.ui.form, b'geometry')
+        self.hideAnimation.setDuration(2000) # chose the value that fits you
+        
+        self.hideAnimation.setStartValue(self.ui.form.geometry())
+        geo = QRect(self.ui.form.geometry())
+        geo.setHeight(200)
+        #computing final geometry
+        self.hideAnimation.setEndValue(geo)
+        print(geo)
+        self.hideAnimation.start()
+        
     def applyEvent(self, params: BatchParameters):
         self.output = params
     
@@ -31,6 +40,31 @@ class BatchSelectionWidget(QPushButton):
     
     def getBatch(self):
         return self.output
+
+# class BatchSelectionWidget(QPushButton):
+#     def __init__(self, workspace: str, parameters: BatchParameters=None):
+#         super().__init__("Batch parameters")
+#         self.workspace = workspace
+#         self.clicked.connect(self.onClick)
+#         self.window = BatchSelectionWindow(self.workspace)
+#         if parameters is None:
+#             self.output = BatchParameters()    
+#         else:
+#             self.output = parameters
+#         self.window.setText(self.output)
+#         self.window.onApply.connect(self.applyEvent)
+    
+#     def applyEvent(self, params: BatchParameters):
+#         self.output = params
+    
+#     def onClick(self):
+#         if not self.window.isVisible():
+#             self.window.show()
+#         else:
+#             self.window.setFocus()
+    
+#     def getBatch(self):
+#         return self.output
 
 class BatchSelectionWindow(QMainWindow):
     onApply = Signal(BatchParameters)

@@ -1,3 +1,4 @@
+from msilib.schema import ComboBox
 import numpy as np
 import inspect, enum, re, gc
 from inspect import getmembers, isfunction, signature   
@@ -6,6 +7,8 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from PySide2.QtCore import *
 from PySide2 import *
+
+import pyqtgraph as pg
 
 from vedo import Mesh
 
@@ -31,110 +34,225 @@ def clearLayout(layout):
             widgetToRemove.setParent(None)
 
 class ChannelBtn(QPushButton):
-    def __init__(self, name: str, chn: Channel, preview: PreviewWidget):
+    channelToggled = Signal(QPushButton, int)
+    channelRemoveTriggered = Signal(QPushButton, int)
+    
+    def __init__(self, name: str, chId: int):
         super().__init__(name)
-        self.channel = chn
-        self.preview = preview
-        
+        self.id = chId
         self.setCheckable(True)
         self.setChecked(True)
         self.setFixedWidth(30)
-        self.toggled.connect(self.toggleChannel)
-    
-    def toggleChannel(self, checked):
-        self.channel.show = checked
-        self.preview.updateFrame()
+        self.toggled.connect(lambda: self.channelToggled.emit(self, self.id))
+        self.setContextMenuPolicy(Qt.ActionsContextMenu)
+        act = QAction("Remove", self)
+        act.triggered.connect(lambda: self.channelRemoveTriggered.emit(self, self.id))
+        self.addAction(act)
 
 class VisualizePage:
     def __init__(self, ui: Ui_MainWindow):
         self.ui = ui
-        self.preview = PreviewWidget(self.ui.mainView, self.ui.slider_frame, [], self.ui.fileInfo)
+        self.threadpool = QThreadPool()
         
-        self.previewTop = PreviewWidget(self.ui.topView, None, [], self.ui.fileInfo)
-        self.previewLeft = PreviewWidget(self.ui.leftView, None, [], self.ui.fileInfo)
-
-        self.preview.signals.channelsChanged.connect(lambda: self.updateChannels())
-        self.updateChannels()
+        self.previewMain = PreviewWidget(slider=self.ui.slider_frame, fileInfo=self.ui.fileInfo)
+        self.previewTop = PreviewWidget(fileInfo=self.ui.fileInfo)
+        self.previewLeft = PreviewWidget(fileInfo=self.ui.fileInfo)
         
-        self.ui.slider_frame.valueChanged.connect(self.resliceViewsUpdate)
-        self.preview.loadChannels = self.loadChannels
+        self.ui.layout_mainPreview.addWidget(self.previewMain)
+        self.ui.layout_topPreview.addWidget(self.previewTop)
+        self.ui.layout_leftPreview.addWidget(self.previewLeft)
+        
+        self.previewMain.enableCross(True)
+        self.previewMain.signals.channelsChanged.connect(lambda: self.updateBtnChannels())
+        
+        self.previewMain.loadChannels = self.loadChannels
         
         self.functions = FunctionsListWidget()
         self.functions.operationTriggered.connect(lambda name: self.functionMenuClicked(name))
         self.ui.visualize_functionListLayout.addWidget(self.functions)
         
         self.functionParameters = FunctionParametersWidget()
+        self.functionParameters.ui.btn_modify_operation.setText("Dupplicate")
+        self.functionParameters.ui.btn_modify_operation.clicked.connect(lambda: self.applyFunction(True))
+        self.functionParameters.ui.btn_add_operation.setText("Apply")
+        self.functionParameters.ui.btn_add_operation.clicked.connect(self.applyFunction)
         self.ui.visualize_functionListLayout.addWidget(self.functionParameters)
         
         self.ui.visualize_btn_addChannel.clicked.connect(self.addFile)
+        
+        # bg = pg.BarGraphItem(x=range(256), height=list([10] * 256), width=0.6, brush=(90,90,90))
+        # self.plot.addItem(bg)
+        x = np.arange(257)
+        y = [0] * 256
+        self.plot = pg.plot(x, y, stepMode="center", fillLevel=0, fillOutline=True, brush=(0,0,255,150))
+        self.plot.resize(50, 50)
+        self.ui.tab_brightnesscontrast_layout.insertWidget(0, self.plot)
+        
+        self.previewMain.mouseMoved.connect(self.moveCross)
+        
+        self.ui.tab_views_addBtn.clicked.connect(self.newView)
+        self.ui.visualize_viewsList.currentItemChanged.connect(self.viewsItemChanged) 
+        self.ui.visualize_viewsList.addItem("View1") 
+        self.ui.visualize_viewsList.setItemSelected(self.ui.visualize_viewsList.item(0), True)
+        self.viewsCount = 1
+        self.views = {"View1": []}
+        self.viewTabs = {}
+        self.currentViewName = "View1"
+        self.addAnnexTab("View1")
+        
+        self.updateBtnChannels()
     
-    def addChannels(self, chn):
-        if type(chn) is list:
-            for channel in chn:
-                self.addChannels(channel)
-            self.updateChannels()
+    def updatePxInt(self):
+        if len(self.currentView) == 0:
             return
-        def loadFrames(channel):
-            if channel.data.dtype != np.uint8:
-                channel.data = channel.data.astype(np.uint8)
-            channel.frames = np.zeros(channel.shape + (3,), np.uint16)        
-            channel.frames[:, :, :, 0] += channel.lut[:, 0][channel.data]
-            channel.frames[:, :, :, 1] += channel.lut[:, 1][channel.data]
-            channel.frames[:, :, :, 2] += channel.lut[:, 2][channel.data]   
-            
-            
-        self.ui.label_appState.setText("Reslicing ...")
-
-        chn.id = len(self.preview.channels) + 1
-             
-        if chn.lut is None:
-            chn.lut = luts[chn.id-1]
+        self.ui.tab_brightnesscontrast_layout.removeWidget(self.plot)                
+        x = np.arange(257)
+        y = damaker.processing.pixelIntensity(self.currentView[0], self.previewMain.frameId)
+        self.plot = pg.plot(x, y, stepMode="center", fillLevel=0, fillOutline=True, brush=(0,0,255,150))
+        self.ui.tab_brightnesscontrast_layout.insertWidget(0, self.plot)
         
-        chnTop = damaker.processing._resliceTop(chn)
-        chnLeft = damaker.processing._resliceLeft(chn)
-        
-        # loadFrames(chn)
-        # loadFrames(chnTop)
-        # loadFrames(chnLeft)
-        
-        # print("Lut done.")
-        
-        self.preview.channels.append(chn)
-        self.previewTop.channels.append(chnTop)
-        self.previewLeft.channels.append(chnLeft)
-        
-        self.preview.updateFrame()
-        self.previewTop.updateFrame()
-        self.previewLeft.updateFrame()
-        
-        self.ui.label_appState.setText("Loading complete.")
-
     
-    def updateChannels(self):
-        clearLayout(self.ui.visualize_layout_channelList)
-        for chn in self.preview.channels:
-            btn = ChannelBtn(f'Ch{chn.id}', chn, self.preview)
-            self.ui.visualize_layout_channelList.addWidget(btn)
-        # self.ui.visualize_layout_channelList.addStretch()
+    @property
+    def currentView(self):
+        return self.views[self.currentViewName]
     
-    def resliceViewsUpdate(self):
-        if len(self.preview.channels) == 0:
+    def addAnnexTab(self, viewName):
+        frame = QFrame()
+        frame_layout = QVBoxLayout()
+        slider = QSlider()
+        preview = PreviewWidget(slider=slider, fileInfo=self.ui.fileInfo)        
+        
+        slider.setOrientation(Qt.Orientation.Horizontal)
+        frame_layout.addWidget(preview)
+        frame_layout.addWidget(slider)
+        frame.setLayout(frame_layout)
+        self.ui.visualize_annexesTabs.addTab(frame, viewName)
+        self.viewTabs[viewName] = preview
+    
+    def viewsItemChanged(self, current, previous):
+        print(current.text())
+        self.selectView(current.text())
+    
+    def selectView(self, viewName):
+        if viewName not in self.views.keys():
             return
-        frame_id = self.preview.slider.value() / self.preview.channel.shape[0]
-        self.previewTop.updateFrame(int(frame_id * self.previewTop.channel.shape[0]))
-        self.previewLeft.updateFrame(int(frame_id * self.previewLeft.channel.shape[0]))
-    
-    def loadChannels(self, filename: str):
-        self.preview.channels.clear()
-        self.previewTop.channels.clear()
-        self.previewLeft.channels.clear()
+        found = False
+        for i in range(self.ui.visualize_viewsList.count()):
+            if self.ui.visualize_viewsList.item(i).text() == viewName:
+                self.ui.visualize_viewsList.setItemSelected(self.ui.visualize_viewsList.item(i), True)
+                found = True
+        if not found: 
+            return
         
+        self.currentViewName = viewName
+        self.reset()
+    
+    def newView(self, channels=None):
+        self.viewsCount += 1
+        viewName = "View%d" % self.viewsCount
+        if type(channels) is list:
+            self.views[viewName] = channels
+        else:
+            self.views[viewName] = []
+        self.ui.visualize_viewsList.addItem(viewName)
+        self.addAnnexTab(viewName)
+        self.selectView(viewName)
+
+    def moveCross(self, event :QGraphicsSceneMouseEvent, pos: QPointF):
+        if event.buttons() == Qt.RightButton:
+            self.previewMain.hLine.setPos(pos.y())
+            self.previewMain.vLine.setPos(pos.x())
+            
+            self.previewTop.updateFramePercentage(pos.y()/self.previewMain.shape[1])
+            self.previewLeft.updateFramePercentage(pos.x()/self.previewMain.shape[2])
+    
+    def reset(self):
+        self.previewMain.clear()
+        self.previewTop.clear()
+        self.previewLeft.clear()
         gc.collect()
         
+        for chn in self.currentView:            
+            self.previewMain.addChannels(chn)
+        
+        resliceWorker = ReslicerWorker(self.currentView)
+        resliceWorker.signals.finished.connect(self.resetOrthoView)
+        self.threadpool.start(resliceWorker)
+        
+        self.updateFrames(0)
+        self.previewMain.sliderUpdateRange()
+        self.previewMain.view.autoRange()
+        self.updateBtnChannels()
+        
+        self.viewTabs[self.currentViewName].reset(self.currentView)
+    
+    def resetOrthoView(self, top, left):
+        self.previewTop.clear()
+        self.previewTop.addChannels(top)
+        self.previewTop.updateFrame(0)
+        self.previewTop.view.autoRange()
+        self.previewLeft.clear()
+        self.previewLeft.addChannels(left)
+        self.previewLeft.updateFrame(0)
+        self.previewLeft.view.autoRange()
+    
+    def addChannels(self, channels):
+        if channels is None or (type(channels) is list and len(channels) == 0):
+            return
+        if type(channels) is Channel:
+            channels = [channels]
+        if type(channels) is list:
+            for channel in channels:
+                channel.id = len(self.currentView) + 1
+                self.currentView.append(channel)
+            self.ui.label_appState.setText("Loading complete.")
+        
+        self.reset()
+    
+    def updateBtnChannels(self):
+        clearLayout(self.ui.visualize_layout_channelList)
+        for chn in self.currentView:
+            btn = ChannelBtn(f'Ch{chn.id}', chn.id)
+            btn.channelToggled.connect(self.toggleChannel)
+            btn.channelRemoveTriggered.connect(self.removeChannel)
+            self.ui.visualize_layout_channelList.addWidget(btn)
+    
+    def toggleChannel(self, btn: QPushButton, id: int):
+        for chn, img in self.allChannelImage():
+            if chn.id == id:
+                if btn.isChecked():
+                    img.show()                
+                else:
+                    img.hide()
+        self.updateFrames()
+    
+    def removeChannel(self, btn: QPushButton, id):
+        for i in range(len(self.currentView)):
+            if self.currentView[i].id == id:
+                self.currentView.remove(self.currentView[i])
+                break
+        self.reset()
+    
+    def allChannels(self):
+        return list(self.previewMain.channels.keys()) + list(self.previewLeft.channels.keys()) + list(self.previewTop.channels.keys())
+
+    def allChannelImage(self):
+        return list(self.previewMain.channels.items()) + list(self.previewLeft.channels.items()) + list(self.previewTop.channels.items())
+
+    def updateFrames(self, frameId=None):
+        self.previewMain.updateFrame(frameId)
+        self.previewLeft.updateFrame(frameId)
+        self.previewTop.updateFrame(frameId)
+    
+    def previews(self):
+        return [self.previewMain, self.previewTop, self.previewLeft]
+    
+    def loadChannels(self, filename: str):
+        self.currentView.clear()        
         self.ui.label_appState.setText("Loading file")
         fw = FileLoaderWorker(filename)
         fw.signals.loaded.connect(self.addChannels)
-        self.preview.threadpool.start(fw)
+        self.previewMain.threadpool.start(fw)
     
     def addFile(self, event):
         filename = QFileDialog.getOpenFileName(None, 'Open file', 
@@ -142,42 +260,32 @@ class VisualizePage:
         self.ui.label_appState.setText("Loading file")
         fw = FileLoaderWorker(filename)
         fw.signals.loaded.connect(self.addChannels)
-        self.preview.threadpool.start(fw)
+        self.previewMain.threadpool.start(fw)
         
     def functionMenuClicked(self, name):
-        self.functionParameters.clearLayouts()
-        self.functionParameters.ui.edit_operation_name.setHidden(False)
-        self.functionParameters.ui.checkbox_enabled.setHidden(False)
-        self.functionParameters.ui.btn_add_operation.setHidden(True)
-        self.functionParameters.ui.btn_modify_operation.setHidden(False)
+        self.functionParameters.clearForm()
+        self.functionParameters.setHiddenAll(False)
+        self.functionParameters.ui.checkbox_enabled.setHidden(True)
+        self.functionParameters.ui.btn_batchMode.setHidden(True)
+        self.functionParameters.outputDir.setHidden(True)
         
         func = self.functions.getFunction(name)
         if func == None:
             return
-        self.functionParameters.ui.currentFunction.setText(name)
-        sign = signature(func)
-        self.functionParameters.ui.edit_operation_name.setText(func.__name__)
-        self.functionParameters.ui.checkbox_enabled.setChecked(True)
+        self.functionParameters.function = func
+        self.functionParameters.ui.edit_operation_name.setText(name)
         
-        if sign.return_annotation in [Channel, Channels, NamedArray]:
-            self.functionParameters.outputDir.setHidden(False)
-            self.functionParameters.outputDir.setText("")
-        else:
-            self.functionParameters.outputDir.setHidden(True)
-        
-        for name in sign.parameters:
-            param = sign.parameters[name]
+        sign = signature(func)        
+        for argName in sign.parameters:
+            param = sign.parameters[argName]
             if param.annotation == inspect._empty:
                 continue
             
             default_arg = None
             if param.default != inspect._empty:
-                default_arg = param.default   
+                default_arg = param.default
             
-            label = QLabel(name)
-            label.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
-            label.setFixedHeight(25)
-            self.functionParameters.ui.layout_fnames.addWidget(label)
+            formWidget = None
                 
             if param.annotation is int:
                 spinBox = QSpinBox()
@@ -187,7 +295,7 @@ class VisualizePage:
                     spinBox.setValue(int(default_arg))
                 else:
                     spinBox.setValue(0)
-                self.functionParameters.ui.layout_fargs.addWidget(spinBox)
+                formWidget = spinBox
             if param.annotation is float:
                 spinBox = QDoubleSpinBox()
                 spinBox.setRange(-1000, 1000)
@@ -196,26 +304,128 @@ class VisualizePage:
                     spinBox.setValue(float(default_arg))
                 else:
                     spinBox.setValue(0.0)
-                self.functionParameters.ui.layout_fargs.addWidget(spinBox)
-            elif param.annotation in [Channel, Channels, BatchParameters, Mesh]:
-                self.functionParameters.ui.layout_fargs.addWidget(BatchSelectionWidget(self.ui.fileSystemModel.rootPath()))
+                formWidget = spinBox
+            elif param.annotation in [Channel, Channels, Mesh]:
+                formWidget = self.newInputComboBox()
+            elif param.annotation is BatchParameters:
+                formWidget = BatchSelectionWidget(self.ui.fileSystemModel.rootPath())
             elif param.annotation is SingleChannel:
-                self.functionParameters.ui.layout_fargs.addWidget(FilePickerWidget(self.ui.fileSystemModel.rootPath()))
+                formWidget = FilePickerWidget(self.ui.fileSystemModel.rootPath())
             elif param.annotation is StrFilePath:
-                self.functionParameters.ui.layout_fargs.addWidget(FilePickerWidget(self.ui.fileSystemModel.rootPath()))
+                formWidget = FilePickerWidget(self.ui.fileSystemModel.rootPath())
             elif param.annotation is StrFolderPath:
-                self.functionParameters.ui.layout_fargs.addWidget(FolderPickerWidget(self.ui.fileSystemModel.rootPath()))
+                formWidget = FolderPickerWidget(self.ui.fileSystemModel.rootPath())
             elif param.annotation is str:
                 textEdit = QLineEdit()
                 textEdit.setFixedHeight(18)
                 if default_arg != None:
                     textEdit.setText(default_arg)
                 textEdit.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-                self.functionParameters.ui.layout_fargs.addWidget(textEdit)
+                formWidget = textEdit
             elif type(param.annotation) is type(enum.Enum):
-                self.functionParameters.ui.layout_fargs.addWidget(EnumComboBox(param.annotation))
+                formWidget = EnumComboBox(param.annotation)
             elif param.annotation is bool:
                 checkBox = QCheckBox("")
                 if default_arg != None:
                     checkBox.setChecked(default_arg)
-                self.functionParameters.ui.layout_fargs.addWidget(checkBox)
+                formWidget = checkBox
+            if formWidget != None:
+                self.functionParameters.ui.layout_settingsForm.addRow(argName+":", formWidget)
+    
+    def newInputComboBox(self):
+        comboBox = QComboBox()
+        for i in range(self.ui.visualize_viewsList.count()):
+            item = self.ui.visualize_viewsList.item(i)
+            comboBox.addItem(item.text())
+        comboBox.setCurrentText(self.currentViewName)
+        return comboBox
+
+    def applyFunction(self, dupplicate:bool=False):
+        func = self.functionParameters.function
+        if func is None:
+            return
+        
+        
+        targetView = ""
+        channelCount = 0
+        args = []
+        for i in range(self.functionParameters.ui.layout_settingsForm.rowCount()):
+            widget = self.functionParameters.ui.layout_settingsForm.itemAt(i, QFormLayout.ItemRole.FieldRole).widget()
+            
+            if type(widget) is QSpinBox:
+                args.append(int(widget.value()))
+            elif type(widget) is QDoubleSpinBox:
+                args.append(float(widget.value()))
+            elif type(widget) is EnumComboBox:
+                sel = widget.currentText()
+                for e in widget.enum:
+                    if e.name == sel:
+                        args.append(e)
+                        break
+            elif type(widget) is BatchSelectionWidget:
+                args.append(widget.getBatch())     
+            elif type(widget) is QComboBox:
+                args.append(self.views[widget.currentText()])
+                channelCount = len(self.views[widget.currentText()])
+                if targetView == "":
+                    targetView = widget.currentText()
+            elif type(widget) in [QLineEdit, FilePickerWidget, FolderPickerWidget]:
+                args.append(widget.text())
+            elif type(widget) is QCheckBox:
+                args.append(widget.isChecked())
+            else:
+                args.append(None)
+        
+        sign = signature(func)
+        if sign.return_annotation is Channel:
+            newChannels = []
+            
+            for i in range(channelCount):
+                argTmp = []
+                argId = 0
+                for argName in sign.parameters:
+                    param = sign.parameters[argName]
+                    if param.annotation == Channel:
+                        argTmp.append(args[argId][i])
+                    else:
+                        argTmp.append(args[argId])
+                    argId += 1
+                newChannels.append(func(*argTmp))
+            if dupplicate == False:
+                if targetView != "":
+                    print(targetView)
+                    self.views[targetView] = newChannels
+                # self.reset()
+            else:
+                self.newView(newChannels)
+        else:
+            for i in range(channelCount):
+                argTmp = []
+                argId = 0
+                for argName in sign.parameters:
+                    param = sign.parameters[argName]
+                    if param.annotation == Channel:
+                        argTmp.append(args[argId][i])
+                    else:
+                        argTmp.append(args[argId])
+                    argId += 1
+                func(*argTmp)
+
+
+class ReslicerSignals(QObject):
+    finished = Signal(list, list)
+
+class ReslicerWorker(QRunnable):
+    def __init__(self, channels: Channel):
+        super(ReslicerWorker, self).__init__()        
+        self.channels = channels
+        self.signals = ReslicerSignals()
+
+    @Slot()
+    def run(self):
+        top = []
+        left = []
+        for channel in self.channels:
+            top.append(damaker.processing._resliceTop(channel))
+            left.append(damaker.processing._resliceLeft(channel))
+        self.signals.finished.emit(top, left)

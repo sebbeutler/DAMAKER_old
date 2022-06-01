@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>402</width>
-    <height>328</height>
+    <height>330</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,31 +33,6 @@ border-width: 1px;</string>
    <property name="bottomMargin">
     <number>0</number>
    </property>
-   <item>
-    <widget class="QLabel" name="currentFunction">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="lineWidth">
-      <number>0</number>
-     </property>
-     <property name="text">
-      <string>CurrentFunction</string>
-     </property>
-     <property name="textInteractionFlags">
-      <set>Qt::NoTextInteraction</set>
-     </property>
-    </widget>
-   </item>
    <item>
     <widget class="QFrame" name="pipline_settings_top">
      <property name="sizePolicy">
@@ -108,6 +83,38 @@ border-width: 1px;</string>
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="btn_batchMode">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+	padding: 2px;
+	border-radius: 2px;
+	background-color: rgb(42, 42, 42);
+	border: 1px solid black;
+}
+
+QPushButton:hover {
+   border: 1px solid rgb(90,90,90);
+}
+
+QPushButton:checked {	
+	background-color: rgb(23, 144, 21);
+}</string>
+        </property>
+        <property name="text">
+         <string>Batch mode</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QCheckBox" name="checkbox_enabled">
         <property name="text">
          <string/>
@@ -130,19 +137,25 @@ border-width: 1px;</string>
     </widget>
    </item>
    <item>
-    <widget class="QFrame" name="frame_settingsForm">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
+    <widget class="QScrollArea" name="scrollArea">
      <property name="styleSheet">
-      <string notr="true">QFrame#frame_settingsForm {
-border: 0px solid rgb(32, 32, 32);
-}
-
-QLabel {
+      <string notr="true">
+border: 0px solid rgb(32, 32, 32);</string>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="widget_settingsForm">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>402</width>
+        <height>257</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLabel {
 	border-width: 0px;
 }
 
@@ -151,30 +164,22 @@ QPushButton {
 	border: 1px solid black;
 	padding: 2px;
 }</string>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
-      <property name="spacing">
-       <number>0</number>
       </property>
-      <property name="leftMargin">
-       <number>3</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>3</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item>
-       <layout class="QVBoxLayout" name="layout_fnames"/>
-      </item>
-      <item>
-       <layout class="QVBoxLayout" name="layout_fargs"/>
-      </item>
-     </layout>
+      <layout class="QFormLayout" name="layout_settingsForm">
+       <property name="leftMargin">
+        <number>20</number>
+       </property>
+       <property name="topMargin">
+        <number>10</number>
+       </property>
+       <property name="rightMargin">
+        <number>5</number>
+       </property>
+       <property name="bottomMargin">
+        <number>5</number>
+       </property>
+      </layout>
+     </widget>
     </widget>
    </item>
    <item>
@@ -207,16 +212,16 @@ QPushButton {
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
       <property name="leftMargin">
-       <number>5</number>
+       <number>0</number>
       </property>
       <property name="topMargin">
-       <number>5</number>
+       <number>0</number>
       </property>
       <property name="rightMargin">
-       <number>5</number>
+       <number>0</number>
       </property>
       <property name="bottomMargin">
-       <number>5</number>
+       <number>0</number>
       </property>
      </layout>
     </widget>

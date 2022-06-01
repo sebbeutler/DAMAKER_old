@@ -92,13 +92,15 @@ def _loadChannels_tiffile(filename: StrFilePath):
     data = data.transpose(tuple(transpose))           
     
     # Split the file by channel
-    if len(data.shape) == 3:
-        return [Channel(fn, data, id=1)]
-    elif len(data.shape) == 4:
+    if len(data.shape) == 4:
         chns = []
         for i in range(data.shape[0]):
             chns.append(Channel(fn, data[i], id=i+1))
-        return chns
+        return chns    
+    elif len(data.shape) == 3:
+        return [Channel(fn, data, id=1)]
+    elif len(data.shape) == 2:
+        return [Channel(fn, data[np.newaxis], id=1)]
 
 def channelSave(chn: Channel, folderPath: StrFolderPath, includeChannelId: bool=False):
     """
@@ -169,7 +171,7 @@ def listSaveCSV(data: NamedArray, path: StrFolderPath):
             file.write("\n".join(map(str, list(array.data))))
         print(f'saved: {filename}')
 
-def axisQuantifSaveCSV(axis_data, path: StrFolderPath, filename: str):
+def _axisQuantifSaveCSV(axis_data, path: StrFolderPath, filename: str):
     if len(axis_data) != 3:
         raise ValueError("Need only 3 axis")
     listSaveCSV(axis_data[0], path, filename + "_front.csv")
