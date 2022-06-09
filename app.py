@@ -111,7 +111,7 @@ class AppWindow(QMainWindow):
 if __name__ == '__main__':
     import sys, os
     os.environ["JAVA_HOME"] = "C:/Program Files/Java/jdk-18.0.1.1"
-    os.environ["JAVA_HOME"] = "C:/Program Files/Java/jdk-11.0.13"
+    # os.environ["JAVA_HOME"] = "C:/Program Files/Java/jdk-11.0.13"
     
     app = QApplication(sys.argv)
     window = AppWindow()    
@@ -123,10 +123,17 @@ if __name__ == '__main__':
     import SimpleITK as sitk
     
     # a = BatchParameters()
-    # a.folder = "C:/Users/Seb/Documents/docs/uni/stage/DAMAKER/resources/batch"
-    # a.mod1 = "1;2;3;4;5"
-    # a.mod2 = "1;2"
-    # a.file = "User{1}C{2}E1.tif"
+    # a.folder = "C:/Users/PC/source/DAMAKER/resources/output/segmentation"
+    # a.associated = True
+    # a.load()
+    
+    # a = BatchParameters()
+    # a.folder = "C:/Users/PC/source/DAMAKER/resources/output/segmentation"
+    # a.mods.append("1;2;3;4")
+    # a.mods.append("1;2")
+    # a.mods.append("1;3;4")
+    # a.file = "User{1}C{2}E{3}.tif"
+    # a.associated = False
     # a.load()
     
     # load = loadChannelsFromDir("resources/output/registration")

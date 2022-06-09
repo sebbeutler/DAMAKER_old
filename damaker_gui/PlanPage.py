@@ -369,6 +369,7 @@ class PlanPage:
         self.pipelineThread.signals.outputReceived.connect(self.pipelineWriteConsole)
         self.pipelineThread.signals.stopped.connect(self.pipelineStopped)        
         self.pipelineThread.start()
+        # self.pipelineThread.run()
         self.ui.btn_run_pipeline.setText("Stop")
         self.pipelineRunning = True
     
@@ -395,7 +396,7 @@ class PlanPage:
     
     def savePipeline(self):
         filepath = filePath = QFileDialog.getSaveFileName(None, 'New file', 
-         self.ui.fileSystemModel.rootPath(), "Any (*.*)")[0]
+         self.ui.fileSystemModel.rootPath(), "Any (*.json)")[0]
         self.buildPipeline().save(filepath)
             
     def loadPipeline(self):

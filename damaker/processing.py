@@ -48,12 +48,12 @@ def channelInvert(input: Channel) -> Channel:
     input.data = 255 - input.data
     return input
 
-def channelCrop(input: Channel, p1, p2) -> Channel:
+def channelCrop(input: Channel, x1: int, y1: int, x2: int, y2: int) -> Channel:
     """
         Name: Crop
         Category: Transform
     """
-    input.data = input.data[:, p1[1]:p2[1], p1[0]:p2[0]]
+    input.data = input.data[:, y1:y2, x1:x2]
     return input
 
 class cv_Interpolation(enum.Enum):
@@ -230,11 +230,28 @@ def changeBrightnessAndContrast(input: Channel, brightness: int, contrast: int) 
     
     data = input.data.astype(np.float16)
     
-    data += brightness
-    data = factor*(data - 128) + 128
+    data = factor*((data + brightness) - 128) + 128
  
     input.data = data.clip(0, 255).astype(np.uint8)
     return input
+
+def _changeFrameBrightnessAndContrast(frame: np.ndarray, brightness: int, contrast: int):
+    """
+        Name: Brightness & Contrast
+        Category: Transform
+    """    
+    def contrastFactor(c):
+        return (259*(c + 255)) / (255*(259 - c))
+
+    factor = contrastFactor(contrast)
+    
+    data = frame.astype(np.float16)
+    
+    data += brightness
+    data = factor*(data - 128) + 128
+ 
+    frame = data.clip(0, 255).astype(np.uint8)
+    return frame
 
 avg_counter = 0
 def _resetAvg():
@@ -244,7 +261,7 @@ def averageChannels(input: Channels, consensusSelection: int=0) -> Channel:
     """
         Name: Average
         Category: Process
-    """    
+    """
     global avg_counter
     avg_counter += 1
     data = []
@@ -715,10 +732,3 @@ def loadChannelsFromDir(input: BatchParameters) -> Channels:
     """ 
     input.load()
     return input.all()
-
-def myOperation(input: Channel) -> Channel:
-    """
-        Name: It is my operation
-        Category: Export
-    """ 
-    print("Hello")

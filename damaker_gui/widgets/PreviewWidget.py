@@ -39,13 +39,13 @@ lut_grays[:, 2] = np.arange(256)
 
 lut_pos = np.arange(0, 1+1/255, 1/255)
 
-_luts = [pg.ColorMap(lut_pos, lut_green), 
-         pg.ColorMap(lut_pos, lut_red), 
-         pg.ColorMap(lut_pos, lut_blue), 
-         pg.ColorMap(lut_pos, lut_yellow), 
-         pg.ColorMap(lut_pos, lut_cyan), 
-         pg.ColorMap(lut_pos, lut_magenta),
-         pg.ColorMap(lut_pos, lut_grays) ]
+_luts = [pg.ColorMap(lut_pos, lut_green, name='green'),
+         pg.ColorMap(lut_pos, lut_red, name='red'),
+         pg.ColorMap(lut_pos, lut_blue, name='blue'),
+         pg.ColorMap(lut_pos, lut_yellow, name='yellow'),
+         pg.ColorMap(lut_pos, lut_cyan, name='cyan'),
+         pg.ColorMap(lut_pos, lut_magenta, name='magenta'),
+         pg.ColorMap(lut_pos, lut_grays, name='grays')]
 
 class PreviewWidgetSignals(QObject):
     channelsChanged = Signal()
@@ -130,7 +130,9 @@ class PreviewWidget(pg.ImageView):
                 continue
             img = pg.ImageItem()
             img.axisOrder = 'row-major'
-            img.setColorMap(_luts[chn.id-1])
+            if chn.lut is None:
+                chn.lut = _luts[chn.id-1]
+            img.setColorMap(chn.lut)
             img.setCompositionMode(QPainter.CompositionMode.CompositionMode_Plus)
             self.addItem(img)
             self.channels[chn] = img 

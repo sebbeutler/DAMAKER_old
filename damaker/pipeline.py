@@ -6,6 +6,7 @@ import re
 from tokenize import Single
 from .Channel import Channel, Channels, SingleChannel
 from .utils import *
+import enum
 
 class Operation:    
     def __init__(self, func=None, args=[], name="", enabled=True):
@@ -82,10 +83,10 @@ class Operation:
 
 class BatchParameters:
     folder: str=""
-    mod1: str=""
-    mod2: str=""
+    mods: list[str] = []
     file: str=""
-    
+    associated: bool=True
+     
     output: list=[]
     fileList: list=[]
     fileListId: int=0
@@ -102,12 +103,27 @@ class BatchParameters:
             print(f'batch files: {self.fileList}')
             return
         
-        for mod1 in self.mod1.split(";"):
-            for mod2 in self.mod2.split(";"):
-                file = re.sub('{(1)}', mod1, self.file)
-                file = re.sub('{(2)}', mod2, file)
-                if os.path.isfile(self.folder + "/" + file):
-                    self.fileList.append(file)
+        def applyMod(file, modId, mods):
+            fileList = []
+            for mod in mods[modId].split(";"):
+                fileModded = re.sub('{(%d)}' % (modId+1), mod, file)
+                if modId+1 >= len(mods):                    
+                    if os.path.isfile(self.folder + "/" + fileModded):
+                        fileList.append(fileModded)
+                    else:
+                        print("Batch file: '%s' not found" % fileModded)
+                else:
+                    applyMod(fileModded, modId+1, mods)
+            if len(fileList) == 0:
+                return
+            if self.associated:
+                self.fileList += fileList
+            else:
+                self.fileList.append(fileList)
+        if len(self.mods) == 0:
+            self.mods = [""]
+        applyMod(self.file, 0, self.mods)
+        
         self.fileListId = 0
                     
         print(f'batch files: {self.fileList}')
@@ -117,7 +133,16 @@ class BatchParameters:
             self.output = loadChannelsFromFile(self.folder + "/" + self.fileList[self.fileListId])
         elif self.type is Mesh:
             self.output = [Mesh(self.folder + "/" + self.fileList[self.fileListId])]
-        self.fileListId += 1
+        elif self.type is Channels:
+            self.output = []
+            if self.associated:
+                for file in self.fileList:
+                    self.output += loadChannelsFromFile(self.folder + "/" + file)
+                self.fileListId = len(self.fileList)
+            else:
+                for file in self.fileList[self.fileListId]:
+                    self.output += loadChannelsFromFile(self.folder + "/" + file)
+                self.fileListId += 1
         return self.output
 
     def all(self):
@@ -130,13 +155,19 @@ class BatchParameters:
         return self.fileListId >= len(self.fileList)
 
     def asDict(self):
-        return {"folder": self.folder, "mod1": self.mod1, "mod2": self.mod2, "file": self.file}
+        d = {"folder": self.folder, "file": self.file, "associated": self.associated}
+        for i in range(len(self.mods)):
+            d[i] = self.mods[i]
+        return d
 
-    def fromDict(self, d):
+    def fromDict(self, d: dict):
         self.folder = d["folder"]
-        self.mod1 = d["mod1"]
-        self.mod2 = d["mod2"]
         self.file = d["file"]
+        self.mods = [None] * (len(d)-2)
+        self.associated = d["associated"]
+        for key in d.keys():
+            if type(key) is int:
+                self.mods[key] = d[key]
 
 class BatchOperation(Operation):
     def __init__(self, func=None, args=[], name="", enabled=True, outputPath=""):
@@ -148,7 +179,7 @@ class BatchOperation(Operation):
         self.outputPath = outputPath
     
     def run(self):
-        parameters = []
+        parameters: list[BatchParameters] = []
         
         argId = 0
         sign = signature(self.func)        
@@ -165,7 +196,12 @@ class BatchOperation(Operation):
                 arguments.append(loadChannelsFromFile(self.args[argId]))
             elif param.annotation is Channels and type(self.args[argId]) is BatchParameters:
                 self.args[argId].load()
-                arguments.append(self.args[argId].all())
+                self.args[argId].type = Channels
+                if self.args[argId].associated:
+                    arguments.append(self.args[argId].all())
+                else:
+                    arguments.append(self.args[argId])
+                    parameters.append(self.args[argId])
             else:
                 arguments.append(self.args[argId])
             argId += 1
@@ -181,13 +217,19 @@ class BatchOperation(Operation):
                 param.next()
         
             outputs = []
-            for i in range(len(parameters[0].output)):   
+            if not parameters[0].associated:
+                nb_channels = 1
+            else:
+                nb_channels = len(parameters[0].output)
+            for i in range(nb_channels):   
                 argId = 0
                 batch_args = []         
                 for name in sign.parameters:
                     param = sign.parameters[name]
                     if param.annotation is Channel and type(arguments[argId]) is BatchParameters:
                         batch_args.append(parameters[argId].output[i])
+                    elif param.annotation is Channels and type(arguments[argId]) is BatchParameters:
+                        batch_args.append(parameters[argId].output)
                     else:
                         if argId < len(arguments):
                             batch_args.append(arguments[argId])
@@ -267,9 +309,12 @@ class Pipeline:
             for arg in op.args:
                 if type(arg) is Operation:
                     op_json["args"].append("%" + arg.name)
-                if type(arg) is BatchParameters:
+                elif type(arg) is BatchParameters:
                     op_json["args"].append(arg.asDict())
+                elif type(arg) is type(enum.Enum.value):
+                    print("enum", arg)
                 elif type(arg) is list:
+                    print("cannot save:", arg)
                     continue
                 else:
                     op_json["args"].append(arg)

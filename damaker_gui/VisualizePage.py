@@ -9,6 +9,8 @@ from PySide2.QtCore import *
 from PySide2 import *
 
 import pyqtgraph as pg
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
 
 from vedo import Mesh
 
@@ -22,6 +24,8 @@ from damaker_gui.widgets.EnumComboBox import EnumComboBox
 from damaker_gui.widgets.FilePickerWidget import FilePickerWidget, FolderPickerWidget
 from damaker_gui.widgets.FunctionListWidget import FunctionsListWidget
 from damaker_gui.widgets.FunctionParametersWidget import FunctionParametersWidget
+import damaker_gui.widgets.PreviewWidget
+from damaker_gui.widgets.RecordFunctionsWidget import RecordFunctionsWidget
 
 from .widgets.PreviewWidget import *
 from .windows.UI_MainWindow import Ui_MainWindow
@@ -52,11 +56,12 @@ class ChannelBtn(QPushButton):
 class VisualizePage:
     def __init__(self, ui: Ui_MainWindow):
         self.ui = ui
-        self.threadpool = QThreadPool()
         
         self.previewMain = PreviewWidget(slider=self.ui.slider_frame, fileInfo=self.ui.fileInfo)
         self.previewTop = PreviewWidget(fileInfo=self.ui.fileInfo)
         self.previewLeft = PreviewWidget(fileInfo=self.ui.fileInfo)
+        
+        self.resliceWorker = None
         
         self.ui.layout_mainPreview.addWidget(self.previewMain)
         self.ui.layout_topPreview.addWidget(self.previewTop)
@@ -64,6 +69,7 @@ class VisualizePage:
         
         self.previewMain.enableCross(True)
         self.previewMain.signals.channelsChanged.connect(lambda: self.updateBtnChannels())
+        self.previewMain.signals.channelsChanged.connect(lambda: self.resetTabLUT()())
         
         self.previewMain.loadChannels = self.loadChannels
         
@@ -80,13 +86,22 @@ class VisualizePage:
         
         self.ui.visualize_btn_addChannel.clicked.connect(self.addFile)
         
-        # bg = pg.BarGraphItem(x=range(256), height=list([10] * 256), width=0.6, brush=(90,90,90))
-        # self.plot.addItem(bg)
-        x = np.arange(257)
-        y = [0] * 256
-        self.plot = pg.plot(x, y, stepMode="center", fillLevel=0, fillOutline=True, brush=(0,0,255,150))
-        self.plot.resize(50, 50)
-        self.ui.tab_brightnesscontrast_layout.insertWidget(0, self.plot)
+        self.figure = Figure(figsize=(0.5, 0.5))
+        self.brightnessPlot = FigureCanvasQTAgg(self.figure)
+        self.axes = self.figure.add_subplot(111)
+        self.axes.plot([1, 2,3], [1, 2 ,3])
+        # self.brightnessPlot.getFigure().delaxes(self.subplot)
+        self.ui.tab_brightnesscontrast_layout.insertWidget(0, self.brightnessPlot)
+        
+        self.ui.slider_brightness.valueChanged.connect(self.updateBrightnessContrast)
+        self.ui.slider_contrast.valueChanged.connect(self.updateBrightnessContrast)
+        self.ui.slider_bc_min.valueChanged.connect(self.updateBrightnessContrastMinMax)
+        self.ui.slider_bc_max.valueChanged.connect(self.updateBrightnessContrastMinMax)
+        
+        self.ui.contrast_apply.clicked.connect(self.applyBrightnessContrast)
+        self.ui.contrast_reset.clicked.connect(self.resetBrightnessContrast)
+        
+        self.previewMain.slider.sliderReleased.connect(self.updatePxInt)
         
         self.previewMain.mouseMoved.connect(self.moveCross)
         
@@ -100,17 +115,124 @@ class VisualizePage:
         self.currentViewName = "View1"
         self.addAnnexTab("View1")
         
+        self.recorder = RecordFunctionsWidget(self.ui.tab_record_layout)
+        
         self.updateBtnChannels()
+        self.resetTabLUT()
+        
+        self.loadChannels("C:/Users/PC/source/DAMAKER/resources/E1.tif")
+    
+    class LUTComboBox(QComboBox):
+        def __init__(self, channel, _callback):
+            super().__init__()
+            self.channel = channel
+            self._callback = _callback
+        
+        def updateChannelLUT(self, text):
+            for lut in damaker_gui.widgets.PreviewWidget._luts:
+                if lut.name == text:
+                    self._callback(self.channel, lut)
+    
+    def resetTabLUT(self):
+        for i in reversed(range(self.ui.layout_tab_LUT.rowCount())):
+            self.ui.layout_tab_LUT.removeRow(i)
+        
+        for chn in self.currentView:
+            comboBox = VisualizePage.LUTComboBox(chn, self.setChannelLUT)
+            for lut in damaker_gui.widgets.PreviewWidget._luts:
+                comboBox.addItem(lut.name)
+            comboBox.setCurrentText(chn.lut.name)
+            comboBox.currentTextChanged.connect(comboBox.updateChannelLUT)
+            self.ui.layout_tab_LUT.addRow("Channel %d :" % chn.id, comboBox)
+    
+    def setChannelLUT(self, channel, colorMap):
+        channel.lut = colorMap
+        if channel in self.previewMain.channels.keys():
+            self.previewMain.channels[channel].setColorMap(channel.lut)
+        
+        for chn in self.previewTop.channels.keys():
+            if chn.id == channel.id:
+                self.previewTop.channels[chn].setColorMap(channel.lut)
+        for chn in self.previewLeft.channels.keys():
+            if chn.id == channel.id:
+                self.previewLeft.channels[chn].setColorMap(channel.lut)
+        
+        self.updateFrames()
+        
+    def updateBrightnessContrastMinMax(self):
+        _min = self.ui.slider_bc_min.value()
+        _max = self.ui.slider_bc_max.value()
+        
+        if _min>_max or _max<_min:
+            _min = _max
+        
+        brightness = (-_min + (255-_max))/2
+        contrast = (_min + (255-_max))/2
+        
+        self.updateBrightnessContrast((brightness, contrast))
+    
+    def updateBrightnessContrast(self, minMax: tuple=None):
+        if type(minMax) is tuple:
+            brightness = minMax[0]
+            contrast = minMax[1]
+            self.ui.slider_brightness.valueChanged.disconnect(self.updateBrightnessContrast)
+            self.ui.slider_contrast.valueChanged.disconnect(self.updateBrightnessContrast)
+            self.ui.slider_brightness.setValue(brightness)
+            self.ui.slider_contrast.setValue(contrast)
+            self.ui.slider_brightness.valueChanged.connect(self.updateBrightnessContrast)
+            self.ui.slider_contrast.valueChanged.connect(self.updateBrightnessContrast)
+            self.ui.bc_min_label.setText(str(self.ui.slider_bc_min.value()))
+            self.ui.bc_max_label.setText(str(self.ui.slider_bc_max.value()))
+        else:
+            brightness = self.ui.slider_brightness.value()
+            contrast = self.ui.slider_contrast.value()
+            _min = -brightness + contrast
+            _max = -brightness - contrast + 255
+            self.ui.slider_bc_min.valueChanged.disconnect(self.updateBrightnessContrastMinMax)
+            self.ui.slider_bc_max.valueChanged.disconnect(self.updateBrightnessContrastMinMax)
+            self.ui.slider_bc_min.setValue(_min)
+            self.ui.slider_bc_max.setValue(_max)
+            self.ui.slider_bc_min.valueChanged.connect(self.updateBrightnessContrastMinMax)
+            self.ui.slider_bc_max.valueChanged.connect(self.updateBrightnessContrastMinMax)
+            self.ui.bc_min_label.setText(str(_min))
+            self.ui.bc_max_label.setText(str(_max))
+        
+        for chn, img in self.previewMain.channels.items():
+            frame = damaker.processing._changeFrameBrightnessAndContrast(chn.data[self.previewMain.frameId], brightness, contrast)
+            img.setImage(frame, autoLevels=False)
+    
+    def applyBrightnessContrast(self):
+        brightness = self.ui.slider_brightness.value()
+        contrast = self.ui.slider_contrast.value()
+        for chn, img in self.previewMain.channels.items():
+            damaker.processing.changeBrightnessAndContrast(chn, brightness, contrast)
+        self.reset(True)
+        self.resetBrightnessContrast()
+    
+    def resetBrightnessContrast(self):
+        self.ui.slider_brightness.setValue(0)
+        self.ui.slider_contrast.setValue(0)
+        self.ui.slider_bc_min.setValue(0)
+        self.ui.slider_bc_max.setValue(255)
+    
+        self.updateFrames()
     
     def updatePxInt(self):
         if len(self.currentView) == 0:
             return
-        self.ui.tab_brightnesscontrast_layout.removeWidget(self.plot)                
-        x = np.arange(257)
-        y = damaker.processing.pixelIntensity(self.currentView[0], self.previewMain.frameId)
-        self.plot = pg.plot(x, y, stepMode="center", fillLevel=0, fillOutline=True, brush=(0,0,255,150))
-        self.ui.tab_brightnesscontrast_layout.insertWidget(0, self.plot)
         
+        self.figure.delaxes(self.axes)
+        self.axes = self.figure.add_subplot(111)        
+        
+        x = np.arange(256)
+        y1 = damaker.processing.pixelIntensity(self.currentView[0], self.previewMain.frameId).data
+        y2 = damaker.processing.pixelIntensity(self.currentView[0]).data        
+        
+        self.axes.plot(x, y1)
+        self.axes.get_xaxis().set_visible(False)
+        self.axes.get_yaxis().set_visible(False)
+        
+        self.brightnessPlot.draw()        
     
     @property
     def currentView(self):
@@ -166,7 +288,7 @@ class VisualizePage:
             self.previewTop.updateFramePercentage(pos.y()/self.previewMain.shape[1])
             self.previewLeft.updateFramePercentage(pos.x()/self.previewMain.shape[2])
     
-    def reset(self):
+    def reset(self, preserveFrameId=False):
         self.previewMain.clear()
         self.previewTop.clear()
         self.previewLeft.clear()
@@ -175,14 +297,20 @@ class VisualizePage:
         for chn in self.currentView:            
             self.previewMain.addChannels(chn)
         
-        resliceWorker = ReslicerWorker(self.currentView)
-        resliceWorker.signals.finished.connect(self.resetOrthoView)
-        self.threadpool.start(resliceWorker)
+        if self.resliceWorker != None:
+            self.resliceWorker.terminate()
+        self.resliceWorker = ReslicerWorker(self.currentView)
+        self.resliceWorker.signals.finished.connect(self.resetOrthoView)
+        self.resliceWorker.start()
         
-        self.updateFrames(0)
+        if type(preserveFrameId) is bool and preserveFrameId is True:
+            self.updateFrames()
+        else:
+            self.updateFrames(0)
         self.previewMain.sliderUpdateRange()
         self.previewMain.view.autoRange()
         self.updateBtnChannels()
+        self.resetTabLUT()
         
         self.viewTabs[self.currentViewName].reset(self.currentView)
     
@@ -195,6 +323,7 @@ class VisualizePage:
         self.previewLeft.addChannels(left)
         self.previewLeft.updateFrame(0)
         self.previewLeft.view.autoRange()
+        self.resliceWorker = None
     
     def addChannels(self, channels):
         if channels is None or (type(channels) is list and len(channels) == 0):
@@ -341,10 +470,9 @@ class VisualizePage:
         return comboBox
 
     def applyFunction(self, dupplicate:bool=False):
-        func = self.functionParameters.function
+        func: function = self.functionParameters.function
         if func is None:
-            return
-        
+            return        
         
         targetView = ""
         channelCount = 0
@@ -376,6 +504,8 @@ class VisualizePage:
             else:
                 args.append(None)
         
+        self.recorder.addOperation(Operation(func, args, func.__name__))
+        
         sign = signature(func)
         if sign.return_annotation is Channel:
             newChannels = []
@@ -393,9 +523,9 @@ class VisualizePage:
                 newChannels.append(func(*argTmp))
             if dupplicate == False:
                 if targetView != "":
-                    print(targetView)
                     self.views[targetView] = newChannels
-                # self.reset()
+                    self.currentViewName = targetView
+                    self.reset()
             else:
                 self.newView(newChannels)
         else:
@@ -415,8 +545,8 @@ class VisualizePage:
 class ReslicerSignals(QObject):
     finished = Signal(list, list)
 
-class ReslicerWorker(QRunnable):
-    def __init__(self, channels: Channel):
+class ReslicerWorker(QThread):
+    def __init__(self, channels: Channel=[]):
         super(ReslicerWorker, self).__init__()        
         self.channels = channels
         self.signals = ReslicerSignals()

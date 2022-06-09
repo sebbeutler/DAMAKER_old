@@ -15,3 +15,4 @@ scikit-image
 bioformats_jar
 opencv-python
 pyqt5-tools
+pyqtgraph
