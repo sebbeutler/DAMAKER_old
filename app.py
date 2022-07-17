@@ -111,7 +111,7 @@ class AppWindow(QMainWindow):
 if __name__ == '__main__':
     import sys, os
     os.environ["JAVA_HOME"] = "C:/Program Files/Java/jdk-18.0.1.1"
-    # os.environ["JAVA_HOME"] = "C:/Program Files/Java/jdk-11.0.13"
+    os.environ["JAVA_HOME"] = "C:/Program Files/Java/jdk-11.0.13"
     
     app = QApplication(sys.argv)
     window = AppWindow()    

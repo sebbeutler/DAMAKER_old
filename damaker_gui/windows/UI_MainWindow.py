@@ -18,7 +18,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1086, 761)
+        MainWindow.resize(1091, 855)
         MainWindow.setMinimumSize(QSize(500, 200))
         palette = QPalette()
         brush = QBrush(QColor(255, 255, 255, 255))
@@ -602,7 +602,8 @@ class Ui_MainWindow(object):
         sizePolicy6.setVerticalStretch(0)
         sizePolicy6.setHeightForWidth(self.pipeline_settings.sizePolicy().hasHeightForWidth())
         self.pipeline_settings.setSizePolicy(sizePolicy6)
-        self.pipeline_settings.setMaximumSize(QSize(16777215, 200))
+        self.pipeline_settings.setMinimumSize(QSize(0, 200))
+        self.pipeline_settings.setMaximumSize(QSize(16777215, 230))
         self.pipeline_settings.setAcceptDrops(False)
         self.pipeline_settings_layout = QHBoxLayout(self.pipeline_settings)
         self.pipeline_settings_layout.setSpacing(0)
@@ -1284,7 +1285,7 @@ class Ui_MainWindow(object):
 
         self.content_tabs.setCurrentIndex(1)
         self.visualize_altPreviewsTabs.setCurrentIndex(0)
-        self.tabWidget.setCurrentIndex(3)
+        self.tabWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainWindow)

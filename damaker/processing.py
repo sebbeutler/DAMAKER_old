@@ -732,3 +732,7 @@ def loadChannelsFromDir(input: BatchParameters) -> Channels:
     """ 
     input.load()
     return input.all()
+
+def erosion(input: Channel, iterations: int, border_value: int=0, brute_force: bool=False) -> Channel:
+    input.data = ndimage.binary_erosion(input.data, None, iterations, None, None, border_value, 0, brute_force)
+    return input

@@ -213,6 +213,7 @@ class PreviewWidget(pg.ImageView):
     def updateTextInfo(self):
         self.textInfo.setText(f"Slide: {self.frameId+1}/{self.shape[0]}")
         self.textInfo.adjustSize()
+        
     
     def viewMouseMoved(self, event: QMouseEvent):
         if self.sceneRect().contains(event.pos().x(), event.pos().y()):

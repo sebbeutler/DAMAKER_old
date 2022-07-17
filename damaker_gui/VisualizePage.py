@@ -20,6 +20,7 @@ from damaker.Channel import Channel, Channels, SingleChannel
 from damaker.utils import NamedArray, StrFilePath, StrFolderPath
 from damaker.pipeline import BatchParameters, Operation, Pipeline
 from damaker_gui.widgets.BatchSelectionWidget import BatchSelectionWidget
+from damaker_gui.widgets.ChannelsSelectorWidget import ChannelSelectorWidget
 from damaker_gui.widgets.EnumComboBox import EnumComboBox
 from damaker_gui.widgets.FilePickerWidget import FilePickerWidget, FolderPickerWidget
 from damaker_gui.widgets.FunctionListWidget import FunctionsListWidget
@@ -78,7 +79,7 @@ class VisualizePage:
         self.ui.visualize_functionListLayout.addWidget(self.functions)
         
         self.functionParameters = FunctionParametersWidget()
-        self.functionParameters.ui.btn_modify_operation.setText("Dupplicate")
+        self.functionParameters.ui.btn_modify_operation.setText("Duplicate")
         self.functionParameters.ui.btn_modify_operation.clicked.connect(lambda: self.applyFunction(True))
         self.functionParameters.ui.btn_add_operation.setText("Apply")
         self.functionParameters.ui.btn_add_operation.clicked.connect(self.applyFunction)
@@ -252,7 +253,6 @@ class VisualizePage:
         self.viewTabs[viewName] = preview
     
     def viewsItemChanged(self, current, previous):
-        print(current.text())
         self.selectView(current.text())
     
     def selectView(self, viewName):
@@ -297,7 +297,7 @@ class VisualizePage:
         for chn in self.currentView:            
             self.previewMain.addChannels(chn)
         
-        if self.resliceWorker != None:
+        if self.resliceWorker != None and self.resliceWorker.isRunning():
             self.resliceWorker.terminate()
         self.resliceWorker = ReslicerWorker(self.currentView)
         self.resliceWorker.signals.finished.connect(self.resetOrthoView)
@@ -434,8 +434,10 @@ class VisualizePage:
                 else:
                     spinBox.setValue(0.0)
                 formWidget = spinBox
-            elif param.annotation in [Channel, Channels, Mesh]:
+            elif param.annotation in [Channel, Mesh]:
                 formWidget = self.newInputComboBox()
+            elif param.annotation is Channels:
+                formWidget = ChannelSelectorWidget(self.views.keys())
             elif param.annotation is BatchParameters:
                 formWidget = BatchSelectionWidget(self.ui.fileSystemModel.rootPath())
             elif param.annotation is SingleChannel:
@@ -469,7 +471,7 @@ class VisualizePage:
         comboBox.setCurrentText(self.currentViewName)
         return comboBox
 
-    def applyFunction(self, dupplicate:bool=False):
+    def applyFunction(self, duplicate:bool=False):
         func: function = self.functionParameters.function
         if func is None:
             return        
@@ -501,6 +503,11 @@ class VisualizePage:
                 args.append(widget.text())
             elif type(widget) is QCheckBox:
                 args.append(widget.isChecked())
+            elif type(widget) is ChannelSelectorWidget:
+                channels = []
+                for val in widget.getValues():
+                    channels += self.views[val]
+                args.append(channels)
             else:
                 args.append(None)
         
@@ -509,7 +516,8 @@ class VisualizePage:
         sign = signature(func)
         if sign.return_annotation is Channel:
             newChannels = []
-            
+            if channelCount == 0:
+                channelCount = 1
             for i in range(channelCount):
                 argTmp = []
                 argId = 0
@@ -521,7 +529,7 @@ class VisualizePage:
                         argTmp.append(args[argId])
                     argId += 1
                 newChannels.append(func(*argTmp))
-            if dupplicate == False:
+            if duplicate == False:
                 if targetView != "":
                     self.views[targetView] = newChannels
                     self.currentViewName = targetView

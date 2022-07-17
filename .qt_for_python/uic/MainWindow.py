@@ -18,7 +18,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1086, 761)
+        MainWindow.resize(1091, 855)
         MainWindow.setMinimumSize(QSize(500, 200))
         palette = QPalette()
         brush = QBrush(QColor(255, 255, 255, 255))
@@ -602,7 +602,8 @@ class Ui_MainWindow(object):
         sizePolicy6.setVerticalStretch(0)
         sizePolicy6.setHeightForWidth(self.pipeline_settings.sizePolicy().hasHeightForWidth())
         self.pipeline_settings.setSizePolicy(sizePolicy6)
-        self.pipeline_settings.setMaximumSize(QSize(16777215, 200))
+        self.pipeline_settings.setMinimumSize(QSize(0, 200))
+        self.pipeline_settings.setMaximumSize(QSize(16777215, 230))
         self.pipeline_settings.setAcceptDrops(False)
         self.pipeline_settings_layout = QHBoxLayout(self.pipeline_settings)
         self.pipeline_settings_layout.setSpacing(0)
@@ -1039,7 +1040,8 @@ class Ui_MainWindow(object):
         sizePolicy12.setVerticalStretch(0)
         sizePolicy12.setHeightForWidth(self.tabWidget.sizePolicy().hasHeightForWidth())
         self.tabWidget.setSizePolicy(sizePolicy12)
-        self.tabWidget.setMinimumSize(QSize(0, 300))
+        self.tabWidget.setMinimumSize(QSize(0, 200))
+        self.tabWidget.setBaseSize(QSize(0, 330))
         self.tabWidget.setStyleSheet(u"")
         self.tab_views = QWidget()
         self.tab_views.setObjectName(u"tab_views")
@@ -1086,40 +1088,126 @@ class Ui_MainWindow(object):
 "	border-radius: 2px;\n"
 "}")
         self.tab_brightnesscontrast_layout = QVBoxLayout(self.tab_brightnesscontrast)
-        self.tab_brightnesscontrast_layout.setSpacing(0)
+        self.tab_brightnesscontrast_layout.setSpacing(10)
         self.tab_brightnesscontrast_layout.setObjectName(u"tab_brightnesscontrast_layout")
         self.tab_brightnesscontrast_layout.setContentsMargins(20, 0, 20, 0)
-        self.horizontalSlider = QSlider(self.tab_brightnesscontrast)
-        self.horizontalSlider.setObjectName(u"horizontalSlider")
-        self.horizontalSlider.setMaximumSize(QSize(16777215, 20))
-        self.horizontalSlider.setOrientation(Qt.Horizontal)
+        self.bc_frame_minmax = QFrame(self.tab_brightnesscontrast)
+        self.bc_frame_minmax.setObjectName(u"bc_frame_minmax")
+        sizePolicy13 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        sizePolicy13.setHorizontalStretch(0)
+        sizePolicy13.setVerticalStretch(0)
+        sizePolicy13.setHeightForWidth(self.bc_frame_minmax.sizePolicy().hasHeightForWidth())
+        self.bc_frame_minmax.setSizePolicy(sizePolicy13)
+        self.horizontalLayout_5 = QHBoxLayout(self.bc_frame_minmax)
+        self.horizontalLayout_5.setSpacing(0)
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
+        self.bc_min_label = QLabel(self.bc_frame_minmax)
+        self.bc_min_label.setObjectName(u"bc_min_label")
 
-        self.tab_brightnesscontrast_layout.addWidget(self.horizontalSlider)
+        self.horizontalLayout_5.addWidget(self.bc_min_label)
 
-        self.horizontalSlider_3 = QSlider(self.tab_brightnesscontrast)
-        self.horizontalSlider_3.setObjectName(u"horizontalSlider_3")
-        self.horizontalSlider_3.setOrientation(Qt.Horizontal)
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.tab_brightnesscontrast_layout.addWidget(self.horizontalSlider_3)
+        self.horizontalLayout_5.addItem(self.horizontalSpacer_2)
 
-        self.horizontalSlider_4 = QSlider(self.tab_brightnesscontrast)
-        self.horizontalSlider_4.setObjectName(u"horizontalSlider_4")
-        self.horizontalSlider_4.setOrientation(Qt.Horizontal)
+        self.bc_max_label = QLabel(self.bc_frame_minmax)
+        self.bc_max_label.setObjectName(u"bc_max_label")
 
-        self.tab_brightnesscontrast_layout.addWidget(self.horizontalSlider_4)
+        self.horizontalLayout_5.addWidget(self.bc_max_label)
 
-        self.horizontalSlider_2 = QSlider(self.tab_brightnesscontrast)
-        self.horizontalSlider_2.setObjectName(u"horizontalSlider_2")
-        self.horizontalSlider_2.setOrientation(Qt.Horizontal)
 
-        self.tab_brightnesscontrast_layout.addWidget(self.horizontalSlider_2)
+        self.tab_brightnesscontrast_layout.addWidget(self.bc_frame_minmax)
+
+        self.formLayout = QFormLayout()
+        self.formLayout.setObjectName(u"formLayout")
+        self.label_2 = QLabel(self.tab_brightnesscontrast)
+        self.label_2.setObjectName(u"label_2")
+
+        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.label_2)
+
+        self.slider_bc_min = QSlider(self.tab_brightnesscontrast)
+        self.slider_bc_min.setObjectName(u"slider_bc_min")
+        self.slider_bc_min.setMaximumSize(QSize(16777215, 20))
+        self.slider_bc_min.setMaximum(255)
+        self.slider_bc_min.setOrientation(Qt.Horizontal)
+
+        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.slider_bc_min)
+
+        self.label_3 = QLabel(self.tab_brightnesscontrast)
+        self.label_3.setObjectName(u"label_3")
+
+        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.label_3)
+
+        self.slider_bc_max = QSlider(self.tab_brightnesscontrast)
+        self.slider_bc_max.setObjectName(u"slider_bc_max")
+        self.slider_bc_max.setMaximum(255)
+        self.slider_bc_max.setValue(255)
+        self.slider_bc_max.setOrientation(Qt.Horizontal)
+
+        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.slider_bc_max)
+
+        self.label_4 = QLabel(self.tab_brightnesscontrast)
+        self.label_4.setObjectName(u"label_4")
+
+        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.label_4)
+
+        self.slider_brightness = QSlider(self.tab_brightnesscontrast)
+        self.slider_brightness.setObjectName(u"slider_brightness")
+        self.slider_brightness.setMinimum(-127)
+        self.slider_brightness.setMaximum(127)
+        self.slider_brightness.setOrientation(Qt.Horizontal)
+
+        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.slider_brightness)
+
+        self.label_5 = QLabel(self.tab_brightnesscontrast)
+        self.label_5.setObjectName(u"label_5")
+
+        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.label_5)
+
+        self.slider_contrast = QSlider(self.tab_brightnesscontrast)
+        self.slider_contrast.setObjectName(u"slider_contrast")
+        self.slider_contrast.setMinimum(-127)
+        self.slider_contrast.setMaximum(127)
+        self.slider_contrast.setOrientation(Qt.Horizontal)
+
+        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.slider_contrast)
+
+
+        self.tab_brightnesscontrast_layout.addLayout(self.formLayout)
+
+        self.horizontalFrame = QFrame(self.tab_brightnesscontrast)
+        self.horizontalFrame.setObjectName(u"horizontalFrame")
+        sizePolicy13.setHeightForWidth(self.horizontalFrame.sizePolicy().hasHeightForWidth())
+        self.horizontalFrame.setSizePolicy(sizePolicy13)
+        self.horizontalLayout_3 = QHBoxLayout(self.horizontalFrame)
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.contrast_reset = QPushButton(self.horizontalFrame)
+        self.contrast_reset.setObjectName(u"contrast_reset")
+
+        self.horizontalLayout_3.addWidget(self.contrast_reset)
+
+        self.contrast_apply = QPushButton(self.horizontalFrame)
+        self.contrast_apply.setObjectName(u"contrast_apply")
+
+        self.horizontalLayout_3.addWidget(self.contrast_apply)
+
+
+        self.tab_brightnesscontrast_layout.addWidget(self.horizontalFrame)
 
         self.tabWidget.addTab(self.tab_brightnesscontrast, "")
-        self.tab = QWidget()
-        self.tab.setObjectName(u"tab")
-        self.tab.setStyleSheet(u"background-color: rgb(62, 62, 62);\n"
+        self.tab_LUT = QWidget()
+        self.tab_LUT.setObjectName(u"tab_LUT")
+        self.tab_LUT.setStyleSheet(u"background-color: rgb(62, 62, 62);\n"
 "alternate-background-color: rgb(0, 0, 0);")
-        self.tabWidget.addTab(self.tab, "")
+        self.layout_tab_LUT = QFormLayout(self.tab_LUT)
+        self.layout_tab_LUT.setObjectName(u"layout_tab_LUT")
+        self.tabWidget.addTab(self.tab_LUT, "")
+        self.tab_record = QWidget()
+        self.tab_record.setObjectName(u"tab_record")
+        self.tab_record_layout = QVBoxLayout(self.tab_record)
+        self.tab_record_layout.setObjectName(u"tab_record_layout")
+        self.tabWidget.addTab(self.tab_record, "")
 
         self.verticalLayout_6.addWidget(self.tabWidget)
 
@@ -1195,7 +1283,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.content_tabs.setCurrentIndex(0)
+        self.content_tabs.setCurrentIndex(1)
         self.visualize_altPreviewsTabs.setCurrentIndex(0)
         self.tabWidget.setCurrentIndex(0)
 
@@ -1242,8 +1330,17 @@ class Ui_MainWindow(object):
         self.visualize_altPreviewsTabs.setTabText(self.visualize_altPreviewsTabs.indexOf(self.visualize_tab_annexes), QCoreApplication.translate("MainWindow", u"Annexes", None))
         self.tab_views_addBtn.setText(QCoreApplication.translate("MainWindow", u"New", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_views), QCoreApplication.translate("MainWindow", u"Views", None))
+        self.bc_min_label.setText(QCoreApplication.translate("MainWindow", u"0", None))
+        self.bc_max_label.setText(QCoreApplication.translate("MainWindow", u"255", None))
+        self.label_2.setText(QCoreApplication.translate("MainWindow", u"Min :", None))
+        self.label_3.setText(QCoreApplication.translate("MainWindow", u"Max :", None))
+        self.label_4.setText(QCoreApplication.translate("MainWindow", u"Brightness :", None))
+        self.label_5.setText(QCoreApplication.translate("MainWindow", u"Cointrast :", None))
+        self.contrast_reset.setText(QCoreApplication.translate("MainWindow", u"Reset", None))
+        self.contrast_apply.setText(QCoreApplication.translate("MainWindow", u"Apply", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_brightnesscontrast), QCoreApplication.translate("MainWindow", u" Brightness/Contrast", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"Page", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_LUT), QCoreApplication.translate("MainWindow", u"LUT", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_record), QCoreApplication.translate("MainWindow", u"Record", None))
         self.label_appState.setText("")
         self.btn_resize_grip.setText("")
     # retranslateUi

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1086</width>
-    <height>761</height>
+    <width>1091</width>
+    <height>855</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -915,7 +915,7 @@ QSpinBox, QDoubleSpinBox {
                 <string/>
                </property>
                <property name="pixmap">
-                <pixmap>:/20x20/icons/20x20/logo_dmkr.png</pixmap>
+                <pixmap resource="../resources/files.qrc">:/20x20/icons/20x20/logo_dmkr.png</pixmap>
                </property>
               </widget>
              </item>
@@ -1306,10 +1306,16 @@ border-color: #202020;</string>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>200</height>
+                 </size>
+                </property>
                 <property name="maximumSize">
                  <size>
                   <width>16777215</width>
-                  <height>200</height>
+                  <height>230</height>
                  </size>
                 </property>
                 <property name="acceptDrops">
@@ -2189,7 +2195,7 @@ border-width:  0px 1px 1px 1px ;
                     <string notr="true"/>
                    </property>
                    <property name="currentIndex">
-                    <number>3</number>
+                    <number>0</number>
                    </property>
                    <widget class="QWidget" name="tab_views">
                     <attribute name="title">

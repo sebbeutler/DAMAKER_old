@@ -1,9 +1,7 @@
 from inspect import signature
-from lib2to3.pytree import type_repr
 import os, json
 import os.path
 import re
-from tokenize import Single
 from .Channel import Channel, Channels, SingleChannel
 from .utils import *
 import enum
@@ -131,8 +129,10 @@ class BatchParameters:
     def next(self):
         if self.type is Channel: 
             self.output = loadChannelsFromFile(self.folder + "/" + self.fileList[self.fileListId])
+            self.fileListId += 1
         elif self.type is Mesh:
             self.output = [Mesh(self.folder + "/" + self.fileList[self.fileListId])]
+            self.fileListId += 1
         elif self.type is Channels:
             self.output = []
             if self.associated:
@@ -221,7 +221,7 @@ class BatchOperation(Operation):
                 nb_channels = 1
             else:
                 nb_channels = len(parameters[0].output)
-            for i in range(nb_channels):   
+            for i in range(nb_channels):
                 argId = 0
                 batch_args = []         
                 for name in sign.parameters:
@@ -311,11 +311,11 @@ class Pipeline:
                     op_json["args"].append("%" + arg.name)
                 elif type(arg) is BatchParameters:
                     op_json["args"].append(arg.asDict())
-                elif type(arg) is type(enum.Enum.value):
-                    print("enum", arg)
-                elif type(arg) is list:
-                    print("cannot save:", arg)
-                    continue
+                # elif type(arg) is type(enum.Enum.value):
+                #     print("enum", arg)
+                # elif type(arg) is list:
+                #     print("cannot save:", arg)
+                #     continue
                 else:
                     op_json["args"].append(arg)
             operations_json.append(op_json)

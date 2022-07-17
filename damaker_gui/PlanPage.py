@@ -112,7 +112,7 @@ class PlanPage:
                     spinBox.setValue(0.0)
                 formWidget = spinBox
             elif param.annotation in [Channel, Channels, BatchParameters, Mesh]:
-                if self.functionParameters.batchModeEnabled:
+                if self.functionParameters.batchModeEnabled or param.annotation is BatchParameters:
                     formWidget = BatchSelectionWidget(self.ui.fileSystemModel.rootPath())
                 else:
                     formWidget = self.newOperationComboBox()
