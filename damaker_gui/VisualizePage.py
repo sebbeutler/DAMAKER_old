@@ -1,4 +1,5 @@
 from msilib.schema import ComboBox
+from dotenv import set_key
 import numpy as np
 import inspect, enum, re, gc
 from inspect import getmembers, isfunction, signature   
@@ -25,6 +26,7 @@ from damaker_gui.widgets.EnumComboBox import EnumComboBox
 from damaker_gui.widgets.FilePickerWidget import FilePickerWidget, FolderPickerWidget
 from damaker_gui.widgets.FunctionListWidget import FunctionsListWidget
 from damaker_gui.widgets.FunctionParametersWidget import FunctionParametersWidget
+from damaker_gui.widgets.Preview3DWidget import Preview3DWidget
 import damaker_gui.widgets.PreviewWidget
 from damaker_gui.widgets.RecordFunctionsWidget import RecordFunctionsWidget
 
@@ -59,6 +61,8 @@ class VisualizePage:
         self.ui = ui
         
         self.previewMain = PreviewWidget(slider=self.ui.slider_frame, fileInfo=self.ui.fileInfo)
+        self.preview3D = Preview3DWidget()
+        self.ui.tabWidget_2.currentChanged.connect(lambda x: self.preview3D.show() if x == 1 else None )
         self.previewTop = PreviewWidget(fileInfo=self.ui.fileInfo)
         self.previewLeft = PreviewWidget(fileInfo=self.ui.fileInfo)
         
@@ -121,7 +125,7 @@ class VisualizePage:
         self.updateBtnChannels()
         self.resetTabLUT()
         
-        self.loadChannels("C:/Users/PC/source/DAMAKER/resources/E1.tif")
+        self.loadChannels("C:/Users/PC/source/DAMAKER/resources/prev_pipeline/out-reg/E1_C2.tif")
     
     class LUTComboBox(QComboBox):
         def __init__(self, channel, _callback):
@@ -313,6 +317,9 @@ class VisualizePage:
         self.resetTabLUT()
         
         self.viewTabs[self.currentViewName].reset(self.currentView)
+        
+        for channel in self.previewMain.channels:
+            self.preview3D.addChannel(channel)
     
     def resetOrthoView(self, top, left):
         self.previewTop.clear()

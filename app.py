@@ -12,6 +12,7 @@ from PySide2 import *
 from damaker_gui.widgets.FileInfoWidget import FileInfoWidget
 from damaker_gui.PlanPage import PlanPage
 from damaker_gui.VisualizePage import VisualizePage
+from damaker_gui.AnalyzePage import AnalyzePage
 
 import numpy as np
 
@@ -71,8 +72,8 @@ class AppWindow(QMainWindow):
         self.ui.btn_selectWorkspace.clicked.connect(self.selectWorkspace)
         
         self.planPage = PlanPage(self.ui)
-        self.visualizePage = VisualizePage(self.ui)     
-        
+        self.visualizePage = VisualizePage(self.ui)  
+        self.analyzePage = AnalyzePage(self.ui)
         # self.switchTab(0)
         self.setFocus()
     
@@ -111,7 +112,7 @@ class AppWindow(QMainWindow):
 if __name__ == '__main__':
     import sys, os
     os.environ["JAVA_HOME"] = "C:/Program Files/Java/jdk-18.0.1.1"
-    os.environ["JAVA_HOME"] = "C:/Program Files/Java/jdk-11.0.13"
+    # os.environ["JAVA_HOME"] = "C:/Program Files/Java/jdk-11.0.13"
     
     app = QApplication(sys.argv)
     window = AppWindow()    

@@ -915,7 +915,7 @@ QSpinBox, QDoubleSpinBox {
                 <string/>
                </property>
                <property name="pixmap">
-                <pixmap resource="../resources/files.qrc">:/20x20/icons/20x20/logo_dmkr.png</pixmap>
+                <pixmap>:/20x20/icons/20x20/logo_dmkr.png</pixmap>
                </property>
               </widget>
              </item>
@@ -1757,45 +1757,151 @@ p, li { white-space: pre-wrap; }
                     <number>0</number>
                    </property>
                    <item>
-                    <widget class="QFrame" name="frame_mainPreview">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>0</width>
-                       <height>400</height>
-                      </size>
-                     </property>
-                     <property name="acceptDrops">
-                      <bool>true</bool>
+                    <widget class="QTabWidget" name="tabWidget_2">
+                     <property name="layoutDirection">
+                      <enum>Qt::RightToLeft</enum>
                      </property>
                      <property name="styleSheet">
-                      <string notr="true">QFrame#frame_mainPreview {
+                      <string notr="true">QTabWidget {
+	background-color: rgb(62, 62, 62);
+	padding: 0px;
+	margin: 0px;
+    border: 1px solid black;
+}
+QTabWidget::pane { border: 0; }
+
+QTabBar {
+  background-color: rgb(62, 62, 62);
+	padding: 0px;
+	margin: 0px;
+}
+
+QTabWidget::tab-bar {
+   border: 1px solid black;
+  background-color: rgb(62, 62, 62);
+}
+
+QTabBar::pane {
+  border: none;
+}
+
+QTabBar::tab {
+  color: lightgray;
+  background-color: rgb(62, 62, 62);
+  border: 0px solid black; 
+padding: 4px;
+} 
+
+QTabBar::tab:hover {
+  background-color: rgb(52, 52, 52);
+} 
+
+QTabBar::tab:selected { 
+  background-color: rgb(42, 42, 42);
+  margin-bottom: -1px; 
+}</string>
+                     </property>
+                     <property name="tabPosition">
+                      <enum>QTabWidget::North</enum>
+                     </property>
+                     <property name="tabShape">
+                      <enum>QTabWidget::Rounded</enum>
+                     </property>
+                     <property name="currentIndex">
+                      <number>0</number>
+                     </property>
+                     <widget class="QWidget" name="tab_2D">
+                      <attribute name="title">
+                       <string>2D</string>
+                      </attribute>
+                      <layout class="QVBoxLayout" name="verticalLayout_5">
+                       <property name="spacing">
+                        <number>0</number>
+                       </property>
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item>
+                        <widget class="QFrame" name="frame_mainPreview">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>400</height>
+                          </size>
+                         </property>
+                         <property name="acceptDrops">
+                          <bool>true</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QFrame#frame_mainPreview {
 background-color: rgb(32, 32, 32);
 border: 1px solid rgb(132, 132, 132);
 }</string>
-                     </property>
-                     <layout class="QVBoxLayout" name="layout_mainPreview">
-                      <property name="spacing">
-                       <number>0</number>
+                         </property>
+                         <layout class="QVBoxLayout" name="layout_mainPreview">
+                          <property name="spacing">
+                           <number>0</number>
+                          </property>
+                          <property name="leftMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="topMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="rightMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="bottomMargin">
+                           <number>0</number>
+                          </property>
+                         </layout>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                     <widget class="QWidget" name="tab_3D">
+                      <property name="styleSheet">
+                       <string notr="true">QFrame#frame_mainPreview {
+background-color: rgb(32, 32, 32);
+border: 1px solid rgb(132, 132, 132);
+}</string>
                       </property>
-                      <property name="leftMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="topMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="bottomMargin">
-                       <number>0</number>
-                      </property>
-                     </layout>
+                      <attribute name="title">
+                       <string>3D</string>
+                      </attribute>
+                      <layout class="QVBoxLayout" name="verticalLayout_8">
+                       <property name="spacing">
+                        <number>0</number>
+                       </property>
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                      </layout>
+                     </widget>
                     </widget>
                    </item>
                    <item>

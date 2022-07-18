@@ -532,7 +532,7 @@ def segmentationMultiClassifier(input: Channel, classifiers: BatchParameters, ou
     for file in classifiers.fileList:
         segmentation(input, classifiers.folder + "/" + file).save(outputDir)
 
-def resampleChannel(input: Channel, sizeX: int, sizeY: int, sizeZ: int, px_sizeX: int, px_sizeY: int, px_sizeZ: int) -> Channel:
+def resampleChannel(input: Channel, sizeX: int, sizeY: int, sizeZ: int) -> Channel:
     """
         Name: Resample
         Category: Import
@@ -542,11 +542,11 @@ def resampleChannel(input: Channel, sizeX: int, sizeY: int, sizeZ: int, px_sizeX
     
     flt = sitk.ResampleImageFilter()
     flt.SetInterpolator(sitk.sitkLinear)
-    flt.SetOutputSpacing((px_sizeX, px_sizeY, px_sizeZ))
+    # flt.SetOutputSpacing((px_sizeX, px_sizeY, px_sizeZ))
     flt.SetSize((sizeX, sizeY, sizeZ))
     
     input.data = sitk.GetArrayFromImage(flt.Execute(arr))
-    input.px_sizes = PhysicalPixelSizes(px_sizeZ, px_sizeY, px_sizeX)
+    # input.px_sizes = PhysicalPixelSizes(px_sizeZ, px_sizeY, px_sizeX)
     return input
 
 def resampleLike(input: Channel, ref: Channel) -> Channel:

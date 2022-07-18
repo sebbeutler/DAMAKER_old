@@ -64,6 +64,9 @@ class PreviewWidget(pg.ImageView):
         self.frameId = 0
         self.shape = (0, 0, 0)
         
+        self.view.state['wheelScaleFactor'] = -1.0 / 50.0
+        self.view.sigRangeChangedManually.connect(lambda: self.updateTextInfo())
+        
         if self.slider != None:
             self.slider.setRange(0, 1)
             self.slider.valueChanged.connect(self.updateFrame)
@@ -211,7 +214,12 @@ class PreviewWidget(pg.ImageView):
             event.ignore()
     
     def updateTextInfo(self):
-        self.textInfo.setText(f"Slide: {self.frameId+1}/{self.shape[0]}")
+        vrange = self.view.viewRange()
+        try:
+            zoom = int((vrange[0][0] - vrange[0][1]) / self.shape[2] * 100) + 100
+        except:
+            zoom = "?"
+        self.textInfo.setText(f"Slide: {self.frameId+1}/{self.shape[0]} Zoom: {zoom}%")
         self.textInfo.adjustSize()
         
     
