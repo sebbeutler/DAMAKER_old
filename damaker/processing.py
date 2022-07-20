@@ -549,6 +549,20 @@ def resampleChannel(input: Channel, sizeX: int, sizeY: int, sizeZ: int) -> Chann
     # input.px_sizes = PhysicalPixelSizes(px_sizeZ, px_sizeY, px_sizeX)
     return input
 
+def _resamplePixelSize(input: Channel, x:float, y:float, z:float) -> Channel:
+    arr = sitk.GetImageFromArray(input.data.astype(np.float32))
+    arr.SetSpacing(tuple(reversed(input.px_sizes)))
+    
+    flt = sitk.ResampleImageFilter()
+    flt.SetInterpolator(sitk.sitkLinear)
+    flt.SetOutputSpacing((x, y, z))
+    flt.SetSize((int(input.shape[2] * (x / input.px_sizes.X)), int(input.shape[1] * (y / input.px_sizes.Y)), int(input.shape[0] * (z / input.px_sizes.Z))))
+    
+    input.data = sitk.GetArrayFromImage(flt.Execute(arr))
+    input.px_sizes = PhysicalPixelSizes(z, x, y)
+    
+    return input
+
 def resampleLike(input: Channel, ref: Channel) -> Channel:
     """
         Name: Homogenize with reference

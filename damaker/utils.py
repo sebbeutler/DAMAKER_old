@@ -31,7 +31,7 @@ def loadChannelsFromFile(filename: StrFilePath):
     if not os.path.isfile(filename):
         print("[DAMAKER] Warning: file '" + filename + "' not found.")
         return None
-    
+    print("Loading channels . . .")
     channels = _loadChannels_tiffile(filename)    
     # channels = _loadChannels_aicsi(filename)    
     metadata = bioformats_reader.BioFile(filename).ome_metadata
@@ -45,7 +45,7 @@ def loadChannelsFromFile(filename: StrFilePath):
     for ch in channels:
         if type(ch) is Channel:
             ch.px_sizes = px_sizes
-            print(f'Loaded: {ch}')
+            print(f'Loaded: {ch} ✔')
     return channels
 
 def _loadChannels_aicsi(filename: StrFilePath):

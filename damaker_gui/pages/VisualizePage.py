@@ -1,37 +1,23 @@
-from msilib.schema import ComboBox
-from dotenv import set_key
+import inspect, enum, gc  
 import numpy as np
-import inspect, enum, re, gc
-from inspect import getmembers, isfunction, signature   
 
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from PySide2.QtCore import *
 from PySide2 import *
 
-import pyqtgraph as pg
+# import pyqtgraph as pg
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
 from vedo import Mesh
 
-import damaker.processing
-import damaker.utils
-from damaker.Channel import Channel, Channels, SingleChannel
-from damaker.utils import NamedArray, StrFilePath, StrFolderPath
-from damaker.pipeline import BatchParameters, Operation, Pipeline
-from damaker_gui.widgets.BatchSelectionWidget import BatchSelectionWidget
-from damaker_gui.widgets.ChannelsSelectorWidget import ChannelSelectorWidget
-from damaker_gui.widgets.EnumComboBox import EnumComboBox
-from damaker_gui.widgets.FilePickerWidget import FilePickerWidget, FolderPickerWidget
-from damaker_gui.widgets.FunctionListWidget import FunctionsListWidget
-from damaker_gui.widgets.FunctionParametersWidget import FunctionParametersWidget
-from damaker_gui.widgets.Preview3DWidget import Preview3DWidget
-import damaker_gui.widgets.PreviewWidget
-from damaker_gui.widgets.RecordFunctionsWidget import RecordFunctionsWidget
+import damaker as dmk
+import damaker_gui.widgets as widgets
 
-from .widgets.PreviewWidget import *
-from .windows.UI_MainWindow import Ui_MainWindow
+from damaker_gui.widgets.PreviewWidget import _luts
+from damaker_gui.windows.UI_MainWindow import Ui_MainWindow
+from damaker_gui.pages.Page import Page
 
 def clearLayout(layout):
     for i in reversed(range(layout.count())): 
@@ -56,19 +42,19 @@ class ChannelBtn(QPushButton):
         act.triggered.connect(lambda: self.channelRemoveTriggered.emit(self, self.id))
         self.addAction(act)
 
-class VisualizePage:
+class VisualizePage(Page):
     def __init__(self, ui: Ui_MainWindow):
-        self.ui = ui
+        super().__init__(ui)
         
-        self.previewMain = PreviewWidget(slider=self.ui.slider_frame, fileInfo=self.ui.fileInfo)
-        self.preview3D = Preview3DWidget()
-        self.ui.tabWidget_2.currentChanged.connect(lambda x: self.preview3D.show() if x == 1 else None )
-        self.previewTop = PreviewWidget(fileInfo=self.ui.fileInfo)
-        self.previewLeft = PreviewWidget(fileInfo=self.ui.fileInfo)
+        self.previewMain = widgets.PreviewWidget(slider=self.ui.slider_frame, fileInfo=self.ui.fileInfo)
+        self.preview3D = widgets.Preview3DWidget()
+        self.previewTop = widgets.PreviewWidget(fileInfo=self.ui.fileInfo)
+        self.previewLeft = widgets.PreviewWidget(fileInfo=self.ui.fileInfo)
         
         self.resliceWorker = None
         
         self.ui.layout_mainPreview.addWidget(self.previewMain)
+        self.ui.layout_tap_preview3D.addWidget(self.preview3D)
         self.ui.layout_topPreview.addWidget(self.previewTop)
         self.ui.layout_leftPreview.addWidget(self.previewLeft)
         
@@ -78,11 +64,11 @@ class VisualizePage:
         
         self.previewMain.loadChannels = self.loadChannels
         
-        self.functions = FunctionsListWidget()
+        self.functions = widgets.FunctionsListWidget()
         self.functions.operationTriggered.connect(lambda name: self.functionMenuClicked(name))
         self.ui.visualize_functionListLayout.addWidget(self.functions)
         
-        self.functionParameters = FunctionParametersWidget()
+        self.functionParameters = widgets.FunctionParametersWidget()
         self.functionParameters.ui.btn_modify_operation.setText("Duplicate")
         self.functionParameters.ui.btn_modify_operation.clicked.connect(lambda: self.applyFunction(True))
         self.functionParameters.ui.btn_add_operation.setText("Apply")
@@ -120,12 +106,13 @@ class VisualizePage:
         self.currentViewName = "View1"
         self.addAnnexTab("View1")
         
-        self.recorder = RecordFunctionsWidget(self.ui.tab_record_layout)
+        self.recorder = widgets.RecordFunctionsWidget(self.ui.tab_record_layout)
         
         self.updateBtnChannels()
         self.resetTabLUT()
         
-        self.loadChannels("C:/Users/PC/source/DAMAKER/resources/prev_pipeline/out-reg/E1_C2.tif")
+        # self.loadChannels("C:/Users/PC/source/DAMAKER/resources/prev_pipeline/out-reg/E1_C2.tif")
+        self.loadChannels("C:/Users/Seb/Documents/docs/uni/stage/DAMAKER/resources/test/Threshold3.4UserAveragedC1E1.tif")
     
     class LUTComboBox(QComboBox):
         def __init__(self, channel, _callback):
@@ -134,7 +121,7 @@ class VisualizePage:
             self._callback = _callback
         
         def updateChannelLUT(self, text):
-            for lut in damaker_gui.widgets.PreviewWidget._luts:
+            for lut in _luts:
                 if lut.name == text:
                     self._callback(self.channel, lut)
     
@@ -144,7 +131,7 @@ class VisualizePage:
         
         for chn in self.currentView:
             comboBox = VisualizePage.LUTComboBox(chn, self.setChannelLUT)
-            for lut in damaker_gui.widgets.PreviewWidget._luts:
+            for lut in _luts:
                 comboBox.addItem(lut.name)
             comboBox.setCurrentText(chn.lut.name)
             comboBox.currentTextChanged.connect(comboBox.updateChannelLUT)
@@ -203,14 +190,14 @@ class VisualizePage:
             self.ui.bc_max_label.setText(str(_max))
         
         for chn, img in self.previewMain.channels.items():
-            frame = damaker.processing._changeFrameBrightnessAndContrast(chn.data[self.previewMain.frameId], brightness, contrast)
+            frame = dmk.processing._changeFrameBrightnessAndContrast(chn.data[self.previewMain.frameId], brightness, contrast)
             img.setImage(frame, autoLevels=False)
     
     def applyBrightnessContrast(self):
         brightness = self.ui.slider_brightness.value()
         contrast = self.ui.slider_contrast.value()
         for chn, img in self.previewMain.channels.items():
-            damaker.processing.changeBrightnessAndContrast(chn, brightness, contrast)
+            dmk.processing.changeBrightnessAndContrast(chn, brightness, contrast)
         self.reset(True)
         self.resetBrightnessContrast()
     
@@ -230,8 +217,8 @@ class VisualizePage:
         self.axes = self.figure.add_subplot(111)        
         
         x = np.arange(256)
-        y1 = damaker.processing.pixelIntensity(self.currentView[0], self.previewMain.frameId).data
-        y2 = damaker.processing.pixelIntensity(self.currentView[0]).data        
+        y1 = dmk.processing.pixelIntensity(self.currentView[0], self.previewMain.frameId).data
+        y2 = dmk.processing.pixelIntensity(self.currentView[0]).data        
         
         self.axes.plot(x, y1)
         self.axes.get_xaxis().set_visible(False)
@@ -247,7 +234,7 @@ class VisualizePage:
         frame = QFrame()
         frame_layout = QVBoxLayout()
         slider = QSlider()
-        preview = PreviewWidget(slider=slider, fileInfo=self.ui.fileInfo)        
+        preview = widgets.PreviewWidget(slider=slider, fileInfo=self.ui.fileInfo)        
         
         slider.setOrientation(Qt.Orientation.Horizontal)
         frame_layout.addWidget(preview)
@@ -318,6 +305,7 @@ class VisualizePage:
         
         self.viewTabs[self.currentViewName].reset(self.currentView)
         
+        self.preview3D.clear()
         for channel in self.previewMain.channels:
             self.preview3D.addChannel(channel)
     
@@ -335,7 +323,7 @@ class VisualizePage:
     def addChannels(self, channels):
         if channels is None or (type(channels) is list and len(channels) == 0):
             return
-        if type(channels) is Channel:
+        if type(channels) is dmk.Channel:
             channels = [channels]
         if type(channels) is list:
             for channel in channels:
@@ -386,7 +374,7 @@ class VisualizePage:
     def loadChannels(self, filename: str):
         self.currentView.clear()        
         self.ui.label_appState.setText("Loading file")
-        fw = FileLoaderWorker(filename)
+        fw = widgets.FileLoaderWorker(filename)
         fw.signals.loaded.connect(self.addChannels)
         self.previewMain.threadpool.start(fw)
     
@@ -394,7 +382,7 @@ class VisualizePage:
         filename = QFileDialog.getOpenFileName(None, 'Open file', 
          self.ui.fileSystemModel.rootPath(),"Any (*.*)")[0]
         self.ui.label_appState.setText("Loading file")
-        fw = FileLoaderWorker(filename)
+        fw = widgets.FileLoaderWorker(filename)
         fw.signals.loaded.connect(self.addChannels)
         self.previewMain.threadpool.start(fw)
         
@@ -411,7 +399,7 @@ class VisualizePage:
         self.functionParameters.function = func
         self.functionParameters.ui.edit_operation_name.setText(name)
         
-        sign = signature(func)        
+        sign = inspect.signature(func)        
         for argName in sign.parameters:
             param = sign.parameters[argName]
             if param.annotation == inspect._empty:
@@ -441,18 +429,18 @@ class VisualizePage:
                 else:
                     spinBox.setValue(0.0)
                 formWidget = spinBox
-            elif param.annotation in [Channel, Mesh]:
+            elif param.annotation in [dmk.Channel, Mesh]:
                 formWidget = self.newInputComboBox()
-            elif param.annotation is Channels:
-                formWidget = ChannelSelectorWidget(self.views.keys())
-            elif param.annotation is BatchParameters:
-                formWidget = BatchSelectionWidget(self.ui.fileSystemModel.rootPath())
-            elif param.annotation is SingleChannel:
-                formWidget = FilePickerWidget(self.ui.fileSystemModel.rootPath())
-            elif param.annotation is StrFilePath:
-                formWidget = FilePickerWidget(self.ui.fileSystemModel.rootPath())
-            elif param.annotation is StrFolderPath:
-                formWidget = FolderPickerWidget(self.ui.fileSystemModel.rootPath())
+            elif param.annotation is dmk.Channels:
+                formWidget = widgets.ChannelSelectorWidget(self.views.keys())
+            elif param.annotation is widgets.BatchParameters:
+                formWidget = widgets.BatchSelectionWidget(self.ui.fileSystemModel.rootPath())
+            elif param.annotation is dmk.SingleChannel:
+                formWidget = widgets.FilePickerWidget(self.ui.fileSystemModel.rootPath())
+            elif param.annotation is dmk.StrFilePath:
+                formWidget = widgets.FilePickerWidget(self.ui.fileSystemModel.rootPath())
+            elif param.annotation is dmk.StrFolderPath:
+                formWidget = widgets.FolderPickerWidget(self.ui.fileSystemModel.rootPath())
             elif param.annotation is str:
                 textEdit = QLineEdit()
                 textEdit.setFixedHeight(18)
@@ -461,7 +449,7 @@ class VisualizePage:
                 textEdit.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
                 formWidget = textEdit
             elif type(param.annotation) is type(enum.Enum):
-                formWidget = EnumComboBox(param.annotation)
+                formWidget = widgets.EnumComboBox(param.annotation)
             elif param.annotation is bool:
                 checkBox = QCheckBox("")
                 if default_arg != None:
@@ -493,24 +481,24 @@ class VisualizePage:
                 args.append(int(widget.value()))
             elif type(widget) is QDoubleSpinBox:
                 args.append(float(widget.value()))
-            elif type(widget) is EnumComboBox:
+            elif type(widget) is widgets.EnumComboBox:
                 sel = widget.currentText()
                 for e in widget.enum:
                     if e.name == sel:
                         args.append(e)
                         break
-            elif type(widget) is BatchSelectionWidget:
+            elif type(widget) is widgets.BatchSelectionWidget:
                 args.append(widget.getBatch())     
             elif type(widget) is QComboBox:
                 args.append(self.views[widget.currentText()])
                 channelCount = len(self.views[widget.currentText()])
                 if targetView == "":
                     targetView = widget.currentText()
-            elif type(widget) in [QLineEdit, FilePickerWidget, FolderPickerWidget]:
+            elif type(widget) in [QLineEdit, widgets.FilePickerWidget, widgets.FolderPickerWidget]:
                 args.append(widget.text())
             elif type(widget) is QCheckBox:
                 args.append(widget.isChecked())
-            elif type(widget) is ChannelSelectorWidget:
+            elif type(widget) is widgets.ChannelSelectorWidget:
                 channels = []
                 for val in widget.getValues():
                     channels += self.views[val]
@@ -518,10 +506,10 @@ class VisualizePage:
             else:
                 args.append(None)
         
-        self.recorder.addOperation(Operation(func, args, func.__name__))
+        self.recorder.addOperation(dmk.Operation(func, args, func.__name__))
         
-        sign = signature(func)
-        if sign.return_annotation is Channel:
+        sign = inspect.signature(func)
+        if sign.return_annotation is dmk.Channel:
             newChannels = []
             if channelCount == 0:
                 channelCount = 1
@@ -530,7 +518,7 @@ class VisualizePage:
                 argId = 0
                 for argName in sign.parameters:
                     param = sign.parameters[argName]
-                    if param.annotation == Channel:
+                    if param.annotation == dmk.Channel:
                         argTmp.append(args[argId][i])
                     else:
                         argTmp.append(args[argId])
@@ -549,7 +537,7 @@ class VisualizePage:
                 argId = 0
                 for argName in sign.parameters:
                     param = sign.parameters[argName]
-                    if param.annotation == Channel:
+                    if param.annotation == dmk.Channel:
                         argTmp.append(args[argId][i])
                     else:
                         argTmp.append(args[argId])
@@ -561,7 +549,7 @@ class ReslicerSignals(QObject):
     finished = Signal(list, list)
 
 class ReslicerWorker(QThread):
-    def __init__(self, channels: Channel=[]):
+    def __init__(self, channels: dmk.Channel=[]):
         super(ReslicerWorker, self).__init__()        
         self.channels = channels
         self.signals = ReslicerSignals()
@@ -571,6 +559,6 @@ class ReslicerWorker(QThread):
         top = []
         left = []
         for channel in self.channels:
-            top.append(damaker.processing._resliceTop(channel))
-            left.append(damaker.processing._resliceLeft(channel))
+            top.append(dmk.processing._resliceTop(channel))
+            left.append(dmk.processing._resliceLeft(channel))
         self.signals.finished.emit(top, left)

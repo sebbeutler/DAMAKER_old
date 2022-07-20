@@ -49,9 +49,9 @@ class Channel:
     
     def __str__(self):
         if self.px_sizes != None:
-            return f"'{self.name}' chn n°{self.id} dim:{self.shape} px:X=%.2f Y=%.2f Z=%.2f" % (self.px_sizes.X,self.px_sizes.Y,self.px_sizes.Z)
+            return f"'{self.name}' [C:{self.id}, size:{self.shape} px:(%.2f,%.2f,%.2f)" % (self.px_sizes.X,self.px_sizes.Y,self.px_sizes.Z)
         else:
-            return f"'{self.name}' chn n°{self.id} dim:{self.shape}"
+            return f"'{self.name}' [C:{self.id}, size:{self.shape}"
 
 class SingleChannel(Channel):
     pass

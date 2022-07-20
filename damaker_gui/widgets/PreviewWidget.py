@@ -216,10 +216,10 @@ class PreviewWidget(pg.ImageView):
     def updateTextInfo(self):
         vrange = self.view.viewRange()
         try:
-            zoom = int((vrange[0][0] - vrange[0][1]) / self.shape[2] * 100) + 100
+            zoom = "%.2f" % ((((vrange[0][0] - vrange[0][1]) / self.shape[2]) + ((vrange[1][0] - vrange[1][1]) / self.shape[1])) * -1 / 2)
         except:
-            zoom = "?"
-        self.textInfo.setText(f"Slide: {self.frameId+1}/{self.shape[0]} Zoom: {zoom}%")
+            zoom = ""
+        self.textInfo.setText(f"Slide: {self.frameId+1}/{self.shape[0]} Zoom: {zoom}")
         self.textInfo.adjustSize()
         
     

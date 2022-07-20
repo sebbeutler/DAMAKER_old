@@ -150,14 +150,14 @@ class Ui_MainWindow(object):
 "\n"
 "#frame_main {\n"
 "	\n"
-"	background-color: rgb(62, 62, 62);\n"
+"	background-color: rgb(72, 75, 75);\n"
 "\n"
-"	border-radius: 2px;\n"
-"	border: 1px solid rgb(32, 32, 32);\n"
+"	/* border-radius: 2px;\n"
+"	border: 1px solid rgb(35, 31, 32);*/\n"
 "}\n"
 "\n"
 "QFrame {\n"
-"	border: 0px solid rgb(32, 32, 32);\n"
+"	border: 0px solid rgb(35, 31, 32);\n"
 "}\n"
 "\n"
 "/* LINE EDIT */\n"
@@ -178,23 +178,23 @@ class Ui_MainWindow(object):
 "/* SCROLL BARS */\n"
 "QScrollBar:horizontal {\n"
 "    border: none;\n"
-"    background: rgb(62, 62, 62);\n"
+"    background: rgb(72, 75, 75);\n"
 "    height: 14px;\n"
 "}\n"
 "QScrollBar::handle:horizontal {\n"
-"    background: rgb(32, 32, 32);\n"
+"    background: rgb(35, 31, 32);\n"
 "    min-width: 20px;\n"
 "	border-radius: 1px\n"
 "}\n"
 " QScrollBar:vertical {\n"
 "	border: none;\n"
-"    background: rgb(62, 62, 62);\n"
+"    background: rgb(72, 75, 75);\n"
 "    width: 14px;\n"
 " }\n"
 " QScrollBar::handle:vertical {	\n"
-"	background: rgb(32, 32, 32);\n"
-"    min-height"
-                        ": 25px;\n"
+"	background: rgb(35, 31, 32);\n"
+"    min-h"
+                        "eight: 25px;\n"
 "	border-radius: 1px\n"
 " }\n"
 "\n"
@@ -231,18 +231,18 @@ class Ui_MainWindow(object):
 "\n"
 "/* CHECKBOX */\n"
 "QCheckBox::indicator {\n"
-"    border:1px solid rgb(32, 32, 32);\n"
+"    border:1px solid rgb(35, 31, 32);\n"
 "	width: 15px;\n"
 "	height: 15px;\n"
 "	border-radius: 10px;\n"
-"    background: rgb(32, 32, 32);\n"
+"    background: rgb(35, 31, 32);\n"
 "}\n"
-"QCheckBox::in"
-                        "dicator:hover {\n"
+"QCheckBo"
+                        "x::indicator:hover {\n"
 "    border: 1px solid rgb(58, 66, 81);\n"
 "}\n"
 "QCheckBox::indicator:checked {\n"
-"    background: 1px solid rgb(32, 32, 32);\n"
+"    background: 1px solid rgb(35, 31, 32);\n"
 "	background-image: url(:/16x16/icons/16x16/cil-check-alt.png);\n"
 "}\n"
 "\n"
@@ -276,9 +276,9 @@ class Ui_MainWindow(object):
 "QComboBox::drop-down {\n"
 "	subcontrol-origin: padding;\n"
 "	subcontrol-position: top right;\n"
-"	width: 25px; \n"
-""
-                        "	border-left-width: 3px;\n"
+"	width: 25px"
+                        "; \n"
+"	border-left-width: 3px;\n"
 "	border-left-color: rgba(39, 44, 54, 150);\n"
 "	border-left-style: solid;\n"
 "	border-top-right-radius: 1px;\n"
@@ -299,11 +299,11 @@ class Ui_MainWindow(object):
 "    border-radius: 4px;\n"
 "    height: 18px;\n"
 "	margin: 0px;\n"
-"	background-color: rgb(62, 62, 62);\n"
+"	background-color: rgb(72, 75, 75);\n"
 "}\n"
 "\n"
 "QSlider::handle:horizontal {\n"
-"    background-color: rgb(32, 32, 32);\n"
+"    background-color: rgb(35, 31, 32);\n"
 "    border: none;\n"
 "    height: 18px;\n"
 "    width: 18px;\n"
@@ -315,15 +315,15 @@ class Ui_MainWindow(object):
 "}\n"
 "\n"
 "QSlider::groove:vertical {\n"
-"    border-radius: 9px;"
-                        "\n"
+"    border-radiu"
+                        "s: 9px;\n"
 "    width: 18px;\n"
 "    margin: 0px;\n"
 "	background-color: rgb(52, 59, 72);\n"
 "}\n"
 "\n"
 "QSlider::handle:vertical {\n"
-"    background-color: rgb(32, 32, 32);\n"
+"    background-color: rgb(35, 31, 32);\n"
 "	border: none;\n"
 "    height: 18px;\n"
 "    width: 18px;\n"
@@ -336,22 +336,22 @@ class Ui_MainWindow(object):
 "\n"
 "/* PUSH BUTTON */\n"
 "QPushButton {\n"
-"	border: 1px solid rgb(32, 32, 32);\n"
+"	border: 1px solid rgb(35, 31, 32);\n"
 "	border-radius: 1px;	\n"
-"	background-color: rgb(62, 62, 62);\n"
+"	background-color: rgb(72, 75, 75);\n"
 "}\n"
 "QPushButton:hover {\n"
 "	background-color: rgb(118, 118, 118);\n"
 "	border: 1px solid rgb(61, 70, 86);\n"
 "}\n"
 "QPushButton:pressed {	\n"
-"	background-color: rgb(62, 62, 62);\n"
+"	background-color: rgb(72, 75, 75);\n"
 "	border: 1px solid rgb(43, 50, 61);\n"
 "}\n"
 "\n"
 "/* SPIN BOX */\n"
 "QSpinBox, QDoubleSpinBox {\n"
-"	background-color: rgb(32, 32, 32);\n"
+"	background-color: rgb(35, 31, 32);\n"
 "	\n"
 "}")
         self.frame_main.setFrameShape(QFrame.NoFrame)
@@ -373,7 +373,7 @@ class Ui_MainWindow(object):
         self.frame_top.setFrameShape(QFrame.NoFrame)
         self.frame_top.setFrameShadow(QFrame.Raised)
         self.frame_top_layout = QHBoxLayout(self.frame_top)
-        self.frame_top_layout.setSpacing(1)
+        self.frame_top_layout.setSpacing(0)
         self.frame_top_layout.setObjectName(u"frame_top_layout")
         self.frame_top_layout.setContentsMargins(0, 0, 0, 0)
         self.frame_pageSelect = QFrame(self.frame_top)
@@ -384,14 +384,18 @@ class Ui_MainWindow(object):
         sizePolicy1.setHeightForWidth(self.frame_pageSelect.sizePolicy().hasHeightForWidth())
         self.frame_pageSelect.setSizePolicy(sizePolicy1)
         self.frame_pageSelect.setMinimumSize(QSize(189, 0))
-        self.frame_pageSelect.setStyleSheet(u"QPushButton:checked {\n"
+        self.frame_pageSelect.setStyleSheet(u"QPushButton {\n"
+"	border-width: 0px;\n"
+"	background-color: rgb(35, 31, 32);\n"
+"}\n"
+"QPushButton:checked {\n"
 "	\n"
 "	background-color: rgb(106, 106, 106);\n"
 "}")
         self.layout_pageSelect = QHBoxLayout(self.frame_pageSelect)
-        self.layout_pageSelect.setSpacing(1)
+        self.layout_pageSelect.setSpacing(0)
         self.layout_pageSelect.setObjectName(u"layout_pageSelect")
-        self.layout_pageSelect.setContentsMargins(2, 0, 0, 0)
+        self.layout_pageSelect.setContentsMargins(0, 0, 0, 0)
         self.label = QLabel(self.frame_pageSelect)
         self.label.setObjectName(u"label")
         sizePolicy2 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -405,21 +409,29 @@ class Ui_MainWindow(object):
 
         self.btn_plan = QPushButton(self.frame_pageSelect)
         self.btn_plan.setObjectName(u"btn_plan")
+        sizePolicy3 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.btn_plan.sizePolicy().hasHeightForWidth())
+        self.btn_plan.setSizePolicy(sizePolicy3)
+        self.btn_plan.setStyleSheet(u"QPushButton {\n"
+"	border-width: 1px 0px 0px 0px;\n"
+"}")
         self.btn_plan.setCheckable(True)
 
         self.layout_pageSelect.addWidget(self.btn_plan)
 
         self.btn_visualize = QPushButton(self.frame_pageSelect)
         self.btn_visualize.setObjectName(u"btn_visualize")
+        sizePolicy3.setHeightForWidth(self.btn_visualize.sizePolicy().hasHeightForWidth())
+        self.btn_visualize.setSizePolicy(sizePolicy3)
+        self.btn_visualize.setStyleSheet(u"")
         self.btn_visualize.setCheckable(True)
 
         self.layout_pageSelect.addWidget(self.btn_visualize)
 
         self.btn_analyse = QPushButton(self.frame_pageSelect)
         self.btn_analyse.setObjectName(u"btn_analyse")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-        sizePolicy3.setHorizontalStretch(0)
-        sizePolicy3.setVerticalStretch(0)
         sizePolicy3.setHeightForWidth(self.btn_analyse.sizePolicy().hasHeightForWidth())
         self.btn_analyse.setSizePolicy(sizePolicy3)
         self.btn_analyse.setMinimumSize(QSize(0, 0))
@@ -466,8 +478,11 @@ class Ui_MainWindow(object):
 
         self.btn_maximize = QPushButton(self.frame_top)
         self.btn_maximize.setObjectName(u"btn_maximize")
-        sizePolicy3.setHeightForWidth(self.btn_maximize.sizePolicy().hasHeightForWidth())
-        self.btn_maximize.setSizePolicy(sizePolicy3)
+        sizePolicy4 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        sizePolicy4.setHorizontalStretch(0)
+        sizePolicy4.setVerticalStretch(0)
+        sizePolicy4.setHeightForWidth(self.btn_maximize.sizePolicy().hasHeightForWidth())
+        self.btn_maximize.setSizePolicy(sizePolicy4)
         self.btn_maximize.setMinimumSize(QSize(15, 20))
         self.btn_maximize.setMaximumSize(QSize(60, 60))
         self.btn_maximize.setFocusPolicy(Qt.NoFocus)
@@ -515,11 +530,11 @@ class Ui_MainWindow(object):
 
         self.frame_content = QFrame(self.frame_main)
         self.frame_content.setObjectName(u"frame_content")
-        sizePolicy4 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy4.setHorizontalStretch(2)
-        sizePolicy4.setVerticalStretch(0)
-        sizePolicy4.setHeightForWidth(self.frame_content.sizePolicy().hasHeightForWidth())
-        self.frame_content.setSizePolicy(sizePolicy4)
+        sizePolicy5 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy5.setHorizontalStretch(2)
+        sizePolicy5.setVerticalStretch(0)
+        sizePolicy5.setHeightForWidth(self.frame_content.sizePolicy().hasHeightForWidth())
+        self.frame_content.setSizePolicy(sizePolicy5)
         self.frame_content.setFrameShape(QFrame.NoFrame)
         self.frame_content.setFrameShadow(QFrame.Raised)
         self.frame_content_layout = QHBoxLayout(self.frame_content)
@@ -528,11 +543,11 @@ class Ui_MainWindow(object):
         self.frame_content_layout.setContentsMargins(0, 0, 0, 0)
         self.left_pannel = QFrame(self.frame_content)
         self.left_pannel.setObjectName(u"left_pannel")
-        sizePolicy5 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
-        sizePolicy5.setHorizontalStretch(0)
-        sizePolicy5.setVerticalStretch(0)
-        sizePolicy5.setHeightForWidth(self.left_pannel.sizePolicy().hasHeightForWidth())
-        self.left_pannel.setSizePolicy(sizePolicy5)
+        sizePolicy6 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
+        sizePolicy6.setHorizontalStretch(0)
+        sizePolicy6.setVerticalStretch(0)
+        sizePolicy6.setHeightForWidth(self.left_pannel.sizePolicy().hasHeightForWidth())
+        self.left_pannel.setSizePolicy(sizePolicy6)
         self.left_pannel.setMinimumSize(QSize(200, 0))
         self.left_pannel.setMaximumSize(QSize(200, 16777215))
         self.pannel_left_layout = QVBoxLayout(self.left_pannel)
@@ -572,7 +587,7 @@ class Ui_MainWindow(object):
         self.treeview_workspace = QTreeView(self.left_pannel)
         self.treeview_workspace.setObjectName(u"treeview_workspace")
         self.treeview_workspace.setAcceptDrops(True)
-        self.treeview_workspace.setStyleSheet(u"border-color: rgb(32, 32, 32);")
+        self.treeview_workspace.setStyleSheet(u"")
         self.treeview_workspace.setDragEnabled(True)
         self.treeview_workspace.setDragDropMode(QAbstractItemView.DragOnly)
         self.treeview_workspace.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
@@ -597,11 +612,11 @@ class Ui_MainWindow(object):
         self.layout_page_plan.setContentsMargins(0, 0, 0, 0)
         self.pipeline_settings = QFrame(self.page_plan)
         self.pipeline_settings.setObjectName(u"pipeline_settings")
-        sizePolicy6 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy6.setHorizontalStretch(0)
-        sizePolicy6.setVerticalStretch(0)
-        sizePolicy6.setHeightForWidth(self.pipeline_settings.sizePolicy().hasHeightForWidth())
-        self.pipeline_settings.setSizePolicy(sizePolicy6)
+        sizePolicy7 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy7.setHorizontalStretch(0)
+        sizePolicy7.setVerticalStretch(0)
+        sizePolicy7.setHeightForWidth(self.pipeline_settings.sizePolicy().hasHeightForWidth())
+        self.pipeline_settings.setSizePolicy(sizePolicy7)
         self.pipeline_settings.setMinimumSize(QSize(0, 200))
         self.pipeline_settings.setMaximumSize(QSize(16777215, 230))
         self.pipeline_settings.setAcceptDrops(False)
@@ -635,11 +650,11 @@ class Ui_MainWindow(object):
 
         self.previewPipelineSlider = QSlider(self.previewPipeline)
         self.previewPipelineSlider.setObjectName(u"previewPipelineSlider")
-        sizePolicy7 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        sizePolicy7.setHorizontalStretch(0)
-        sizePolicy7.setVerticalStretch(0)
-        sizePolicy7.setHeightForWidth(self.previewPipelineSlider.sizePolicy().hasHeightForWidth())
-        self.previewPipelineSlider.setSizePolicy(sizePolicy7)
+        sizePolicy8 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        sizePolicy8.setHorizontalStretch(0)
+        sizePolicy8.setVerticalStretch(0)
+        sizePolicy8.setHeightForWidth(self.previewPipelineSlider.sizePolicy().hasHeightForWidth())
+        self.previewPipelineSlider.setSizePolicy(sizePolicy8)
         self.previewPipelineSlider.setStyleSheet(u"padding: 0px;")
         self.previewPipelineSlider.setOrientation(Qt.Horizontal)
 
@@ -650,11 +665,11 @@ class Ui_MainWindow(object):
 
         self.functions_frame = QFrame(self.pipeline_settings)
         self.functions_frame.setObjectName(u"functions_frame")
-        sizePolicy8 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
-        sizePolicy8.setHorizontalStretch(0)
-        sizePolicy8.setVerticalStretch(0)
-        sizePolicy8.setHeightForWidth(self.functions_frame.sizePolicy().hasHeightForWidth())
-        self.functions_frame.setSizePolicy(sizePolicy8)
+        sizePolicy9 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        sizePolicy9.setHorizontalStretch(0)
+        sizePolicy9.setVerticalStretch(0)
+        sizePolicy9.setHeightForWidth(self.functions_frame.sizePolicy().hasHeightForWidth())
+        self.functions_frame.setSizePolicy(sizePolicy9)
         self.functions_frame.setMinimumSize(QSize(250, 0))
         self.functions_frame.setStyleSheet(u"#functions_frame {\n"
 "	border-width: 1px 0px 1px 0px;\n"
@@ -729,11 +744,11 @@ class Ui_MainWindow(object):
 
         self.btn_run_pipeline = QPushButton(self.operation_list_btns)
         self.btn_run_pipeline.setObjectName(u"btn_run_pipeline")
-        sizePolicy9 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.MinimumExpanding)
-        sizePolicy9.setHorizontalStretch(0)
-        sizePolicy9.setVerticalStretch(0)
-        sizePolicy9.setHeightForWidth(self.btn_run_pipeline.sizePolicy().hasHeightForWidth())
-        self.btn_run_pipeline.setSizePolicy(sizePolicy9)
+        sizePolicy10 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.MinimumExpanding)
+        sizePolicy10.setHorizontalStretch(0)
+        sizePolicy10.setVerticalStretch(0)
+        sizePolicy10.setHeightForWidth(self.btn_run_pipeline.sizePolicy().hasHeightForWidth())
+        self.btn_run_pipeline.setSizePolicy(sizePolicy10)
         self.btn_run_pipeline.setStyleSheet(u"border: 1px solid rgb(125, 125, 125);")
         icon3 = QIcon()
         icon3.addFile(u":/16x16/icons/16x16/cil-media-play.png", QSize(), QIcon.Normal, QIcon.Off)
@@ -744,8 +759,8 @@ class Ui_MainWindow(object):
 
         self.btn_save_pipeline = QPushButton(self.operation_list_btns)
         self.btn_save_pipeline.setObjectName(u"btn_save_pipeline")
-        sizePolicy9.setHeightForWidth(self.btn_save_pipeline.sizePolicy().hasHeightForWidth())
-        self.btn_save_pipeline.setSizePolicy(sizePolicy9)
+        sizePolicy10.setHeightForWidth(self.btn_save_pipeline.sizePolicy().hasHeightForWidth())
+        self.btn_save_pipeline.setSizePolicy(sizePolicy10)
         self.btn_save_pipeline.setStyleSheet(u"border: 1px solid rgb(125, 125, 125);")
         icon4 = QIcon()
         icon4.addFile(u":/16x16/icons/16x16/cil-save.png", QSize(), QIcon.Normal, QIcon.Off)
@@ -755,8 +770,8 @@ class Ui_MainWindow(object):
 
         self.btn_load_pipeline = QPushButton(self.operation_list_btns)
         self.btn_load_pipeline.setObjectName(u"btn_load_pipeline")
-        sizePolicy9.setHeightForWidth(self.btn_load_pipeline.sizePolicy().hasHeightForWidth())
-        self.btn_load_pipeline.setSizePolicy(sizePolicy9)
+        sizePolicy10.setHeightForWidth(self.btn_load_pipeline.sizePolicy().hasHeightForWidth())
+        self.btn_load_pipeline.setSizePolicy(sizePolicy10)
         self.btn_load_pipeline.setStyleSheet(u"border: 1px solid rgb(125, 125, 125);\n"
 "padding: 3px;")
 
@@ -764,8 +779,8 @@ class Ui_MainWindow(object):
 
         self.btn_remove_operation = QPushButton(self.operation_list_btns)
         self.btn_remove_operation.setObjectName(u"btn_remove_operation")
-        sizePolicy9.setHeightForWidth(self.btn_remove_operation.sizePolicy().hasHeightForWidth())
-        self.btn_remove_operation.setSizePolicy(sizePolicy9)
+        sizePolicy10.setHeightForWidth(self.btn_remove_operation.sizePolicy().hasHeightForWidth())
+        self.btn_remove_operation.setSizePolicy(sizePolicy10)
         self.btn_remove_operation.setStyleSheet(u"border: 1px solid rgb(125, 125, 125);\n"
 "padding: 3px;")
 
@@ -779,7 +794,7 @@ class Ui_MainWindow(object):
         self.edit_pipeline_output.setMaximumSize(QSize(16777215, 150))
         self.edit_pipeline_output.setStyleSheet(u"QTextEdit {\n"
 "    color: rgb(193, 193, 168);\n"
-"	background-color: rgb(32, 32, 32);\n"
+"	background-color: rgb(35, 31, 32);\n"
 "	border-width: 0px 1px 0px 1px;\n"
 "}")
         self.edit_pipeline_output.setUndoRedoEnabled(False)
@@ -797,7 +812,7 @@ class Ui_MainWindow(object):
         self.layout_page_visualize = QHBoxLayout(self.page_visualize)
         self.layout_page_visualize.setSpacing(0)
         self.layout_page_visualize.setObjectName(u"layout_page_visualize")
-        self.layout_page_visualize.setContentsMargins(0, 1, 1, 0)
+        self.layout_page_visualize.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_7 = QVBoxLayout()
         self.verticalLayout_7.setSpacing(0)
         self.verticalLayout_7.setObjectName(u"verticalLayout_7")
@@ -811,7 +826,7 @@ class Ui_MainWindow(object):
         self.tabWidget_2.setObjectName(u"tabWidget_2")
         self.tabWidget_2.setLayoutDirection(Qt.RightToLeft)
         self.tabWidget_2.setStyleSheet(u"QTabWidget {\n"
-"	background-color: rgb(62, 62, 62);\n"
+"	background-color: rgb(72, 75, 75);\n"
 "	padding: 0px;\n"
 "	margin: 0px;\n"
 "    border: 1px solid black;\n"
@@ -819,14 +834,14 @@ class Ui_MainWindow(object):
 "QTabWidget::pane { border: 0; }\n"
 "\n"
 "QTabBar {\n"
-"  background-color: rgb(62, 62, 62);\n"
+"  background-color: rgb(72, 75, 75);\n"
 "	padding: 0px;\n"
 "	margin: 0px;\n"
 "}\n"
 "\n"
 "QTabWidget::tab-bar {\n"
 "   border: 1px solid black;\n"
-"  background-color: rgb(62, 62, 62);\n"
+"  background-color: rgb(72, 75, 75);\n"
 "}\n"
 "\n"
 "QTabBar::pane {\n"
@@ -835,7 +850,7 @@ class Ui_MainWindow(object):
 "\n"
 "QTabBar::tab {\n"
 "  color: lightgray;\n"
-"  background-color: rgb(62, 62, 62);\n"
+"  background-color: rgb(72, 75, 75);\n"
 "  border: 0px solid black; \n"
 "padding: 4px;\n"
 "} \n"
@@ -858,15 +873,15 @@ class Ui_MainWindow(object):
         self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.frame_mainPreview = QFrame(self.tab_2D)
         self.frame_mainPreview.setObjectName(u"frame_mainPreview")
-        sizePolicy10 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-        sizePolicy10.setHorizontalStretch(0)
-        sizePolicy10.setVerticalStretch(0)
-        sizePolicy10.setHeightForWidth(self.frame_mainPreview.sizePolicy().hasHeightForWidth())
-        self.frame_mainPreview.setSizePolicy(sizePolicy10)
+        sizePolicy11 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy11.setHorizontalStretch(0)
+        sizePolicy11.setVerticalStretch(0)
+        sizePolicy11.setHeightForWidth(self.frame_mainPreview.sizePolicy().hasHeightForWidth())
+        self.frame_mainPreview.setSizePolicy(sizePolicy11)
         self.frame_mainPreview.setMinimumSize(QSize(0, 400))
         self.frame_mainPreview.setAcceptDrops(True)
         self.frame_mainPreview.setStyleSheet(u"QFrame#frame_mainPreview {\n"
-"background-color: rgb(32, 32, 32);\n"
+"background-color: rgb(35, 31, 32);\n"
 "border: 1px solid rgb(132, 132, 132);\n"
 "}")
         self.layout_mainPreview = QVBoxLayout(self.frame_mainPreview)
@@ -880,13 +895,13 @@ class Ui_MainWindow(object):
         self.tab_3D = QWidget()
         self.tab_3D.setObjectName(u"tab_3D")
         self.tab_3D.setStyleSheet(u"QFrame#frame_mainPreview {\n"
-"background-color: rgb(32, 32, 32);\n"
+"background-color: rgb(35, 31, 32);\n"
 "border: 1px solid rgb(132, 132, 132);\n"
 "}")
-        self.verticalLayout_8 = QVBoxLayout(self.tab_3D)
-        self.verticalLayout_8.setSpacing(0)
-        self.verticalLayout_8.setObjectName(u"verticalLayout_8")
-        self.verticalLayout_8.setContentsMargins(0, 0, 0, 0)
+        self.layout_tap_preview3D = QVBoxLayout(self.tab_3D)
+        self.layout_tap_preview3D.setSpacing(0)
+        self.layout_tap_preview3D.setObjectName(u"layout_tap_preview3D")
+        self.layout_tap_preview3D.setContentsMargins(0, 0, 0, 0)
         self.tabWidget_2.addTab(self.tab_3D, "")
 
         self.verticalLayout_3.addWidget(self.tabWidget_2)
@@ -992,7 +1007,7 @@ class Ui_MainWindow(object):
         self.visualize_leftpanel.setObjectName(u"visualize_leftpanel")
         self.visualize_leftpanel.setMaximumSize(QSize(350, 16777215))
         self.visualize_leftpanel.setStyleSheet(u"QTabWidget {\n"
-"	background-color: rgb(62, 62, 62);\n"
+"	background-color: rgb(72, 75, 75);\n"
 "	padding: 0px;\n"
 "	margin: 0px;\n"
 "    border: 1px solid black;\n"
@@ -1000,14 +1015,14 @@ class Ui_MainWindow(object):
 "QTabWidget::pane { border: 0; }\n"
 "\n"
 "QTabBar {\n"
-"  background-color: rgb(62, 62, 62);\n"
+"  background-color: rgb(72, 75, 75);\n"
 "	padding: 0px;\n"
 "	margin: 0px;\n"
 "}\n"
 "\n"
 "QTabWidget::tab-bar {\n"
 "   border: 1px solid black;\n"
-"  background-color: rgb(62, 62, 62);\n"
+"  background-color: rgb(72, 75, 75);\n"
 "}\n"
 "\n"
 "QTabBar::pane {\n"
@@ -1016,7 +1031,7 @@ class Ui_MainWindow(object):
 "\n"
 "QTabBar::tab {\n"
 "  color: lightgray;\n"
-"  background-color: rgb(62, 62, 62);\n"
+"  background-color: rgb(72, 75, 75);\n"
 "  border: 0px solid black; \n"
 "padding: 4px;\n"
 "} \n"
@@ -1046,14 +1061,14 @@ class Ui_MainWindow(object):
         self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.topPreview = QFrame(self.visualize_tab_orthogonalPreviews)
         self.topPreview.setObjectName(u"topPreview")
-        sizePolicy11 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
-        sizePolicy11.setHorizontalStretch(0)
-        sizePolicy11.setVerticalStretch(0)
-        sizePolicy11.setHeightForWidth(self.topPreview.sizePolicy().hasHeightForWidth())
-        self.topPreview.setSizePolicy(sizePolicy11)
+        sizePolicy12 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
+        sizePolicy12.setHorizontalStretch(0)
+        sizePolicy12.setVerticalStretch(0)
+        sizePolicy12.setHeightForWidth(self.topPreview.sizePolicy().hasHeightForWidth())
+        self.topPreview.setSizePolicy(sizePolicy12)
         self.topPreview.setMinimumSize(QSize(200, 0))
         self.topPreview.setStyleSheet(u"QFrame#topPreview {\n"
-"background-color: rgb(32, 32, 32);\n"
+"background-color: rgb(35, 31, 32);\n"
 "border: 1px solid rgb(132, 132, 132);\n"
 "}")
         self.layout_topPreview = QVBoxLayout(self.topPreview)
@@ -1065,11 +1080,11 @@ class Ui_MainWindow(object):
 
         self.leftPreview = QFrame(self.visualize_tab_orthogonalPreviews)
         self.leftPreview.setObjectName(u"leftPreview")
-        sizePolicy11.setHeightForWidth(self.leftPreview.sizePolicy().hasHeightForWidth())
-        self.leftPreview.setSizePolicy(sizePolicy11)
+        sizePolicy12.setHeightForWidth(self.leftPreview.sizePolicy().hasHeightForWidth())
+        self.leftPreview.setSizePolicy(sizePolicy12)
         self.leftPreview.setMinimumSize(QSize(200, 0))
         self.leftPreview.setStyleSheet(u"QFrame#leftPreview {\n"
-"background-color: rgb(32, 32, 32);\n"
+"background-color: rgb(35, 31, 32);\n"
 "border: 1px solid rgb(132, 132, 132);\n"
 "border-width:  0px 1px 1px 1px ;\n"
 "}")
@@ -1099,11 +1114,11 @@ class Ui_MainWindow(object):
 
         self.tabWidget = QTabWidget(self.visualize_leftpanel)
         self.tabWidget.setObjectName(u"tabWidget")
-        sizePolicy12 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        sizePolicy12.setHorizontalStretch(0)
-        sizePolicy12.setVerticalStretch(0)
-        sizePolicy12.setHeightForWidth(self.tabWidget.sizePolicy().hasHeightForWidth())
-        self.tabWidget.setSizePolicy(sizePolicy12)
+        sizePolicy13 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        sizePolicy13.setHorizontalStretch(0)
+        sizePolicy13.setVerticalStretch(0)
+        sizePolicy13.setHeightForWidth(self.tabWidget.sizePolicy().hasHeightForWidth())
+        self.tabWidget.setSizePolicy(sizePolicy13)
         self.tabWidget.setMinimumSize(QSize(0, 200))
         self.tabWidget.setBaseSize(QSize(0, 330))
         self.tabWidget.setStyleSheet(u"")
@@ -1144,7 +1159,7 @@ class Ui_MainWindow(object):
 "\n"
 "\n"
 "QSlider::handle {\n"
-"    background-color: rgb(32, 32, 32);\n"
+"    background-color: rgb(35, 31, 32);\n"
 "    border: none;\n"
 "    height: 5px;\n"
 "    width: 20px;\n"
@@ -1157,11 +1172,11 @@ class Ui_MainWindow(object):
         self.tab_brightnesscontrast_layout.setContentsMargins(20, 0, 20, 0)
         self.bc_frame_minmax = QFrame(self.tab_brightnesscontrast)
         self.bc_frame_minmax.setObjectName(u"bc_frame_minmax")
-        sizePolicy13 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        sizePolicy13.setHorizontalStretch(0)
-        sizePolicy13.setVerticalStretch(0)
-        sizePolicy13.setHeightForWidth(self.bc_frame_minmax.sizePolicy().hasHeightForWidth())
-        self.bc_frame_minmax.setSizePolicy(sizePolicy13)
+        sizePolicy14 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        sizePolicy14.setHorizontalStretch(0)
+        sizePolicy14.setVerticalStretch(0)
+        sizePolicy14.setHeightForWidth(self.bc_frame_minmax.sizePolicy().hasHeightForWidth())
+        self.bc_frame_minmax.setSizePolicy(sizePolicy14)
         self.horizontalLayout_5 = QHBoxLayout(self.bc_frame_minmax)
         self.horizontalLayout_5.setSpacing(0)
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
@@ -1242,8 +1257,8 @@ class Ui_MainWindow(object):
 
         self.horizontalFrame = QFrame(self.tab_brightnesscontrast)
         self.horizontalFrame.setObjectName(u"horizontalFrame")
-        sizePolicy13.setHeightForWidth(self.horizontalFrame.sizePolicy().hasHeightForWidth())
-        self.horizontalFrame.setSizePolicy(sizePolicy13)
+        sizePolicy14.setHeightForWidth(self.horizontalFrame.sizePolicy().hasHeightForWidth())
+        self.horizontalFrame.setSizePolicy(sizePolicy14)
         self.horizontalLayout_3 = QHBoxLayout(self.horizontalFrame)
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
         self.contrast_reset = QPushButton(self.horizontalFrame)
@@ -1262,7 +1277,7 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.tab_brightnesscontrast, "")
         self.tab_LUT = QWidget()
         self.tab_LUT.setObjectName(u"tab_LUT")
-        self.tab_LUT.setStyleSheet(u"background-color: rgb(62, 62, 62);\n"
+        self.tab_LUT.setStyleSheet(u"background-color: rgb(72, 75, 75);\n"
 "alternate-background-color: rgb(0, 0, 0);")
         self.layout_tab_LUT = QFormLayout(self.tab_LUT)
         self.layout_tab_LUT.setObjectName(u"layout_tab_LUT")
@@ -1348,7 +1363,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
 
         self.content_tabs.setCurrentIndex(1)
-        self.tabWidget_2.setCurrentIndex(0)
+        self.tabWidget_2.setCurrentIndex(1)
         self.visualize_altPreviewsTabs.setCurrentIndex(0)
         self.tabWidget.setCurrentIndex(0)
 
