@@ -111,8 +111,8 @@ class VisualizePage(Page):
         self.updateBtnChannels()
         self.resetTabLUT()
         
-        # self.loadChannels("C:/Users/PC/source/DAMAKER/resources/prev_pipeline/out-reg/E1_C2.tif")
-        self.loadChannels("C:/Users/Seb/Documents/docs/uni/stage/DAMAKER/resources/test/Threshold3.4UserAveragedC1E1.tif")
+        self.loadChannels("C:/Users/PC/source/DAMAKER/resources/prev_pipeline/out-reg/E1_C2.tif")
+        # self.loadChannels("C:/Users/Seb/Documents/docs/uni/stage/DAMAKER/resources/test/Threshold3.4UserAveragedC1E1.tif")
     
     class LUTComboBox(QComboBox):
         def __init__(self, channel, _callback):

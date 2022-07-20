@@ -543,7 +543,7 @@ def resampleChannel(input: Channel, sizeX: int, sizeY: int, sizeZ: int) -> Chann
     flt = sitk.ResampleImageFilter()
     flt.SetInterpolator(sitk.sitkLinear)
     # flt.SetOutputSpacing((px_sizeX, px_sizeY, px_sizeZ))
-    flt.SetSize((sizeX, sizeY, sizeZ))
+    flt.SetSize((int(sizeX), int(sizeY), int(sizeZ)))
     
     input.data = sitk.GetArrayFromImage(flt.Execute(arr))
     # input.px_sizes = PhysicalPixelSizes(px_sizeZ, px_sizeY, px_sizeX)

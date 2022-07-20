@@ -1,1 +1,0 @@
-pyside2-rcc ../resources/files.qrc -o ../resources/files_rc.py

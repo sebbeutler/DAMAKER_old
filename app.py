@@ -116,7 +116,7 @@ class AppWindow(QMainWindow):
     
     def selectWorkspace(self, event):
         path = QFileDialog.getExistingDirectory(None, 'Open folder', self.ui.fileSystemModel.rootPath())
-        root = self.ui.fileSystemModel.setRootP&ath(path)
+        root = self.ui.fileSystemModel.setRootPath(path)
         self.ui.treeview_workspace.setRootIndex(root)
     
     def setupJavaPath(self, path: str):
@@ -248,8 +248,8 @@ if __name__ == '__main__':
     print("✔")
     
     print("Loading Window -> ", end='')
-    # window = AppWindow(java_path="C:/Program Files/Java/jdk-18.0.1.1")   
-    window = AppWindow(java_path="C:/Program Files/Java/jdk-11.0.13")   
+    window = AppWindow(java_path="C:/Program Files/Java/jdk-18.0.1.1")   
+    # window = AppWindow(java_path="C:/Program Files/Java/jdk-11.0.13")   
     # window = AppWindowTest(java_path="C:/Program Files/Java/jdk-11.0.13")   
     print("✔")
      
