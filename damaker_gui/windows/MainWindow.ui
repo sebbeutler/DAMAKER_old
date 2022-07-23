@@ -919,7 +919,7 @@ QPushButton:checked {
                 <string/>
                </property>
                <property name="pixmap">
-                <pixmap resource="../resources/files.qrc">:/20x20/icons/20x20/logo_dmkr.png</pixmap>
+                <pixmap>:/20x20/icons/20x20/logo_dmkr.png</pixmap>
                </property>
               </widget>
              </item>
@@ -1781,7 +1781,7 @@ p, li { white-space: pre-wrap; }
                     <number>0</number>
                    </property>
                    <item>
-                    <widget class="QTabWidget" name="tabWidget_2">
+                    <widget class="QTabWidget" name="tab_centralPreview">
                      <property name="layoutDirection">
                       <enum>Qt::RightToLeft</enum>
                      </property>
@@ -1832,7 +1832,7 @@ QTabBar::tab:selected {
                       <enum>QTabWidget::Rounded</enum>
                      </property>
                      <property name="currentIndex">
-                      <number>1</number>
+                      <number>0</number>
                      </property>
                      <widget class="QWidget" name="tab_2D">
                       <attribute name="title">
@@ -2325,7 +2325,7 @@ border-width:  0px 1px 1px 1px ;
                     <string notr="true"/>
                    </property>
                    <property name="currentIndex">
-                    <number>0</number>
+                    <number>1</number>
                    </property>
                    <widget class="QWidget" name="tab_views">
                     <attribute name="title">

@@ -55,4 +55,8 @@ class Preview3DWidget(GLViewWidget):
         
         print("✔")
     
+    def setChannels(self, channels):        
+        self.clear()
+        for channel in channels:
+            self.addChannel(channel)
     

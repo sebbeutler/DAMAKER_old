@@ -58,6 +58,8 @@ class VisualizePage(Page):
         self.ui.layout_topPreview.addWidget(self.previewTop)
         self.ui.layout_leftPreview.addWidget(self.previewLeft)
         
+        # self.ui.tab_centralPreview.currentChanged.connect(lambda id: self.preview3D.setChannels if id == 1)
+        
         self.previewMain.enableCross(True)
         self.previewMain.signals.channelsChanged.connect(lambda: self.updateBtnChannels())
         self.previewMain.signals.channelsChanged.connect(lambda: self.resetTabLUT()())
@@ -76,22 +78,7 @@ class VisualizePage(Page):
         self.ui.visualize_functionListLayout.addWidget(self.functionParameters)
         
         self.ui.visualize_btn_addChannel.clicked.connect(self.addFile)
-        
-        self.figure = Figure(figsize=(0.5, 0.5))
-        self.brightnessPlot = FigureCanvasQTAgg(self.figure)
-        self.axes = self.figure.add_subplot(111)
-        self.axes.plot([1, 2,3], [1, 2 ,3])
-        # self.brightnessPlot.getFigure().delaxes(self.subplot)
-        self.ui.tab_brightnesscontrast_layout.insertWidget(0, self.brightnessPlot)
-        
-        self.ui.slider_brightness.valueChanged.connect(self.updateBrightnessContrast)
-        self.ui.slider_contrast.valueChanged.connect(self.updateBrightnessContrast)
-        self.ui.slider_bc_min.valueChanged.connect(self.updateBrightnessContrastMinMax)
-        self.ui.slider_bc_max.valueChanged.connect(self.updateBrightnessContrastMinMax)
-        
-        self.ui.contrast_apply.clicked.connect(self.applyBrightnessContrast)
-        self.ui.contrast_reset.clicked.connect(self.resetBrightnessContrast)
-        
+    
         self.previewMain.slider.sliderReleased.connect(self.updatePxInt)
         
         self.previewMain.mouseMoved.connect(self.moveCross)
@@ -111,8 +98,8 @@ class VisualizePage(Page):
         self.updateBtnChannels()
         self.resetTabLUT()
         
-        self.loadChannels("C:/Users/PC/source/DAMAKER/resources/prev_pipeline/out-reg/E1_C2.tif")
-        # self.loadChannels("C:/Users/Seb/Documents/docs/uni/stage/DAMAKER/resources/test/Threshold3.4UserAveragedC1E1.tif")
+        # self.loadChannels("C:/Users/PC/source/DAMAKER/resources/prev_pipeline/out-reg/E1_C2.tif")
+        self.loadChannels("C:/Users/Seb/Documents/docs/uni/stage/DAMAKER/resources/test/Threshold3.4UserAveragedC1E1.tif")
     
     class LUTComboBox(QComboBox):
         def __init__(self, channel, _callback):
@@ -304,10 +291,6 @@ class VisualizePage(Page):
         self.resetTabLUT()
         
         self.viewTabs[self.currentViewName].reset(self.currentView)
-        
-        self.preview3D.clear()
-        for channel in self.previewMain.channels:
-            self.preview3D.addChannel(channel)
     
     def resetOrthoView(self, top, left):
         self.previewTop.clear()
@@ -345,9 +328,10 @@ class VisualizePage(Page):
         for chn, img in self.allChannelImage():
             if chn.id == id:
                 if btn.isChecked():
-                    img.show()                
+                    img.show()             
                 else:
                     img.hide()
+        #!TODO toggle 3D volume
         self.updateFrames()
     
     def removeChannel(self, btn: QPushButton, id):
