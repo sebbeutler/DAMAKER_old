@@ -9,3 +9,6 @@ from .OperationInputWidget import *
 from .Preview3DWidget import *
 from .PreviewWidget import *
 from .RecordFunctionsWidget import *
+from .ContentFrame import *
+from .WorkspaceWidget import *
+from .ConsoleWidget import *

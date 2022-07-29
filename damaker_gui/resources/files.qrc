@@ -250,6 +250,9 @@
     <file>icons/16x16/cil-zoom-in.png</file>
     <file>icons/16x16/cil-zoom-out.png</file>
   </qresource>
+  <qresource prefix="styles">
+    <file>styles/dark.qss</file>
+  </qresource>
   <qresource prefix="24x24">
     <file>icons/24x24/cil-check-alt.png</file>
     <file>icons/24x24/logo_dmkr.png</file>

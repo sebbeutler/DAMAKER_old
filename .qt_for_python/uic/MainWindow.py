@@ -18,7 +18,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1091, 855)
+        MainWindow.resize(1113, 719)
         MainWindow.setMinimumSize(QSize(500, 200))
         palette = QPalette()
         brush = QBrush(QColor(255, 255, 255, 255))
@@ -822,10 +822,10 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.setSpacing(0)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.tabWidget_2 = QTabWidget(self.visualize_preview_verticalframe)
-        self.tabWidget_2.setObjectName(u"tabWidget_2")
-        self.tabWidget_2.setLayoutDirection(Qt.RightToLeft)
-        self.tabWidget_2.setStyleSheet(u"QTabWidget {\n"
+        self.tab_centralPreview = QTabWidget(self.visualize_preview_verticalframe)
+        self.tab_centralPreview.setObjectName(u"tab_centralPreview")
+        self.tab_centralPreview.setLayoutDirection(Qt.RightToLeft)
+        self.tab_centralPreview.setStyleSheet(u"QTabWidget {\n"
 "	background-color: rgb(72, 75, 75);\n"
 "	padding: 0px;\n"
 "	margin: 0px;\n"
@@ -863,8 +863,8 @@ class Ui_MainWindow(object):
 "  background-color: rgb(42, 42, 42);\n"
 "  margin-bottom: -1px; \n"
 "}")
-        self.tabWidget_2.setTabPosition(QTabWidget.North)
-        self.tabWidget_2.setTabShape(QTabWidget.Rounded)
+        self.tab_centralPreview.setTabPosition(QTabWidget.North)
+        self.tab_centralPreview.setTabShape(QTabWidget.Rounded)
         self.tab_2D = QWidget()
         self.tab_2D.setObjectName(u"tab_2D")
         self.verticalLayout_5 = QVBoxLayout(self.tab_2D)
@@ -891,7 +891,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_5.addWidget(self.frame_mainPreview)
 
-        self.tabWidget_2.addTab(self.tab_2D, "")
+        self.tab_centralPreview.addTab(self.tab_2D, "")
         self.tab_3D = QWidget()
         self.tab_3D.setObjectName(u"tab_3D")
         self.tab_3D.setStyleSheet(u"QFrame#frame_mainPreview {\n"
@@ -902,9 +902,9 @@ class Ui_MainWindow(object):
         self.layout_tap_preview3D.setSpacing(0)
         self.layout_tap_preview3D.setObjectName(u"layout_tap_preview3D")
         self.layout_tap_preview3D.setContentsMargins(0, 0, 0, 0)
-        self.tabWidget_2.addTab(self.tab_3D, "")
+        self.tab_centralPreview.addTab(self.tab_3D, "")
 
-        self.verticalLayout_3.addWidget(self.tabWidget_2)
+        self.verticalLayout_3.addWidget(self.tab_centralPreview)
 
         self.slider_frame = QSlider(self.visualize_preview_verticalframe)
         self.slider_frame.setObjectName(u"slider_frame")
@@ -1362,10 +1362,10 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.content_tabs.setCurrentIndex(1)
-        self.tabWidget_2.setCurrentIndex(1)
+        self.content_tabs.setCurrentIndex(0)
+        self.tab_centralPreview.setCurrentIndex(0)
         self.visualize_altPreviewsTabs.setCurrentIndex(0)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -1405,8 +1405,8 @@ class Ui_MainWindow(object):
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;\" bgcolor=\"#202020\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#202020;\"><br /></p></body></html>", None))
-        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_2D), QCoreApplication.translate("MainWindow", u"2D", None))
-        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_3D), QCoreApplication.translate("MainWindow", u"3D", None))
+        self.tab_centralPreview.setTabText(self.tab_centralPreview.indexOf(self.tab_2D), QCoreApplication.translate("MainWindow", u"2D", None))
+        self.tab_centralPreview.setTabText(self.tab_centralPreview.indexOf(self.tab_3D), QCoreApplication.translate("MainWindow", u"3D", None))
         self.visualize_btn_addChannel.setText("")
         self.visualize_altPreviewsTabs.setTabText(self.visualize_altPreviewsTabs.indexOf(self.visualize_tab_orthogonalPreviews), QCoreApplication.translate("MainWindow", u"Orthogonal View", None))
         self.visualize_altPreviewsTabs.setTabText(self.visualize_altPreviewsTabs.indexOf(self.visualize_tab_annexes), QCoreApplication.translate("MainWindow", u"Annexes", None))

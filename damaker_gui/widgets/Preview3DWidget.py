@@ -13,7 +13,8 @@ from damaker.Channel import Channel
 import damaker.processing
 
 class Preview3DWidget(GLViewWidget):
-    def __init__(self, parent=None):
+    name: str = "3D View"
+    def __init__(self, parent=None, channels=None):
         super().__init__(parent)
                 
         g = GLGridItem()
@@ -21,7 +22,10 @@ class Preview3DWidget(GLViewWidget):
         self.addItem(g)
         
         self.setCameraParams(rotation=QQuaternion(QVector4D(1., 1., 0., 0.)))        
-        self.setCameraPosition(distance=1000)        
+        self.setCameraPosition(distance=1000)   
+        
+        if channels != None:
+            self.setChannels(channels)     
     
     def addChannel(self, chn: Channel):
         print("Converting channels into 3D view: ", end='')

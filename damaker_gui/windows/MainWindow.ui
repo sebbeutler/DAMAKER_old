@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1091</width>
-    <height>855</height>
+    <width>1113</width>
+    <height>719</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -919,7 +919,7 @@ QPushButton:checked {
                 <string/>
                </property>
                <property name="pixmap">
-                <pixmap>:/20x20/icons/20x20/logo_dmkr.png</pixmap>
+                <pixmap resource="../resources/files.qrc">:/20x20/icons/20x20/logo_dmkr.png</pixmap>
                </property>
               </widget>
              </item>
@@ -1300,7 +1300,7 @@ border-color: #202020;</string>
              <string notr="true"/>
             </property>
             <property name="currentIndex">
-             <number>1</number>
+             <number>0</number>
             </property>
             <widget class="QWidget" name="page_plan">
              <property name="styleSheet">

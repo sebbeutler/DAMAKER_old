@@ -1363,7 +1363,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
 
         self.content_tabs.setCurrentIndex(1)
-        self.tab_centralPreview.setCurrentIndex(1)
+        self.tab_centralPreview.setCurrentIndex(0)
         self.visualize_altPreviewsTabs.setCurrentIndex(0)
         self.tabWidget.setCurrentIndex(1)
 

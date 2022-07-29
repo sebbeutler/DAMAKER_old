@@ -8,8 +8,18 @@ import pyqtgraph as pg
 import numpy as np
 import qimage2ndarray
 
+import gc
+
 from damaker.Channel import Channel
 from damaker.utils import loadChannelsFromFile
+from damaker_gui.widgets.Preview3DWidget import Preview3DWidget
+
+def clearLayout(layout):
+    for i in reversed(range(layout.count())): 
+        widgetToRemove = layout.itemAt(i).widget()
+        layout.removeWidget(widgetToRemove)
+        if widgetToRemove != None:
+            widgetToRemove.setParent(None)
 
 lut_green = np.zeros((256, 3), np.uint8)
 lut_green[:, 1] = np.arange(256)
@@ -47,11 +57,80 @@ _luts = [pg.ColorMap(lut_pos, lut_green, name='green'),
          pg.ColorMap(lut_pos, lut_magenta, name='magenta'),
          pg.ColorMap(lut_pos, lut_grays, name='grays')]
 
+class ChannelBtn(QPushButton):
+    channelToggled = Signal(QPushButton, int)
+    channelRemoveTriggered = Signal(QPushButton, int)
+    
+    def __init__(self, name: str, chId: int):
+        super().__init__(name)
+        self.id = chId
+        self.setCheckable(True)
+        self.setChecked(True)
+        self.setFixedWidth(30)
+        self.toggled.connect(lambda: self.channelToggled.emit(self, self.id))
+        self.setContextMenuPolicy(Qt.ActionsContextMenu)
+        act = QAction("Remove", self)
+        act.triggered.connect(lambda: self.channelRemoveTriggered.emit(self, self.id))
+        self.addAction(act)
+
 class PreviewWidgetSignals(QObject):
     channelsChanged = Signal()
- 
+
+class PreviewFrame(QFrame):
+    name: str = "Z-stack"
+    def __init__(self, parent=None, path=None):
+        super().__init__(parent)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(3)
+        self._layout.setMargin(0)
+        
+        self.layout_btn_channels = QHBoxLayout()
+        f = QFrame()
+        f.setLayout(self.layout_btn_channels)
+        self._layout.addWidget(f)
+        
+        self.slider = QSlider()
+        self.slider.setOrientation(Qt.Horizontal)
+        
+        self.view = PreviewWidget([], None, self.slider)
+        self._layout.addWidget(self.view)
+        self._layout.addWidget(self.slider)
+        
+        if path != None:
+            self.view.loadChannels(path)
+        
+        self.btn_3DView = QPushButton("3D")
+        self.btn_3DView.clicked.connect(self.add3DView)
+        
+        self.view.channelAdded.connect(self.updateBtnChannels)
+        self.updateBtnChannels()
+    
+    def getToolbar(self):
+        return [self.btn_3DView]
+    
+    def add3DView(self):
+        print(self.parentWidget().parentWidget().parentWidget().addTab(Preview3DWidget(channels=list(self.view.channels.keys()))))
+    
+    def updateBtnChannels(self):
+        clearLayout(self.layout_btn_channels)
+        for chn in self.view.channels.keys():
+            btn = ChannelBtn(f'Ch{chn.id}', chn.id)
+            btn.channelToggled.connect(self.toggleChannel)
+            # btn.channelRemoveTriggered.connect(self.removeChannel)
+            self.layout_btn_channels.addWidget(btn)
+    
+    def toggleChannel(self, btn: QPushButton, id: int):
+        for chn, img in self.view.channels.items():
+            if chn.id == id:
+                if btn.isChecked():
+                    img.show()             
+                else:
+                    img.hide()
+        self.view.updateFrame()
+
 class PreviewWidget(pg.ImageView):  
     mouseMoved = Signal(QMouseEvent, QPointF)
+    channelAdded = Signal()
       
     def __init__(self, channels: list=[], fileInfo=None, slider: QSlider=None):
         super().__init__()
@@ -91,6 +170,8 @@ class PreviewWidget(pg.ImageView):
     
         self.scene._mouseMoveEvent = self.scene.mouseMoveEvent
         self.scene.mouseMoveEvent = self.mouseMoveEvent
+        
+        # self.view.setBackgroundColor(QColor.fromRgb(244, 248, 249))
         
         self.updateFrame()
     
@@ -141,6 +222,7 @@ class PreviewWidget(pg.ImageView):
             self.channels[chn] = img 
         
         # self.view.autoRange()
+        self.channelAdded.emit()
     
     def clear(self):
         for chn, img in self.channels.items():
@@ -172,6 +254,7 @@ class PreviewWidget(pg.ImageView):
         del self.channels[channel]      
     
     def loadChannels(self, filename: str):
+        print(f"loading {filename}")
         fw = FileLoaderWorker(filename)
         fw.signals.loaded.connect(self.reset)
         self.threadpool.start(fw)
@@ -181,10 +264,12 @@ class PreviewWidget(pg.ImageView):
         if len(self.channels) == 0:
             return
         m_pos = self.view.mapSceneToView(e.scenePos())
-        self.fileInfo.mx = int(max(0, m_pos.x()))
-        self.fileInfo.my = int(max(0, m_pos.y()))
-        self.fileInfo.preview = self
-        self.fileInfo.update()
+        
+        if self.fileInfo != None:
+            self.fileInfo.mx = int(max(0, m_pos.x()))
+            self.fileInfo.my = int(max(0, m_pos.y()))
+            self.fileInfo.preview = self
+            self.fileInfo.update()
         self.mouseMoved.emit(e, m_pos)
         
     def dropEvent(self, event: QGraphicsSceneDragDropEvent):
@@ -244,6 +329,7 @@ class PreviewWidget(pg.ImageView):
     @property
     def count(self):
         return len(self.channels.keys())
+        
     
 class FileLoaderSignals(QObject):
     loaded = Signal(list)
