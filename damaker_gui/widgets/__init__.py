@@ -12,3 +12,15 @@ from .RecordFunctionsWidget import *
 from .ContentFrame import *
 from .WorkspaceWidget import *
 from .ConsoleWidget import *
+from .PipelineWidget import *
+
+def clearLayout(layout: QLayout, delete=False):
+    for i in reversed(range(layout.count())): 
+        widgetToRemove = layout.itemAt(i).widget()
+        layout.removeWidget(widgetToRemove)
+        if widgetToRemove != None:
+            widgetToRemove.setParent(None)
+            if delete:
+                widgetToRemove.deleteLater()
+
+RootPath = "/"

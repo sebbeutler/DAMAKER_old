@@ -48,6 +48,7 @@ class Ui_MainWindow(object):
 "	background-color: rgb(0, 0, 0);\n"
 "	padding: 15px;\n"
 "	margin: 10px;\n"
+"font-weight: bold;\n"
 "}\n"
 "\n"
 "QTabBar::pane {\n"
@@ -82,9 +83,9 @@ class Ui_MainWindow(object):
 "QSlider::handle:horizontal {\n"
 "    background-color: rgb(35, 31, 32);\n"
 "    border: none;\n"
-"    height: 18px;\n"
-"    widt"
-                        "h: 18px;\n"
+"    hei"
+                        "ght: 18px;\n"
+"    width: 18px;\n"
 "    margin: 0px;\n"
 "	border-radius: 2px;\n"
 "}\n"
@@ -138,7 +139,22 @@ class Ui_MainWindow(object):
         self.horizontalSlider.setObjectName(u"horizontalSlider")
         self.horizontalSlider.setOrientation(Qt.Horizontal)
 
-        self.gridLayout.addWidget(self.horizontalSlider, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.horizontalSlider, 2, 0, 1, 1)
+
+        self.listView = QListView(self.dock1_tabPage1)
+        self.listView.setObjectName(u"listView")
+
+        self.gridLayout.addWidget(self.listView, 1, 0, 1, 1)
+
+        self.scrollArea = QScrollArea(self.dock1_tabPage1)
+        self.scrollArea.setObjectName(u"scrollArea")
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollAreaWidgetContents = QWidget()
+        self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 738, 307))
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+
+        self.gridLayout.addWidget(self.scrollArea, 0, 0, 1, 1)
 
         self.dock1_tab.addTab(self.dock1_tabPage1, "")
 

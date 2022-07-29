@@ -6,20 +6,12 @@ from PySide2 import *
 import pyqtgraph as pg
 
 import numpy as np
-import qimage2ndarray
-
-import gc
+import damaker_gui.widgets as widgets
 
 from damaker.Channel import Channel
 from damaker.utils import loadChannelsFromFile
 from damaker_gui.widgets.Preview3DWidget import Preview3DWidget
-
-def clearLayout(layout):
-    for i in reversed(range(layout.count())): 
-        widgetToRemove = layout.itemAt(i).widget()
-        layout.removeWidget(widgetToRemove)
-        if widgetToRemove != None:
-            widgetToRemove.setParent(None)
+# from damaker_gui.widgets import clearLayout
 
 lut_green = np.zeros((256, 3), np.uint8)
 lut_green[:, 1] = np.arange(256)
@@ -73,9 +65,6 @@ class ChannelBtn(QPushButton):
         act.triggered.connect(lambda: self.channelRemoveTriggered.emit(self, self.id))
         self.addAction(act)
 
-class PreviewWidgetSignals(QObject):
-    channelsChanged = Signal()
-
 class PreviewFrame(QFrame):
     name: str = "Z-stack"
     def __init__(self, parent=None, path=None):
@@ -85,6 +74,8 @@ class PreviewFrame(QFrame):
         self._layout.setMargin(0)
         
         self.layout_btn_channels = QHBoxLayout()
+        self.layout_btn_channels.setMargin(0)
+        self.layout_btn_channels.setSpacing(3)
         f = QFrame()
         f.setLayout(self.layout_btn_channels)
         self._layout.addWidget(f)
@@ -102,7 +93,7 @@ class PreviewFrame(QFrame):
         self.btn_3DView = QPushButton("3D")
         self.btn_3DView.clicked.connect(self.add3DView)
         
-        self.view.channelAdded.connect(self.updateBtnChannels)
+        self.view.channelsChanged.connect(self.updateBtnChannels)
         self.updateBtnChannels()
     
     def getToolbar(self):
@@ -112,13 +103,27 @@ class PreviewFrame(QFrame):
         print(self.parentWidget().parentWidget().parentWidget().addTab(Preview3DWidget(channels=list(self.view.channels.keys()))))
     
     def updateBtnChannels(self):
-        clearLayout(self.layout_btn_channels)
+        widgets.clearLayout(self.layout_btn_channels, True)
         for chn in self.view.channels.keys():
             btn = ChannelBtn(f'Ch{chn.id}', chn.id)
             btn.channelToggled.connect(self.toggleChannel)
-            # btn.channelRemoveTriggered.connect(self.removeChannel)
+            btn.channelRemoveTriggered.connect(self.removeChannel)
             self.layout_btn_channels.addWidget(btn)
+        self.layout_btn_channels.addStretch()
     
+    def removeChannel(self, btn: QPushButton, id):
+        toDelete = None
+        for chn, img in self.view.channels.items():
+            if chn.id == id:
+                self.view.removeItem(img)
+                toDelete = chn
+        if toDelete != None:
+            del self.view.channels[toDelete]
+            print(f"Removed channel n°{id} ✔")
+        self.view.updateFrame()
+        self.layout_btn_channels.removeWidget(btn)
+        btn.deleteLater()
+            
     def toggleChannel(self, btn: QPushButton, id: int):
         for chn, img in self.view.channels.items():
             if chn.id == id:
@@ -131,11 +136,11 @@ class PreviewFrame(QFrame):
 class PreviewWidget(pg.ImageView):  
     mouseMoved = Signal(QMouseEvent, QPointF)
     channelAdded = Signal()
-      
+    channelsChanged = Signal()
+    
     def __init__(self, channels: list=[], fileInfo=None, slider: QSlider=None):
         super().__init__()
 
-        self.signals = PreviewWidgetSignals()
         self.threadpool = QThreadPool()
 
         self.fileInfo = fileInfo
@@ -174,6 +179,10 @@ class PreviewWidget(pg.ImageView):
         # self.view.setBackgroundColor(QColor.fromRgb(244, 248, 249))
         
         self.updateFrame()
+    
+    @property
+    def data(self) -> list[Channel]:
+        return list(self.channels.keys())
     
     def enableCross(self, enable: bool):
         if enable:    
@@ -245,7 +254,7 @@ class PreviewWidget(pg.ImageView):
             self.fileInfo.update()
         
         self.updateFrame(0) 
-        self.signals.channelsChanged.emit()
+        self.channelsChanged.emit()
     
     def removeChannel(self, channel: Channel):
         if channel not in self.channels.keys():

@@ -20,8 +20,9 @@ QMenu::item::selected {
     background-color: rgb(30,30,30);
 }"""
 
-class FunctionsListWidget(QWidget):
+class FunctionListWidget(QWidget):
     operationTriggered = Signal(str)
+    name: str= "Operations"
     
     def __init__(self):
         super().__init__()
@@ -65,7 +66,7 @@ class FunctionsListWidget(QWidget):
                 continue
             menu = QMenu(cat)
             menu.setToolTipsVisible(True)
-            menu.setStyleSheet(_menuStyleSheet)
+            # menu.setStyleSheet(_menuStyleSheet)
             for func in funcs:
                 action: QAction = menu.addAction(func.alias)
                 # action.setToolTip(func.__doc__)
@@ -73,7 +74,7 @@ class FunctionsListWidget(QWidget):
             btn = QPushButton(cat)
             btn.setMinimumHeight(15)
             btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
-            btn.setStyleSheet("color: white;")
+            # btn.setStyleSheet("color: white;")
             btn.setMenu(menu)
             btn.clicked.connect(btn.showMenu)
             self._layout.addWidget(btn)

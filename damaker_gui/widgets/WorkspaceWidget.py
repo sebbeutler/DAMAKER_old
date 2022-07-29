@@ -6,6 +6,8 @@ from PySide2 import *
 
 import os, shutil
 
+from damaker_gui import widgets
+
 class WorkspaceWidget(QTreeView):
     name: str = "Workspace"
     signalOpen = Signal(str)
@@ -18,6 +20,7 @@ class WorkspaceWidget(QTreeView):
         self.explorer = QFileSystemModel(self)
         self.explorer.setReadOnly(False)        
         root = self.explorer.setRootPath(path)
+        widgets.RootPath = path
         
         self.setModel(self.explorer)
         self.setRootIndex(root)

@@ -18,7 +18,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1091, 855)
+        MainWindow.resize(1113, 719)
         MainWindow.setMinimumSize(QSize(500, 200))
         palette = QPalette()
         brush = QBrush(QColor(255, 255, 255, 255))
@@ -1362,10 +1362,10 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.content_tabs.setCurrentIndex(1)
+        self.content_tabs.setCurrentIndex(0)
         self.tab_centralPreview.setCurrentIndex(0)
         self.visualize_altPreviewsTabs.setCurrentIndex(0)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainWindow)

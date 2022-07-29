@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'BatchParametersWidget.ui'
+## Form generated from reading UI file 'BatchParametersWidget copy.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.2
 ##
@@ -18,89 +18,17 @@ class Ui_BatchParameters(object):
     def setupUi(self, BatchParameters):
         if not BatchParameters.objectName():
             BatchParameters.setObjectName(u"BatchParameters")
-        BatchParameters.resize(309, 134)
-        BatchParameters.setStyleSheet(u"QScrollArea {\n"
-" border-radius: 3px;\n"
-"border: 1px solid rgb(60, 60, 60);\n"
-"background-color: rgb(238, 248, 255);\n"
-"}\n"
-"\n"
-"QScrollBar:vertical\n"
-"{\n"
-"    width:8px;\n"
-"    background:rgba(0,0,0,0%);\n"
-"    margin:0px,0px,0px,0px;\n"
-"    padding-top:9px;\n"
-"    padding-bottom:9px;\n"
-"}\n"
-"\n"
-"QScrollBar::handle:vertical\n"
-"{\n"
-"    width:8px;\n"
-"    background:rgba(0,0,0,25%);\n"
-"    border-radius:4px;\n"
-"    min-height:20;\n"
-"}\n"
-"\n"
-"QScrollBar::handle:vertical:hover\n"
-"{\n"
-"    width:8px;\n"
-"    background:rgba(0,0,0,50%);\n"
-"    border-radius:4px;\n"
-"    min-height:20;\n"
-"}\n"
-"\n"
-"QScrollBar::add-line:vertical\n"
-"{\n"
-"    height:9px;width:8px;\n"
-"    border-image:url(:/image/3.png);\n"
-"    subcontrol-position:bottom;\n"
-"}\n"
-"\n"
-"QScrollBar::sub-line:vertical\n"
-"{\n"
-"    height:9px;width:8px;\n"
-"    border-image:url(:/image/1.png);\n"
-"    subcontrol-position:top;\n"
-"}\n"
-"\n"
-"QScrollBar::add-line:vertical:hover\n"
-"{\n"
-"    height:9px;width:8px;\n"
-"    bor"
-                        "der-image:url(:/image/4.png);\n"
-"    subcontrol-position:bottom;\n"
-"}\n"
-"\n"
-"QScrollBar::sub-line:vertical:hover\n"
-"{\n"
-"    height:9px;width:8px;\n"
-"    border-image:url(:/image/2.png);\n"
-"    subcontrol-position:top;\n"
-"}\n"
-"\n"
-"QScrollBar::add-page:vertical,QScrollBar::sub-page:vertical\n"
-"{\n"
-"    background:rgba(0,0,0,10%);\n"
-"    border-radius:4px;\n"
-"}")
-        BatchParameters.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        BatchParameters.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
-        BatchParameters.setWidgetResizable(True)
-        self.BatchParametersContent = QFrame()
-        self.BatchParametersContent.setObjectName(u"BatchParametersContent")
-        self.BatchParametersContent.setGeometry(QRect(0, 0, 307, 132))
+        BatchParameters.resize(400, 125)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.BatchParametersContent.sizePolicy().hasHeightForWidth())
-        self.BatchParametersContent.setSizePolicy(sizePolicy)
-        self.BatchParametersContent.setStyleSheet(u"")
-        self.verticalLayout = QVBoxLayout(self.BatchParametersContent)
+        sizePolicy.setHeightForWidth(BatchParameters.sizePolicy().hasHeightForWidth())
+        BatchParameters.setSizePolicy(sizePolicy)
+        self.verticalLayout = QVBoxLayout(BatchParameters)
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.topBar = QFrame(self.BatchParametersContent)
+        self.topBar = QFrame(BatchParameters)
         self.topBar.setObjectName(u"topBar")
         self.topBar.setEnabled(True)
         self.topBar.setMaximumSize(QSize(16777215, 25))
@@ -127,12 +55,25 @@ class Ui_BatchParameters(object):
 
         self.verticalLayout.addWidget(self.topBar)
 
-        self.batch_form = QFrame(self.BatchParametersContent)
+        self.batch_form = QFrame(BatchParameters)
         self.batch_form.setObjectName(u"batch_form")
         sizePolicy.setHeightForWidth(self.batch_form.sizePolicy().hasHeightForWidth())
         self.batch_form.setSizePolicy(sizePolicy)
         self.batch_form.setMinimumSize(QSize(0, 100))
-        self.batch_form.setStyleSheet(u"")
+        self.batch_form.setStyleSheet(u"* {\n"
+"	color: rgb(170, 170, 170);\n"
+"}\n"
+"\n"
+"QFrame {\n"
+"background: rgb(32,32,32);\n"
+"border-radius: 2px;\n"
+"border: 1px solid rgb(60, 60, 60);\n"
+"}\n"
+"\n"
+"QLabel {\n"
+"\n"
+"	border-width: 0px;\n"
+"}")
         self.batch_form.setFrameShape(QFrame.StyledPanel)
         self.batch_form.setFrameShadow(QFrame.Raised)
         self.batch_form_layout = QFormLayout(self.batch_form)
@@ -182,7 +123,6 @@ class Ui_BatchParameters(object):
 
         self.verticalLayout.addWidget(self.batch_form)
 
-        BatchParameters.setWidget(self.BatchParametersContent)
 
         self.retranslateUi(BatchParameters)
 
@@ -190,7 +130,7 @@ class Ui_BatchParameters(object):
     # setupUi
 
     def retranslateUi(self, BatchParameters):
-        self.BatchParametersContent.setWindowTitle(QCoreApplication.translate("BatchParameters", u"Frame", None))
+        BatchParameters.setWindowTitle(QCoreApplication.translate("BatchParameters", u"Frame", None))
         self.btn_deploy.setText(QCoreApplication.translate("BatchParameters", u"Deploy", None))
         self.label.setText(QCoreApplication.translate("BatchParameters", u"Expr.:", None))
         self.filename_input.setText(QCoreApplication.translate("BatchParameters", u"*", None))
@@ -198,6 +138,5 @@ class Ui_BatchParameters(object):
         self.checkBox_associated.setText("")
         self.label_3.setText(QCoreApplication.translate("BatchParameters", u"Modalities:", None))
         self.btn_add_mod.setText("")
-        pass
     # retranslateUi
 

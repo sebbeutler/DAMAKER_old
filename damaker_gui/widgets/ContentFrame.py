@@ -3,14 +3,13 @@ from PySide2.QtGui import *
 from PySide2.QtCore import *
 from PySide2 import *
 
-import random
-
 class ToolBar(QFrame):
     def __init__(self, parent=None):        
         super().__init__(parent)
         self._layout = QHBoxLayout()
         self._layout.setSpacing(0)
         self._layout.setMargin(0)
+        self.setMinimumHeight(22)
         self.setLayout(self._layout)
     
     def newAction(self, widget: QWidget):
@@ -47,17 +46,21 @@ class ContentFrame(QFrame):
             self._tab: QTabWidget = self.findChild(QTabWidget)
             self._tab.setMovable(True)
             self._tab.tabCloseRequested.connect(self.tabClose)
+            self._tab.currentChanged.connect(self.tabChanged)
             self.layout().insertWidget(0, self.toolBar)
         return self._tab
+    
+    def tabChanged(self, index: int):
+        widget = self.tab.widget(index)
+        self.toolBar.clearActions()
+        if hasattr(widget, "getToolbar"):
+            self.toolBar.newActions(widget.getToolbar())
     
     def addTab(self, widget: QWidget, name=None):
         if hasattr(widget, "name") and name is None:
             name = widget.name
         if name is None or type(name) is not str:
             name = "None"
-        if hasattr(widget, "getToolbar"):
-            self.toolBar.clearActions()
-            self.toolBar.newActions(widget.getToolbar())
         self.tab.addTab(widget, name)
         self.tab.setCurrentIndex(self.tab.count()-1)
     

@@ -6,17 +6,20 @@ from PySide2 import *
 from .FilePickerWidget import FolderPickerWidget
 
 from damaker.pipeline import BatchParameters
+from damaker_gui import widgets
 
 from damaker_gui.windows.UI_BatchParametersWidget import Ui_BatchParameters
 
-class BatchSelectionWidget(QFrame):
-    def __init__(self, workspace: str, parameters: BatchParameters=None):
+class BatchSelectionWidget(QScrollArea):
+    def __init__(self, parameters: BatchParameters=None):
         super().__init__()
         self.ui = Ui_BatchParameters()
         self.ui.setupUi(self)
         
-        self.inputPath = FolderPickerWidget(workspace)
+        self.inputPath = FolderPickerWidget(widgets.RootPath)
         self.ui.batch_form_layout.insertRow(0, "Input folder: ", self.inputPath)
+        
+        self.ui.topBar.setHidden(True)
         
         self.ui.btn_deploy.clicked.connect(self.deploy)
         self.ui.btn_add_mod.clicked.connect(self.addMod)
@@ -26,7 +29,7 @@ class BatchSelectionWidget(QFrame):
         if parameters != None:
             self.setParameters(parameters)
         
-        self.deploy()
+        # self.deploy()
     
     def getBatch(self):
         params = BatchParameters()
@@ -43,6 +46,8 @@ class BatchSelectionWidget(QFrame):
         self.modCounter += 1
         self.ui.batch_form_layout.addRow("Mod {%d}: " % self.modCounter, QLineEdit())
         self.ui.batch_form.adjustSize()
+        self.ui.BatchParametersContent.adjustSize()
+        self.adjustSize()
         
     def setParameters(self, params: BatchParameters):
         self.inputPath.setText(params.folder)
