@@ -13,6 +13,8 @@ from damaker.utils import loadChannelsFromFile
 from damaker_gui.widgets.Preview3DWidget import Preview3DWidget
 # from damaker_gui.widgets import clearLayout
 
+from damaker_gui.resources import files_rc
+
 lut_green = np.zeros((256, 3), np.uint8)
 lut_green[:, 1] = np.arange(256)
 
@@ -67,6 +69,8 @@ class ChannelBtn(QPushButton):
 
 class PreviewFrame(QFrame):
     name: str = "Z-stack"
+    # icon: str = u":/20x20/icons/20x20/cil-screen-desktop.png"
+    icon: str = u":/flat-icons/icons/flat-icons/database.svg"
     def __init__(self, parent=None, path=None):
         super().__init__(parent)
         self._layout = QVBoxLayout(self)

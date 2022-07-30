@@ -1,5 +1,6 @@
 import enum
-from inspect import signature, _empty   
+from inspect import signature, _empty
+import inspect   
 
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
@@ -11,6 +12,7 @@ from vedo import Mesh
 # from .widgets.BatchSelectionWidget import BatchSelectionWidget
  
 import damaker as dmk
+from damaker.utils import StrFilePath, StrFolderPath
 import damaker_gui.widgets as widgets
 
 from damaker_gui.windows.UI_MainWindow import Ui_MainWindow

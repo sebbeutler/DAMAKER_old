@@ -23,6 +23,8 @@ QMenu::item::selected {
 class FunctionListWidget(QWidget):
     operationTriggered = Signal(str)
     name: str= "Operations"
+    # icon: str = u":/flat-icons/icons/flat-icons/engineering.svg"
+    icon: str = u":/flat-icons/icons/flat-icons/services.svg"
     
     def __init__(self):
         super().__init__()

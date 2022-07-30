@@ -3,6 +3,8 @@ from PySide2.QtGui import *
 from PySide2.QtCore import *
 from PySide2 import *
 
+from damaker_gui.widgets.WorkspaceWidget import WorkspaceWidget
+
 from .FilePickerWidget import FolderPickerWidget
 
 from damaker.pipeline import BatchParameters
@@ -16,7 +18,7 @@ class BatchSelectionWidget(QScrollArea):
         self.ui = Ui_BatchParameters()
         self.ui.setupUi(self)
         
-        self.inputPath = FolderPickerWidget(widgets.RootPath)
+        self.inputPath = FolderPickerWidget(WorkspaceWidget.RootPath)
         self.ui.batch_form_layout.insertRow(0, "Input folder: ", self.inputPath)
         
         self.ui.topBar.setHidden(True)

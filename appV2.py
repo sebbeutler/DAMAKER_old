@@ -30,21 +30,24 @@ class MainWindow(QMainWindow):
         # self.ui.menubar.mousePressEvent = self.mousePressEvent
         
         # self.btn = QPushButton("test", self.ui.menubar)
-        self.ui.dock1.addTab(widgets.PreviewFrame())
-        self.pipeline = widgets.PipelineWidget()
-        self.ui.dock1.addTab(self.pipeline)
         
-        self.fl = widgets.FunctionListWidget()
-        self.pipeline.connectTo(self.fl)
-        self.ui.dock2.addTab(self.fl)
-        
+        # -Console-
         self.ui.dock3.addTab(widgets.ConsoleWidget())
         
+        # -Workspace-
         self.workspace = widgets.WorkspaceWidget()
         self.workspace.signalOpen.connect(self.openFile)        
         self.ui.dock4.addTab(self.workspace)
         
+        # -Preview Z-Stack-
+        self.ui.dock1.addTab(widgets.PreviewFrame())
+        self.pipeline = widgets.PipelineWidget()
+        self.ui.dock1.addTab(self.pipeline)
         
+        # -Operations-
+        self.fl = widgets.FunctionListWidget()
+        self.pipeline.connectTo(self.fl)
+        self.ui.dock2.addTab(self.fl)
         
         # self.menu_view = self.ui.menubar.addMenu("View")
         # self.menu_view.addAction("")

@@ -5,6 +5,9 @@ from PySide2 import *
 
 class ConsoleWidget(QTextEdit):
     name: str = "Output"
+    # icon: str = u":/flat-icons/icons/flat-icons/command_line.svg"
+    icon: str = u":/flat-icons/icons/flat-icons/about.svg"
+    
     signalStreamOut = Signal(str)
     def __init__(self, parent=None):
         super().__init__(parent)

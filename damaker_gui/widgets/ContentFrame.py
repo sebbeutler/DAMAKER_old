@@ -61,7 +61,12 @@ class ContentFrame(QFrame):
             name = widget.name
         if name is None or type(name) is not str:
             name = "None"
-        self.tab.addTab(widget, name)
+        if hasattr(widget, "icon"):
+            icon = QIcon()
+            icon.addFile(widget.icon, QSize(), QIcon.Normal, QIcon.Off)
+            self.tab.addTab(widget, icon, name)
+        else:
+            self.tab.addTab(widget, name)
         self.tab.setCurrentIndex(self.tab.count()-1)
     
     def tabClose(self, index):

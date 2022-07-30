@@ -156,6 +156,10 @@ QSlider::handle:vertical:hover {
           <string notr="true">background-color: rgb(244, 248, 249);
 margin: 0px;</string>
          </property>
+         <attribute name="icon">
+          <iconset resource="../resources/files.qrc">
+           <normaloff>:/flat-icons/icons/flat-icons/database.svg</normaloff>:/flat-icons/icons/flat-icons/database.svg</iconset>
+         </attribute>
          <attribute name="title">
           <string>Page</string>
          </attribute>
@@ -181,7 +185,7 @@ margin: 0px;</string>
                <x>0</x>
                <y>0</y>
                <width>738</width>
-               <height>307</height>
+               <height>309</height>
               </rect>
              </property>
             </widget>

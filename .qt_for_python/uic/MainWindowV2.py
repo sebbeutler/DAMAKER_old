@@ -151,12 +151,14 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 738, 307))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 738, 309))
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
         self.gridLayout.addWidget(self.scrollArea, 0, 0, 1, 1)
 
-        self.dock1_tab.addTab(self.dock1_tabPage1, "")
+        icon1 = QIcon()
+        icon1.addFile(u":/flat-icons/icons/flat-icons/database.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.dock1_tab.addTab(self.dock1_tabPage1, icon1, "")
 
         self.layout_dock1.addWidget(self.dock1_tab)
 

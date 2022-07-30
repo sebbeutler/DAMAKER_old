@@ -10,7 +10,11 @@ from damaker_gui import widgets
 
 class WorkspaceWidget(QTreeView):
     name: str = "Workspace"
+    icon: str = u":/flat-icons/icons/flat-icons/globe.svg"
+    
+    
     signalOpen = Signal(str)
+    RootPath = os.getcwd()
     def __init__(self, parent=None, path="/", signalOpen=None):
         super().__init__(parent)
         
@@ -19,8 +23,7 @@ class WorkspaceWidget(QTreeView):
         
         self.explorer = QFileSystemModel(self)
         self.explorer.setReadOnly(False)        
-        root = self.explorer.setRootPath(path)
-        widgets.RootPath = path
+        root = self.explorer.setRootPath(WorkspaceWidget.RootPath)
         
         self.setModel(self.explorer)
         self.setRootIndex(root)
@@ -80,10 +83,11 @@ class WorkspaceWidget(QTreeView):
             return True
         return False
         
-        
     def selectWorkspace(self):
         path = QFileDialog.getExistingDirectory(None, 'Open folder', self.explorer.rootPath())
         root = self.explorer.setRootPath(path)
+        WorkspaceWidget.RootPath = path        
+        print("Workspace🌐:", WorkspaceWidget.RootPath)
         self.setRootIndex(root)
     
     def open(self):

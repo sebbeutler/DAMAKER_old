@@ -22,5 +22,3 @@ def clearLayout(layout: QLayout, delete=False):
             widgetToRemove.setParent(None)
             if delete:
                 widgetToRemove.deleteLater()
-
-RootPath = "/"
