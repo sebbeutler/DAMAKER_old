@@ -19,6 +19,7 @@ class Ui_BatchParameters(object):
         if not BatchParameters.objectName():
             BatchParameters.setObjectName(u"BatchParameters")
         BatchParameters.resize(309, 134)
+        BatchParameters.setMinimumSize(QSize(309, 0))
         BatchParameters.setStyleSheet(u"QScrollArea {\n"
 " border-radius: 3px;\n"
 "border: 1px solid rgb(60, 60, 60);\n"

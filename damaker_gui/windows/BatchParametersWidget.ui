@@ -10,6 +10,12 @@
     <height>134</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>309</width>
+    <height>0</height>
+   </size>
+  </property>
   <property name="styleSheet">
    <string notr="true">QScrollArea {
  border-radius: 3px;

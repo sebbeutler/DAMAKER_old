@@ -28,7 +28,7 @@ class Preview3DWidget(GLViewWidget):
             self.setChannels(channels)     
     
     def addChannel(self, chn: Channel):
-        print("Converting channels into 3D view: ", end='')
+        print("Converting channels into 3D view: ")
         
         chn = chn.copy()
         lut: np.ndarray = chn.lut.getLookupTable(nPts=256)
