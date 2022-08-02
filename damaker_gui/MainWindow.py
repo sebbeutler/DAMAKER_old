@@ -29,9 +29,11 @@ class MainWindow(QMainWindow):
         self.fileInfo = widgets.FileInfoWidget()
         self.ui.dock2.addTab(self.fileInfo)
         
+        # -LUT selector- #
+        self.lutSelector = widgets.LutSelectorWidget()
+        
         # -Orthogonal projection- #
-        self.orthogonalProjection = widgets.OrthogonalProjectionWidget(origin=None)
-        # self.ui.dock2.addTab(self.orthogonalProjection)
+        self.orthogonalProjection = widgets.OrthogonalProjectionWidget()
         
         # -Workspace- #
         self.workspace = widgets.WorkspaceWidget()

@@ -16,6 +16,8 @@ from .PipelineWidget import *
 from .OperationWidget import *
 from .ITabWidget import *
 from .OrthogonalProjectionWidget import *
+from .LutSelectorWidget import *
+from .PreviewFrame import *
 
 def clearLayout(layout: QLayout, delete=False):
     for i in reversed(range(layout.count())): 
