@@ -3,10 +3,6 @@ if __name__ == '__main__':
     os.system("pyside2-uic -o ./damaker_gui/windows/UI_MainWindowV2.py --from-imports ./damaker_gui/windows/MainWindowV2.ui")
     os.system("pyside2-uic -o ./damaker_gui/windows/UI_BatchParametersWidget.py --from-imports ./damaker_gui/windows/BatchParametersWidget.ui")
 
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
-from PySide2.QtCore import *
-from PySide2 import *
 import sys
 import damaker_gui.widgets as widgets
 from damaker_gui.windows.UI_MainWindowV2 import *

@@ -1,11 +1,8 @@
-from inspect import getmembers, isfunction, signature  
+from inspect import getmembers, isfunction  
 import re
 
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
-from PySide2.QtCore import *
-from PySide2 import *
-from yaml import load
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QMenu, QPushButton, QAction
+from PySide2.QtCore import Signal
 
 import damaker.processing
 import damaker.utils

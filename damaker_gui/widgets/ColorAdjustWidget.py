@@ -1,7 +1,5 @@
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
-from PySide2.QtCore import *
-from PySide2 import *
+from PySide2.QtWidgets import QFrame
+from PySide2.QtCore import Signal
 
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg

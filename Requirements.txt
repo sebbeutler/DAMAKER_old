@@ -1,0 +1,13 @@
+PySide2
+aicsimageio
+tiffile
+scikit-image
+bioformats_jar
+vedo
+matplotlib
+opencv-python==4.5.5.64
+vedo
+SimpleITK
+py4j
+pyqtgraph
+PyOpenGL

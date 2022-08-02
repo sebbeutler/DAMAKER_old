@@ -1,7 +1,4 @@
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
-from PySide2.QtCore import *
-from PySide2 import *
+from PySide2.QtWidgets import QFrame, QVBoxLayout, QPushButton, QWidget, QHBoxLayout, QComboBox, QSizePolicy
 
 class ChannelSelectorWidget(QFrame):
     def __init__(self, choices=[]):
@@ -10,7 +7,6 @@ class ChannelSelectorWidget(QFrame):
         self._layout = QVBoxLayout()
         self._layout.setSpacing(4)
         self._layout.setMargin(0)
-        
         
         self.setLayout(self._layout)
         

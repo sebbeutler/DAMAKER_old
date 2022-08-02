@@ -1,7 +1,6 @@
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
-from PySide2.QtCore import *
-from PySide2 import *
+from PySide2.QtWidgets import QFrame, QHBoxLayout, QWidget, QSizePolicy, QLayout, QTabWidget
+from PySide2.QtGui import QIcon
+from PySide2.QtCore import QSize
 
 class ToolBar(QFrame):
     def __init__(self, parent=None):        

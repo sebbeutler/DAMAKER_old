@@ -1,7 +1,5 @@
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
+from PySide2.QtWidgets import QGroupBox, QListWidget, QGridLayout, QLineEdit, QSizePolicy, QWidget, QLabel, QSpinBox, QDoubleSpinBox, QCheckBox
 from PySide2.QtCore import *
-from PySide2 import *
 
 from damaker.pipeline import *
 import damaker_gui.widgets as widgets

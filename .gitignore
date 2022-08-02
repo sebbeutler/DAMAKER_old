@@ -15,7 +15,15 @@ __pycache__/
 /.project
 /.settings/
 /doc
+
 # Maven #
 /target/
 
-resources/
+.qt_for_python/
+
+/resources/
+
+# PyInstaller #
+/build/
+/dist/
+*.spec

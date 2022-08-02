@@ -1,13 +1,11 @@
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
-from PySide2.QtCore import *
-from PySide2 import *
+from PySide2.QtWidgets import QPushButton, QFrame, QVBoxLayout, QHBoxLayout, QHBoxLayout, QAction, QSlider, QGraphicsSceneMouseEvent, QSizePolicy, QLabel, QGraphicsSceneDragDropEvent
+from PySide2.QtGui import QIcon, QMouseEvent, QPainter
+from PySide2.QtCore import Signal, Qt, QSize, QPointF, QThreadPool, QPoint, QObject, QRunnable, QThread, Slot
 
 import pyqtgraph as pg
 
 import numpy as np
 import damaker
-from damaker.processing import ResliceType
 import damaker_gui.widgets as widgets
 
 from damaker.Channel import Channel

@@ -1,16 +1,11 @@
 import enum
 import os
-import subprocess
 import math
-from time import time
 import cv2
-from cv2 import Mat
 import numpy as np
-import time
 
 import vedo
 from vedo import Mesh
-from vedo.applications import *
 
 import SimpleITK as sitk
 
@@ -18,7 +13,6 @@ from aicsimageio.types import PhysicalPixelSizes
 from scipy import ndimage
 
 from py4j.java_gateway import JavaGateway
-from py4j.java_collections import JavaArray
 
 from damaker.pipeline import BatchParameters
 

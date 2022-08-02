@@ -1,10 +1,6 @@
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
-from PySide2.QtCore import *
-from PySide2 import *
+from PySide2.QtGui import QQuaternion, QVector4D, QVector3D
 
-from pyqtgraph.opengl import GLVolumeItem, GLViewWidget, GLGridItem, GLAxisItem
-import pyqtgraph as pg
+from pyqtgraph.opengl import GLVolumeItem, GLViewWidget, GLGridItem
 
 import numpy as np
 import damaker

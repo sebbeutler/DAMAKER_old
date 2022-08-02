@@ -1,7 +1,4 @@
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
-from PySide2.QtCore import *
-from PySide2 import *
+from PySide2.QtWidgets import QWidget, QSizePolicy, QHBoxLayout, QLineEdit, QPushButton, QFileDialog, QLabel
 
 class FilePickerWidget(QWidget):
     def __init__(self, workspace: str, height: int=20):

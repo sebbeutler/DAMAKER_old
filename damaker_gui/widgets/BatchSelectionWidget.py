@@ -1,14 +1,10 @@
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
-from PySide2.QtCore import *
-from PySide2 import *
+from PySide2.QtWidgets import QLineEdit, QScrollArea, QFormLayout, QSizePolicy
 
 from damaker_gui.widgets.WorkspaceWidget import WorkspaceWidget
 
 from .FilePickerWidget import FolderPickerWidget
 
 from damaker.pipeline import BatchParameters
-from damaker_gui import widgets
 
 from damaker_gui.windows.UI_BatchParametersWidget import Ui_BatchParameters
 

@@ -1,12 +1,7 @@
-from genericpath import isdir, isfile
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
-from PySide2.QtCore import *
-from PySide2 import *
+from PySide2.QtWidgets import QTreeView, QFileSystemModel, QAbstractItemView, QPushButton, QFileDialog, QWidget
+from PySide2.QtCore import Signal
 
 import os, shutil
-
-from damaker_gui import widgets
 
 class WorkspaceWidget(QTreeView):
     name: str = "Workspace"
