@@ -37,7 +37,7 @@ class WorkspaceWidget(QTreeView):
         self.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
         self.setIndentation(15)
         self.setWordWrap(True)
-        self.setHeaderHidden(True)
+        self.setHeaderHidden(False)
         
         self.file_buffer = ""
         
