@@ -7,8 +7,9 @@ import damaker
 
 from damaker.Channel import Channel
 import damaker.processing
+from damaker_gui.widgets.ITabWidget import ITabWidget
 
-class Preview3DWidget(GLViewWidget):
+class Preview3DWidget(GLViewWidget, ITabWidget):
     name: str = "3D View"
     def __init__(self, parent=None, channels=None):
         super().__init__(parent)

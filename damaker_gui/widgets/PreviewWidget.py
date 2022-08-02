@@ -10,6 +10,7 @@ import damaker_gui.widgets as widgets
 
 from damaker.Channel import Channel
 from damaker.utils import loadChannelsFromFile
+from damaker_gui.widgets.ITabWidget import ITabWidget
 from damaker_gui.widgets.Preview3DWidget import Preview3DWidget
 # from damaker_gui.widgets import clearLayout
 
@@ -67,10 +68,11 @@ class ChannelBtn(QPushButton):
         act.triggered.connect(lambda: self.channelRemoveTriggered.emit(self, self.id))
         self.addAction(act)
 
-class PreviewFrame(QFrame):
+class PreviewFrame(QFrame, ITabWidget):
     name: str = "Z-stack"
     # icon: str = u":/20x20/icons/20x20/cil-screen-desktop.png"
     icon: str = u":/flat-icons/icons/flat-icons/database.svg"
+    
     def __init__(self, parent=None, path="", channels=[], fileInfo=None):
         super().__init__(parent)
         self._layout = QVBoxLayout(self)

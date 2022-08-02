@@ -1,6 +1,8 @@
 from PySide2.QtWidgets import QComboBox, QSizePolicy
 
-class OperationInputWidget(QComboBox):
+from damaker_gui.widgets.ITabWidget import ITabWidget
+
+class OperationInputWidget(QComboBox, ITabWidget):
     def __init__(self, operations: list[str]):
         super().__init__()
         for op in operations:

@@ -2,7 +2,9 @@ from PySide2.QtWidgets import QTextEdit, QPushButton
 from PySide2.QtGui import QTextCursor
 from PySide2.QtCore import Signal
 
-class ConsoleWidget(QTextEdit):
+from damaker_gui.widgets.ITabWidget import ITabWidget
+
+class ConsoleWidget(QTextEdit, ITabWidget):
     name: str = "Output"
     # icon: str = u":/flat-icons/icons/flat-icons/command_line.svg"
     icon: str = u":/flat-icons/icons/flat-icons/about.svg"

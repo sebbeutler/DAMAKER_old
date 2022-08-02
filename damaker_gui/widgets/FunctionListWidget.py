@@ -6,6 +6,7 @@ from PySide2.QtCore import Signal
 
 import damaker.processing
 import damaker.utils
+from damaker_gui.widgets.ITabWidget import ITabWidget
 
 _menuStyleSheet = """
 QMenu {
@@ -17,7 +18,7 @@ QMenu::item::selected {
     background-color: rgb(30,30,30);
 }"""
 
-class FunctionListWidget(QWidget):
+class FunctionListWidget(QWidget, ITabWidget):
     operationTriggered = Signal(str)
     name: str= "Operations"
     # icon: str = u":/flat-icons/icons/flat-icons/engineering.svg"

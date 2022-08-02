@@ -6,7 +6,9 @@ import damaker_gui.widgets as widgets
 
 import inspect
 
-class OperationWidget(QGroupBox):
+from damaker_gui.widgets.ITabWidget import ITabWidget
+
+class OperationWidget(QGroupBox, ITabWidget):
     def __init__(self, op:Operation, pipeline: QListWidget=None):
         super().__init__(op.func.alias)
         self.op = op

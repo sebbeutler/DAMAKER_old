@@ -3,7 +3,9 @@ from PySide2.QtCore import Signal
 
 import os, shutil
 
-class WorkspaceWidget(QTreeView):
+from damaker_gui.widgets.ITabWidget import ITabWidget
+
+class WorkspaceWidget(QTreeView, ITabWidget):
     name: str = "Workspace"
     icon: str = u":/flat-icons/icons/flat-icons/globe.svg"
     

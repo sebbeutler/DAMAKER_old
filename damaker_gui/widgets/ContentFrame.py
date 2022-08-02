@@ -2,6 +2,8 @@ from PySide2.QtWidgets import QFrame, QHBoxLayout, QWidget, QSizePolicy, QLayout
 from PySide2.QtGui import QIcon
 from PySide2.QtCore import QSize
 
+from damaker_gui.widgets.ITabWidget import ITabWidget
+
 class ToolBar(QFrame):
     def __init__(self, parent=None):        
         super().__init__(parent)
@@ -52,15 +54,12 @@ class ContentFrame(QFrame):
     def tabChanged(self, index: int):
         widget = self.tab.widget(index)
         self.toolBar.clearActions()
-        if hasattr(widget, "getToolbar"):
+        if issubclass(type(widget), ITabWidget):
             self.toolBar.newActions(widget.getToolbar())
     
-    def addTab(self, widget: QWidget, name=None):
-        if hasattr(widget, "name") and name is None:
+    def addTab(self, widget: QWidget, name: str="None"):
+        if issubclass(type(widget), ITabWidget):
             name = widget.name
-        if name is None or type(name) is not str:
-            name = "None"
-        if hasattr(widget, "icon"):
             icon = QIcon()
             icon.addFile(widget.icon, QSize(), QIcon.Normal, QIcon.Off)
             self.tab.addTab(widget, icon, name)
@@ -69,9 +68,11 @@ class ContentFrame(QFrame):
         self.tab.setCurrentIndex(self.tab.count()-1)
     
     def tabClose(self, index):
-        print(f'tab {index}')
         import gc
-        self._tab.widget(index).deleteLater()
+        widget = self._tab.widget(index)
+        if issubclass(widget, ITabWidget):
+            widget.closing()
+        widget.deleteLater()
         self._tab.removeTab(index)
         gc.collect()
         

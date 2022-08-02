@@ -1,6 +1,8 @@
 from PySide2.QtWidgets import QFrame, QFormLayout, QLabel
 
-class FileInfoWidget(QFrame):
+from damaker_gui.widgets.ITabWidget import ITabWidget
+
+class FileInfoWidget(QFrame, ITabWidget):
     name: str = "Info"
     icon: str = u":/flat-icons/icons/flat-icons/fine_print.svg"
     def __init__(self, parent=None):

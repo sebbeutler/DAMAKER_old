@@ -3,8 +3,9 @@ from PySide2.QtCore import QSize, QThread, Signal, Slot, Qt
 
 from damaker.pipeline import *
 import damaker_gui.widgets as widgets
+from damaker_gui.widgets.ITabWidget import ITabWidget
 
-class PipelineWidget(QListWidget):
+class PipelineWidget(QListWidget, ITabWidget):
     name: str = "Pipeline"
     icon: str = u":/flat-icons/icons/flat-icons/timeline.svg"
     def __init__(self, parent=None, operations=[]):
