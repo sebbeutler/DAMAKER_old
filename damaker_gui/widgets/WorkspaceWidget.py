@@ -7,7 +7,6 @@ class WorkspaceWidget(QTreeView):
     name: str = "Workspace"
     icon: str = u":/flat-icons/icons/flat-icons/globe.svg"
     
-    
     signalOpen = Signal(str)
     RootPath = os.getcwd()
     def __init__(self, parent=None, path="/", signalOpen=None):

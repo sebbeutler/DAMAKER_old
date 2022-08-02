@@ -1,0 +1,1 @@
+pyside2-rcc -o ../windows/files_rc.py ./files.qrc

@@ -46,6 +46,7 @@ class MainWindow(QMainWindow):
         
         # self.ortho = Q
         
+        
         # self.menu_view = self.ui.menubar.addMenu("View")
         # self.menu_view.addAction("")
         

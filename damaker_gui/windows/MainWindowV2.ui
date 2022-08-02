@@ -21,10 +21,13 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../resources/files.qrc">
-    <normaloff>:/16x16/icons/16x16/logo_dmkr.png</normaloff>:/16x16/icons/16x16/logo_dmkr.png</iconset>
+    <normaloff>:/16x16/icons/16x16/damaker.png</normaloff>:/16x16/icons/16x16/damaker.png</iconset>
   </property>
   <property name="styleSheet">
    <string notr="true"/>
+  </property>
+  <property name="tabShape">
+   <enum>QTabWidget::Triangular</enum>
   </property>
   <widget class="QSplitter" name="splitter_horizontal">
    <property name="styleSheet">
@@ -291,7 +294,11 @@ margin: 0px;</string>
        <number>0</number>
       </property>
       <item>
-       <widget class="QTabWidget" name="dock4_tab"/>
+       <widget class="QTabWidget" name="dock4_tab">
+        <property name="tabShape">
+         <enum>QTabWidget::Rounded</enum>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

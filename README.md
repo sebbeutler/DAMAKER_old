@@ -13,6 +13,8 @@ pip install -r Requirements.txt```
 
 `pyinstaller -n Damaker -w -F --collect-all "xmlschema"  --collect-all "vedo" --collect-all "py4j"  --collect-all "pyqtgraph" --collect-all "ome_types" --hidden-import "vtkmodules" --hidden-import "vtkmodules.all" --hidden-import "vtkmodules.util.numpy_support" main.py -y`
 
+`pyinstaller -n Damaker --onefile --windowed --icon=damaker_gui/resources/icons/16x16/damaker.ico --upx-dir=dist/upx-3.96-win64 --collect-all "xmlschema"  --collect-all "vedo" --collect-all "py4j"  --collect-all "pyqtgraph" --collect-all "ome_types" --hidden-import "vtkmodules" --hidden-import "vtkmodules.all" --hidden-import "vtkmodules.util.numpy_support" main.py -y`
+
 ### Related links
 
 - github : https://github.com/subski/DAMAKER
