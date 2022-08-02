@@ -6,6 +6,8 @@ from PySide2 import *
 import pyqtgraph as pg
 
 import numpy as np
+import damaker
+from damaker.processing import ResliceType
 import damaker_gui.widgets as widgets
 
 from damaker.Channel import Channel
@@ -71,7 +73,7 @@ class PreviewFrame(QFrame):
     name: str = "Z-stack"
     # icon: str = u":/20x20/icons/20x20/cil-screen-desktop.png"
     icon: str = u":/flat-icons/icons/flat-icons/database.svg"
-    def __init__(self, parent=None, path=None):
+    def __init__(self, parent=None, path="", channels=[], fileInfo=None):
         super().__init__(parent)
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(3)
@@ -87,24 +89,56 @@ class PreviewFrame(QFrame):
         self.slider = QSlider()
         self.slider.setOrientation(Qt.Horizontal)
         
-        self.view = PreviewWidget([], None, self.slider)
+        self.view = PreviewWidget([], fileInfo, self.slider)
         self._layout.addWidget(self.view)
         self._layout.addWidget(self.slider)
         
-        if path != None:
+        if path != "":
             self.view.loadChannels(path)
         
-        self.btn_3DView = QPushButton("3D")
+        if channels != []:
+            self.view.addChannels(channels)
+        
+        # -- 3D --
+        self.thread3DView = Loader3DViewThread()
+        self.preview3D = None
+        icon = QIcon()
+        icon.addFile(u":/flat-icons/icons/flat-icons/cube.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.btn_3DView = QPushButton(icon, "3D")
         self.btn_3DView.clicked.connect(self.add3DView)
         
+        # -- ORTHO --
+        self.threadOrtho = ReslicerWorker()
+        self.btn_orthoView = QPushButton("Orthogonal projection")
+        self.projections = []
+        self.btn_orthoView.clicked.connect(self.loadOrthogonalViews)
+                
         self.view.channelsChanged.connect(self.updateBtnChannels)
         self.updateBtnChannels()
     
+    def loadOrthogonalViews(self):
+        self.threadOrtho.channels = list(self.view.channels.keys())
+        self.threadOrtho.finished.connect(self.showOrthogonalViews)
+        self.threadOrtho.start()
+        print("Reslicing stack ")
+    
+    def showOrthogonalViews(self, top, left):
+        self.orthoFrame = PreviewFrame(channels=top, fileInfo=self.view.fileInfo)
+        self.orthoFrame.view.sliderUpdateRange()
+        self.orthoFrame.view.updateFrame(0)
+        self.orthoFrame.view.view.autoRange()
+        self.parentWidget().parentWidget().parentWidget().addTab(self.orthoFrame)
+        print("Reslicing done ✔")
+    
     def getToolbar(self):
-        return [self.btn_3DView]
+        return [self.btn_3DView, self.btn_orthoView]
     
     def add3DView(self):
-        print(self.parentWidget().parentWidget().parentWidget().addTab(Preview3DWidget(channels=list(self.view.channels.keys()))))
+        self.thread3DView.setChannels(list(self.view.channels.keys()))
+        self.thread3DView.setWidget(Preview3DWidget())
+        self.thread3DView.loaded.connect(self.parentWidget().parentWidget().parentWidget().addTab)
+        self.thread3DView.start()
+        
     
     def updateBtnChannels(self):
         widgets.clearLayout(self.layout_btn_channels, True)
@@ -362,3 +396,40 @@ class FileLoaderWorker(QRunnable):
             self.signals.error.emit()
         else:
             self.signals.loaded.emit(channels)
+
+class Loader3DViewThread(QThread):
+    loaded = Signal(Preview3DWidget)
+    def __init__(self, channels=[], widget: Preview3DWidget=None):
+        super().__init__()
+        self.channels = channels
+        self.widget = widget
+
+    def setChannels(self, channels):
+        self.channels = channels        
+    
+    def setWidget(self, widget):
+        self.widget = widget
+    
+    @Slot()
+    def run(self):
+        if self.channels == [] or self.widget is None:
+            return
+        self.setPriority(QThread.HighPriority)
+        print("Converting to 3D 🔅")   
+        self.widget.setChannels(self.channels)
+        self.loaded.emit(self.widget)
+
+class ReslicerWorker(QThread):
+    finished = Signal(list, list)
+    def __init__(self, channels: Channel=[]):
+        super(ReslicerWorker, self).__init__()        
+        self.channels = channels
+
+    @Slot()
+    def run(self):
+        top = []
+        left = []
+        for channel in self.channels:
+            top.append(damaker.processing._resliceTop(channel))
+            left.append(damaker.processing._resliceLeft(channel))
+        self.finished.emit(top, left)

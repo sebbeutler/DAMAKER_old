@@ -157,7 +157,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.scrollArea, 0, 0, 1, 1)
 
         icon1 = QIcon()
-        icon1.addFile(u":/flat-icons/icons/flat-icons/database.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/flat-icons/icons/flat-icons/info.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.dock1_tab.addTab(self.dock1_tabPage1, icon1, "")
 
         self.layout_dock1.addWidget(self.dock1_tab)

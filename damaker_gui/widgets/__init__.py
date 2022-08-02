@@ -13,6 +13,7 @@ from .ContentFrame import *
 from .WorkspaceWidget import *
 from .ConsoleWidget import *
 from .PipelineWidget import *
+from .OperationWidget import *
 
 def clearLayout(layout: QLayout, delete=False):
     for i in reversed(range(layout.count())): 

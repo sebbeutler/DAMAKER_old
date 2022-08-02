@@ -337,7 +337,7 @@ def _resliceTop(input: Channel) -> Channel:
     except:
         return input
     
-    input.px_sizes = PhysicalPixelSizes(Y, Y, X)
+    input.px_sizes = PhysicalPixelSizes(input.px_sizes.Y, input.px_sizes.Y, input.px_sizes.X)
     input.name = "reslicedTop_" + input.name
     input.data = result.astype(np.uint8)
     
@@ -365,7 +365,7 @@ def _resliceLeft(input: Channel) -> Channel:
     
     input.name = "reslicedLeft_" + input.name
     input.data = result.astype(np.uint8)
-    input.px_sizes = PhysicalPixelSizes(X, X, Y)
+    input.px_sizes = PhysicalPixelSizes(input.px_sizes.X, input.px_sizes.X, input.px_sizes.Y)
     
     return input
 
@@ -536,8 +536,9 @@ def resampleChannel(input: Channel, sizeX: int, sizeY: int, sizeZ: int) -> Chann
     """
         Name: Resample
         Category: Import
-    """    
-    arr = sitk.GetImageFromArray(input.data.astype(np.float32))
+    """
+    print(f"{sizeX}, {sizeY}, {sizeZ}")
+    arr = sitk.GetImageFromArray(input.data.astype(np.uint8))
     arr.SetSpacing(tuple(reversed(input.px_sizes)))
     
     flt = sitk.ResampleImageFilter()

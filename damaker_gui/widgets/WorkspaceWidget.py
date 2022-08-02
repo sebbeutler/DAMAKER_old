@@ -28,9 +28,9 @@ class WorkspaceWidget(QTreeView):
         self.setModel(self.explorer)
         self.setRootIndex(root)
         
-        self.setColumnHidden(1, True)
-        self.setColumnHidden(2, True)
-        self.setColumnHidden(3, True)
+        # self.setColumnHidden(1, True)
+        # self.setColumnHidden(2, True)
+        # self.setColumnHidden(3, True)
         
         self.setDragEnabled(True)
         self.setDragDropMode(QAbstractItemView.DragDropMode.DragOnly)
@@ -85,6 +85,8 @@ class WorkspaceWidget(QTreeView):
         
     def selectWorkspace(self):
         path = QFileDialog.getExistingDirectory(None, 'Open folder', self.explorer.rootPath())
+        if path == "":
+            return
         root = self.explorer.setRootPath(path)
         WorkspaceWidget.RootPath = path        
         print("Workspace🌐:", WorkspaceWidget.RootPath)

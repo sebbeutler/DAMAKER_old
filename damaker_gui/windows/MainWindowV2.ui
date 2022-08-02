@@ -158,7 +158,7 @@ margin: 0px;</string>
          </property>
          <attribute name="icon">
           <iconset resource="../resources/files.qrc">
-           <normaloff>:/flat-icons/icons/flat-icons/database.svg</normaloff>:/flat-icons/icons/flat-icons/database.svg</iconset>
+           <normaloff>:/flat-icons/icons/flat-icons/info.svg</normaloff>:/flat-icons/icons/flat-icons/info.svg</iconset>
          </attribute>
          <attribute name="title">
           <string>Page</string>

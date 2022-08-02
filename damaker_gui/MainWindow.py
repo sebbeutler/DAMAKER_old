@@ -3,26 +3,21 @@ if __name__ == '__main__':
     os.system("pyside2-uic -o ./damaker_gui/windows/UI_MainWindowV2.py --from-imports ./damaker_gui/windows/MainWindowV2.ui")
     os.system("pyside2-uic -o ./damaker_gui/windows/UI_BatchParametersWidget.py --from-imports ./damaker_gui/windows/BatchParametersWidget.ui")
 
-from pyclbr import Function
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from PySide2.QtCore import *
 from PySide2 import *
 import sys
-from damaker.pipeline import Operation
 import damaker_gui.widgets as widgets
 from damaker_gui.windows.UI_MainWindowV2 import *
 
-
-
 class MainWindow(QMainWindow):
-
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
-
+        # self.show()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        print("ui loaded: ✔")
+        # print("ui loaded: ✔")
         # self.setWindowFlag(Qt.FramelessWindowHint)
         # self.ui.menubar._mouseMoveEvent = self.ui.menubar.mouseMoveEvent
         # self.ui.menubar.mouseMoveEvent = self.moveWindowEvent
@@ -34,13 +29,17 @@ class MainWindow(QMainWindow):
         # -Console-
         self.ui.dock3.addTab(widgets.ConsoleWidget())
         
+        # -FileInfo-
+        self.fileInfo = widgets.FileInfoWidget()
+        self.ui.dock2.addTab(self.fileInfo)
+        
         # -Workspace-
         self.workspace = widgets.WorkspaceWidget()
         self.workspace.signalOpen.connect(self.openFile)        
         self.ui.dock4.addTab(self.workspace)
         
         # -Preview Z-Stack-
-        self.ui.dock1.addTab(widgets.PreviewFrame())
+        self.ui.dock1.addTab(widgets.PreviewFrame(fileInfo=self.fileInfo))
         self.pipeline = widgets.PipelineWidget()
         self.ui.dock1.addTab(self.pipeline)
         
@@ -49,6 +48,8 @@ class MainWindow(QMainWindow):
         self.pipeline.connectTo(self.fl)
         self.ui.dock2.addTab(self.fl)
         
+        # self.ortho = Q
+        
         # self.menu_view = self.ui.menubar.addMenu("View")
         # self.menu_view.addAction("")
         
@@ -56,7 +57,7 @@ class MainWindow(QMainWindow):
     
     def openFile(self, path: str):
         if path.endswith(".tif") or path.endswith(".tiff"):
-            self.ui.dock1.addTab(widgets.PreviewFrame(path=path))
+            self.ui.dock1.addTab(widgets.PreviewFrame(path=path, fileInfo=self.fileInfo))
         else:
             self.ui.statusbar.showMessage(f"No suitable format found for file: '{path}'", 10000)
         
@@ -86,5 +87,4 @@ class MainWindow(QMainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MainWindow()
-    window.show()
     sys.exit(app.exec_())

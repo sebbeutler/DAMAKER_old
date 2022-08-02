@@ -15,7 +15,7 @@ from vedo import Mesh
 import damaker as dmk
 import damaker_gui.widgets as widgets
 
-from damaker_gui.widgets.PreviewWidget import _luts
+from damaker_gui.widgets.PreviewWidget import ReslicerWorker, _luts
 from damaker_gui.windows.UI_MainWindow import Ui_MainWindow
 from damaker_gui.pages.Page import Page
 
@@ -527,22 +527,3 @@ class VisualizePage(Page):
                         argTmp.append(args[argId])
                     argId += 1
                 func(*argTmp)
-
-
-class ReslicerSignals(QObject):
-    finished = Signal(list, list)
-
-class ReslicerWorker(QThread):
-    def __init__(self, channels: dmk.Channel=[]):
-        super(ReslicerWorker, self).__init__()        
-        self.channels = channels
-        self.signals = ReslicerSignals()
-
-    @Slot()
-    def run(self):
-        top = []
-        left = []
-        for channel in self.channels:
-            top.append(dmk.processing._resliceTop(channel))
-            left.append(dmk.processing._resliceLeft(channel))
-        self.signals.finished.emit(top, left)
