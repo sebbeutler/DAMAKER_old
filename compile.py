@@ -1,7 +1,7 @@
 import os
 
 # -Settings-
-_EXENAME = 'v0.2.5-alpha.DAMAKER.standalone'
+_EXENAME = 'v0.2.7-alpha.DAMAKER.standalone'
 _ONEFILE = True
 _ICON  = f'{os.path.dirname(__file__)}/damaker_gui/resources/icons/16x16/damaker.ico'
 _COMPRESS = False

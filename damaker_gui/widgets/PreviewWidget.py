@@ -6,6 +6,7 @@ import pyqtgraph as pg
 
 import numpy as np
 import damaker
+import damaker_gui
 import damaker_gui.widgets as widgets
 
 from damaker.Channel import Channel
@@ -109,29 +110,38 @@ class PreviewFrame(QFrame, ITabWidget):
         
         # -- ORTHO --
         self.threadOrtho = ReslicerWorker()
-        self.btn_orthoView = QPushButton("Orthogonal projection")
-        self.projections = []
-        self.btn_orthoView.clicked.connect(self.loadOrthogonalViews)
-                
+        self.idProj = (0, 0)
+        self.projX = None
+        self.projY = None
+            
+        self.view.channelsChanged.connect(self.loadOrthogonalViews)
         self.view.channelsChanged.connect(self.updateBtnChannels)
         self.updateBtnChannels()
     
     def loadOrthogonalViews(self):
         self.threadOrtho.channels = list(self.view.channels.keys())
-        self.threadOrtho.finished.connect(self.showOrthogonalViews)
+        self.threadOrtho.finished.connect(self.setProjections)
         self.threadOrtho.start()
-        print("Reslicing stack ")
+        self.view.enableCross(True)
+        print("Reslicing stack ...")
+        
+    def setProjections(self, top, left):
+        self.projX = left
+        self.projY = top
+        self.tabEnterFocus()
+        print("Reslicing thread done ☑")
     
-    def showOrthogonalViews(self, top, left):
-        self.orthoFrame = PreviewFrame(channels=top, fileInfo=self.view.fileInfo)
-        self.orthoFrame.view.sliderUpdateRange()
-        self.orthoFrame.view.updateFrame(0)
-        self.orthoFrame.view.view.autoRange()
-        self.parentWidget().parentWidget().parentWidget().addTab(self.orthoFrame)
-        print("Reslicing done ✔")
+    def tabEnterFocus(self):
+        if damaker_gui.Window() != None:
+            print("ENTER")
+            damaker_gui.Window().orthogonalProjection.connectTo(self)
+    
+    def tabExitFocus(self):
+        if damaker_gui.Window() != None:
+            damaker_gui.Window().orthogonalProjection.disconnect(self)
     
     def getToolbar(self):
-        return [self.btn_3DView, self.btn_orthoView]
+        return [self.btn_3DView]
     
     def add3DView(self):
         self.thread3DView.setChannels(list(self.view.channels.keys()))
@@ -274,6 +284,7 @@ class PreviewWidget(pg.ImageView):
     def clear(self):
         for chn, img in self.channels.items():
             self.removeItem(img)
+            # chn.free()
         
         self.channels.clear()
         self.shape = (0,0,0)
@@ -421,6 +432,7 @@ class Loader3DViewThread(QThread):
 
 class ReslicerWorker(QThread):
     finished = Signal(list, list)
+    loaded: bool = False
     def __init__(self, channels: Channel=[]):
         super(ReslicerWorker, self).__init__()        
         self.channels = channels

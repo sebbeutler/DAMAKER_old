@@ -39,6 +39,8 @@ class ContentFrame(QFrame):
             super().__init__(parent)
         self._tab: QTabWidget = None        
         self.toolBar = ToolBar()
+        self.previousTab = None
+        self.currentTab = None
         
     @property
     def tab(self) -> QTabWidget:
@@ -46,34 +48,54 @@ class ContentFrame(QFrame):
             self.setStyleSheet("QFrame#" + self.objectName() + "{ background-color: rgb(172, 187, 205); border-radius: 3px; border: 1px solid rgb(205, 205, 205); }")
             self._tab: QTabWidget = self.findChild(QTabWidget)
             self._tab.setMovable(True)
-            self._tab.tabCloseRequested.connect(self.tabClose)
+            self._tab.tabCloseRequested.connect(self.closeTab)
             self._tab.currentChanged.connect(self.tabChanged)
             self.layout().insertWidget(0, self.toolBar)
         return self._tab
     
     def tabChanged(self, index: int):
         widget = self.tab.widget(index)
-        self.toolBar.clearActions()
+        self.toolBar.clearActions()        
+        if issubclass(type(self.currentTab), ITabWidget):
+            self.currentTab.tabExitFocus()            
         if issubclass(type(widget), ITabWidget):
             self.toolBar.newActions(widget.getToolbar())
+            widget.tabEnterFocus()
+        self.previousTab = self.currentTab
+        self.currentTab = widget
+        
     
     def addTab(self, widget: QWidget, name: str="None"):
         if issubclass(type(widget), ITabWidget):
             name = widget.name
             icon = QIcon()
             icon.addFile(widget.icon, QSize(), QIcon.Normal, QIcon.Off)
-            self.tab.addTab(widget, icon, name)
+            widget.tabIndex = self.tab.addTab(widget, icon, name)
         else:
             self.tab.addTab(widget, name)
         self.tab.setCurrentIndex(self.tab.count()-1)
     
-    def tabClose(self, index):
+    def closeTab(self, index) -> bool:
+        if index < 0 or index >= self.tab.count():
+            return False
         import gc
         widget = self._tab.widget(index)
-        if issubclass(widget, ITabWidget):
+        if issubclass(type(widget), ITabWidget):
             widget.closing()
         widget.deleteLater()
-        self._tab.removeTab(index)
+        self.tab.removeTab(index)
         gc.collect()
+        return True
+    
+    def removeTab(self, widget: QWidget):
+        index = self.getWidgetIndex(widget)
+        if index != -1:
+            self.tab.removeTab(index)
+    
+    def getWidgetIndex(self, widget: QWidget) -> int:
+        for i in range(self.tab.count()):
+            if widget == self.tab.widget(i):
+                return i
+        return -1 # Not found
         
         

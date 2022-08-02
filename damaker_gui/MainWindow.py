@@ -22,27 +22,31 @@ class MainWindow(QMainWindow):
         
         # self.btn = QPushButton("test", self.ui.menubar)
         
-        # -Console-
+        # -Console- #
         self.ui.dock3.addTab(widgets.ConsoleWidget())
         
-        # -FileInfo-
+        # -FileInfo- #
         self.fileInfo = widgets.FileInfoWidget()
         self.ui.dock2.addTab(self.fileInfo)
         
-        # -Workspace-
+        # -Orthogonal projection- #
+        self.orthogonalProjection = widgets.OrthogonalProjectionWidget(origin=None)
+        # self.ui.dock2.addTab(self.orthogonalProjection)
+        
+        # -Workspace- #
         self.workspace = widgets.WorkspaceWidget()
         self.workspace.signalOpen.connect(self.openFile)        
         self.ui.dock4.addTab(self.workspace)
         
-        # -Preview Z-Stack-
+        # -Preview Z-Stack- #
         self.ui.dock1.addTab(widgets.PreviewFrame(fileInfo=self.fileInfo))
         self.pipeline = widgets.PipelineWidget()
         self.ui.dock1.addTab(self.pipeline)
         
-        # -Operations-
-        self.fl = widgets.FunctionListWidget()
-        self.pipeline.connectTo(self.fl)
-        self.ui.dock2.addTab(self.fl)
+        # -Operations- #
+        self.operationList = widgets.FunctionListWidget()
+        self.pipeline.connectTo(self.operationList)
+        self.ui.dock2.addTab(self.operationList)
         
         # self.ortho = Q
         
@@ -50,7 +54,32 @@ class MainWindow(QMainWindow):
         # self.menu_view = self.ui.menubar.addMenu("View")
         # self.menu_view.addAction("")
         
+        for arg in sys.argv[1:]:
+            self.openFile(arg)
+        
         self.showMaximized()
+        
+    @property
+    def docks(self):
+        return [self.ui.dock1, self.ui.dock2, self.ui.dock3, self.ui.dock4]
+    
+    def addTab(self, dockId: int=1, widget: QWidget=QWidget(), tabName: str="None") -> QWidget:
+        if dockId == 1:
+            self.ui.dock1.addTab(widget, tabName)
+        if dockId == 2:
+            self.ui.dock2.addTab(widget, tabName)
+        if dockId == 3:
+            self.ui.dock3.addTab(widget, tabName)
+        if dockId == 4:
+            self.ui.dock4.addTab(widget, tabName)
+        return widget
+
+    def closeTab(self, widget: QWidget) -> bool:
+        for dock in self.docks:
+            if dock.closeTab(dock.getWidgetIndex(widget)):
+                return True
+        return False
+                    
     
     def openFile(self, path: str):
         if path.endswith(".tif") or path.endswith(".tiff"):
