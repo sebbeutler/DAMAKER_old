@@ -1,8 +1,10 @@
 import os
 
+# TODO: exclude unused module. see: https://stackoverflow.com/questions/4890159/python-excluding-modules-pyinstaller
+
 # -Settings-
-_EXENAME = 'v0.2.7-alpha.DAMAKER.standalone'
-_ONEFILE = True
+_EXENAME = 'v0.2.7-alpha.DAMAKER'
+_STANDALONE = True
 _ICON  = f'{os.path.dirname(__file__)}/damaker_gui/resources/icons/16x16/damaker.ico'
 _COMPRESS = False
 
@@ -10,8 +12,8 @@ _COMPRESS = False
 cmd = f"""pyinstaller
 main.py
     -y
-    -n {_EXENAME}
-    {'--onefile' if _ONEFILE else '' }
+    -n {_EXENAME}{'.standalone' if _STANDALONE else ''}
+    {'--onefile' if _STANDALONE else '' }
     --windowed
     
     --icon={_ICON}
@@ -28,6 +30,7 @@ main.py
     --hidden-import "vtkmodules.util.numpy_support"
 """
 
+# -Execution- #
 if __name__ == '__main__':
     print('exec: ', cmd)
     os.system(cmd.replace('\n', ' '))

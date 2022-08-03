@@ -2,11 +2,13 @@ from inspect import getmembers, isfunction
 import re
 
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QMenu, QPushButton, QAction
-from PySide2.QtCore import Signal
+from PySide2.QtGui import QIcon
+from PySide2.QtCore import Signal, QSize
 
+import damaker
 import damaker.processing
 import damaker.utils
-from damaker_gui.widgets.ITabWidget import ITabWidget
+import damaker_gui.widgets as widgets
 
 _menuStyleSheet = """
 QMenu {
@@ -18,7 +20,7 @@ QMenu::item::selected {
     background-color: rgb(30,30,30);
 }"""
 
-class FunctionListWidget(QWidget, ITabWidget):
+class FunctionListWidget(QWidget, widgets.ITabWidget):
     operationTriggered = Signal(str)
     name: str= "Operations"
     # icon: str = u":/flat-icons/icons/flat-icons/engineering.svg"
@@ -38,11 +40,27 @@ class FunctionListWidget(QWidget, ITabWidget):
         self.functions = {}
         self.loadFunctions()
         
+        
+        icon = QIcon()
+        icon.addFile(u":/flat-icons/icons/flat-icons/refresh.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.btn_reloadPlugins = QPushButton(icon, "Refresh Plugins")
+        self.btn_reloadPlugins.clicked.connect(self.reload)
+        
+    def getToolbar(self):
+        return [self.btn_reloadPlugins]
+    
+    def reload(self):
+        damaker.plugins = damaker.importPlugins()
+        widgets.clearLayout(self._layout)
+        self.menus.clear()
+        self.loadFunctions()
+        print("Reloaded operations ✔")
     
     def loadFunctions(self):
         self.functions = dict(getmembers(damaker.processing, isfunction))        
         self.functions.update(dict(getmembers(damaker.utils, isfunction)))
-        self.categories = {"Other": []}
+        self.functions.update(dict(getmembers(damaker.plugins, isfunction)))
+        self.categories = {"Plugins": []}
         
         for func in self.functions.values():
             if func.__name__[0] == '_':
@@ -59,7 +77,7 @@ class FunctionListWidget(QWidget, ITabWidget):
                     self.categories[category[0]] = []
                 self.categories[category[0]].append(func)
             else:
-                self.categories["Other"].append(func)
+                self.categories["Plugins"].append(func)
         
         for cat, funcs in self.categories.items():
             if len(funcs) == 0:
