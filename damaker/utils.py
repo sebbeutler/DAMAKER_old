@@ -8,7 +8,7 @@ import numpy as np
 from skimage import measure
 
 from aicsimageio.writers import OmeTiffWriter
-from aicsimageio.readers import bioformats_reader
+from aicsimageio.readers import bioformats_reader, OmeTiffReader
 from aicsimageio.types import PhysicalPixelSizes
 
 from vedo import Mesh, Plotter
@@ -34,7 +34,9 @@ def loadChannelsFromFile(filename: StrFilePath):
     print("Loading channels . . .")
     channels = _loadChannels_tiffile(filename)    
     # channels = _loadChannels_aicsi(filename)    
-    metadata = bioformats_reader.BioFile(filename).ome_metadata
+    
+    biofile = bioformats_reader.BioFile(filename)    
+    metadata = biofile.ome_metadata
     
     px_sizes = PhysicalPixelSizes(
         metadata.images[0].pixels.physical_size_z,
@@ -44,6 +46,7 @@ def loadChannelsFromFile(filename: StrFilePath):
     
     for ch in channels:
         if type(ch) is Channel:
+            # ch.metadata = metadata
             ch.px_sizes = px_sizes
             print(f'Loaded: {ch} ✔')
     return channels
@@ -75,6 +78,7 @@ def _loadChannels_tiffile(filename: StrFilePath):
     with TiffFile(filename) as file:
         data = file.asarray()
         axes = file.series[0].axes
+        metadata = file.imagej_metadata
         
     fn = filename.split("/")[-1]
     fn = ".".join(fn.split(".")[:-1])
@@ -95,12 +99,12 @@ def _loadChannels_tiffile(filename: StrFilePath):
     if len(data.shape) == 4:
         chns = []
         for i in range(data.shape[0]):
-            chns.append(Channel(fn, data[i], id=i+1))
+            chns.append(Channel(fn, data[i], id=i+1, metadata=metadata))
         return chns    
     elif len(data.shape) == 3:
-        return [Channel(fn, data, id=1)]
+        return [Channel(fn, data, id=1, metadata=metadata)]
     elif len(data.shape) == 2:
-        return [Channel(fn, data[np.newaxis], id=1)]
+        return [Channel(fn, data[np.newaxis], id=1, metadata=metadata)]
 
 def channelSave(chn: Channel, folderPath: StrFolderPath, includeChannelId: bool=False):
     """

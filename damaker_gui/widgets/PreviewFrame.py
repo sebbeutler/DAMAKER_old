@@ -1,6 +1,9 @@
-from PySide2.QtWidgets import QPushButton, QFrame, QVBoxLayout, QHBoxLayout, QHBoxLayout, QAction, QSlider
+from PySide2.QtWidgets import QPushButton, QFrame, QVBoxLayout, QHBoxLayout, QHBoxLayout, QAction, QSlider, QFileDialog
 from PySide2.QtGui import QIcon
 from PySide2.QtCore import Signal, Qt, QSize, QThread, Slot
+
+from aicsimageio.writers import OmeTiffWriter
+import numpy as np
 
 import damaker
 from damaker.Channel import Channel
@@ -85,10 +88,23 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
         self.idProj = (0, 0)
         self.projX: list[Channel] = None
         self.projY: list[Channel] = None
+        
+        icon = QIcon()
+        icon.addFile(u":/flat-icons/icons/flat-icons/add_image.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.btn_save = QPushButton(icon, "Export")
+        self.btn_save.clicked.connect(self.saveChannels)
             
         self.view.channelsChanged.connect(self.loadOrthogonalViews)
         self.view.channelsChanged.connect(self.updateBtnChannels)
         self.updateBtnChannels()
+    
+    def saveChannels(self):        
+        path = QFileDialog.getSaveFileName(None, 'Export', widgets.WorkspaceWidget.RootPath)[0]
+        if path == "":
+            return
+        channels = list(self.view.channels.keys())
+        if len(channels) == 0: return
+        OmeTiffWriter.save(np.array([chn.data for chn in channels]), path, physical_pixel_sizes=channels[0].px_sizes, dim_order="CZYX")
     
     def loadOrthogonalViews(self):
         self.threadOrtho.channels = list(self.view.channels.keys())
@@ -114,7 +130,7 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
             damaker_gui.Window().orthogonalProjection.disconnect(self)
     
     def getToolbar(self):
-        return [self.btn_3DView]
+        return [self.btn_3DView, self.btn_save]
     
     def add3DView(self):
         self.thread3DView.setChannels(list(self.view.channels.keys()))

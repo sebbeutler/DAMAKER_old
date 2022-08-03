@@ -1,14 +1,17 @@
 from aicsimageio.types import PhysicalPixelSizes
 import numpy as np
 from aicsimageio.writers import OmeTiffWriter
+from ome_types.model import OME
+import pyqtgraph as pg
 
 class Channel:
-    def __init__(self, name: str="", data: np.ndarray=[], physicalPixelSizes: PhysicalPixelSizes=None, id: int=0, lut=None):
+    def __init__(self, name: str="", data: np.ndarray=[], physicalPixelSizes: PhysicalPixelSizes=None, id: int=0, lut: pg.ColorMap=None, metadata: OME=None):
         self.name = name
         self.data = np.array(data)
         self.px_sizes = physicalPixelSizes
         self.id = id
         self.lut = lut
+        self.metadata = metadata
         
         self.show = True
         self.frames = None
@@ -17,13 +20,14 @@ class Channel:
     def shape(self):
         return self.data.shape
     
-    def save(self, folderPath: str="", includeChannelId: bool=False):
+    def save(self, folderPath: str="", includeChannelId: bool=False, filename: str=""):
         if folderPath != "" and folderPath[-1] not in "/\\":
             folderPath += "/"
-        if includeChannelId:
-            filename = f'{self.name}_C{self.id}.tif'
-        else:
-            filename = f'{self.name}.tif'
+        if filename == "":
+            if includeChannelId:
+                filename = f'{self.name}_C{self.id}.tif'
+            else:
+                filename = f'{self.name}.tif'
         
         if len(self.data.shape) == 3:
             OmeTiffWriter.save(self.data, folderPath + filename, physical_pixel_sizes=self.px_sizes, dim_order="ZYX")
@@ -56,7 +60,7 @@ class Channel:
 class SingleChannel(Channel):
     pass
 
-class Channels(list):
+class Channels(list[Channel]):
     pass
 
 class Frame:

@@ -50,6 +50,12 @@ _luts = [pg.ColorMap(lut_pos, lut_green, name='green'),
          pg.ColorMap(lut_pos, lut_magenta, name='magenta'),
          pg.ColorMap(lut_pos, lut_grays, name='grays')]
 
+def getLut(name: str) -> pg.ColorMap:
+    for lut in _luts:
+        if lut.name == name:
+            return lut
+    return _luts[0] # Default
+
 class PreviewWidget(pg.ImageView):  
     mouseMoved = Signal(QMouseEvent, QPointF)
     channelAdded = Signal()
