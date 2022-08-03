@@ -4,7 +4,7 @@ import os
 
 # -Settings-
 _EXENAME = 'v0.2.7-alpha.DAMAKER'
-_STANDALONE = True
+_STANDALONE = False
 _ICON  = f'{os.path.dirname(__file__)}/damaker_gui/resources/icons/16x16/damaker.ico'
 _COMPRESS = False
 
@@ -12,7 +12,7 @@ _COMPRESS = False
 cmd = f"""pyinstaller
 main.py
     -y
-    -n {_EXENAME}{'.standalone' if _STANDALONE else ''}
+    -n {_EXENAME}{'.standalone' if _STANDALONE else '.full'}
     {'--onefile' if _STANDALONE else '' }
     --windowed
     
