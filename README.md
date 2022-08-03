@@ -2,26 +2,31 @@
 
 # DAMAKER
 
-
+Download binaries: https://github.com/subski/DAMAKER/releases
 
 ## Build with conda
+
+### Download
 ```
 conda create -n damaker python=3.9 -y
 conda activate damaker
 git clone https://github.com/subski/DAMAKER.git
-conda install -c conda-forge scyjava -y
 pip install -r Requirements.txt
+Optional:
+  conda install -c conda-forge scyjava -y
 ```
 
+### Run
 ```
 python main.py
 ```
 
+### Build binaries
 ```
 python compile.py
 ```
 
-### Related links
+## Related links
 
 - github : https://github.com/subski/DAMAKER
 - trello : https://trello.com/b/bgtG1JQn/conduite-de-projet
