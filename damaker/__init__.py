@@ -5,7 +5,24 @@ DMK_DIR = os.getcwd()
 PLUGINS_DIR = f'{DMK_DIR}/plugins/'
 if not os.path.exists(PLUGINS_DIR):
     os.mkdir(PLUGINS_DIR)
-    open(f'{PLUGINS_DIR}/__init__.py', 'w').close()
+    with open(f'{PLUGINS_DIR}/__init__.py', 'w') as initFile:
+        initFile.write("""
+# To import a file 'plugins/myFile.py'
+# from .myFile import *
+
+# Or put the functions directly here
+
+# # -Example 1- #
+# def myFunc(param1: str, param2: int) -> bool:
+# 	print("do something.")
+# 	return True
+
+# # -Example 2- #
+# from damaker.Channel import Channel
+# def myOperation(input: Channel) -> Channel:
+# 	# process channel here.
+# 	return input
+""")
 
 def importPlugins():
     import importlib.util
