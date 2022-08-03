@@ -2,18 +2,19 @@ from inspect import signature
 import os, json
 import os.path
 import re
+from typing import Callable
 from .Channel import Channel, Channels, SingleChannel
 from .utils import *
 import enum
 
 class Operation:    
-    def __init__(self, func=None, args=[], name="", enabled=True):
+    def __init__(self, func: Callable=None, args: list=[], name: str="", enabled: bool=True, opType=None):
         self.func = func
         self.args = args
         self.name = name
         self.output = None
         self.enabled = enabled
-        self.type = Operation
+        self.type = Operation if opType is None else opType
         self.outputPath = ""
 
     def run(self):       
@@ -78,6 +79,10 @@ class Operation:
     
     def __str__(self) -> str:
         return self.name
+
+    def copy(self):
+        return Operation(self.func, self.args.copy(), self.name, self.enabled)
+        
 
 class BatchParameters:
     folder: str=""
@@ -171,11 +176,7 @@ class BatchParameters:
 
 class BatchOperation(Operation):
     def __init__(self, func=None, args=[], name="", enabled=True, outputPath=""):
-        self.func = func
-        self.args = args
-        self.name = name
-        self.enabled = enabled
-        self.type = BatchOperation
+        super().__init__(func, args, name, enabled, BatchOperation)
         self.outputPath = outputPath
     
     def run(self):

@@ -1,11 +1,12 @@
-from PySide2.QtWidgets import QListWidget, QAbstractItemView, QAction, QPushButton, QListWidgetItem
+from typing import Callable, overload
+from PySide2.QtWidgets import QListWidget, QAbstractItemView, QAction, QPushButton, QListWidgetItem, QGridLayout
 from PySide2.QtCore import QSize, QThread, Signal, Slot, Qt
 
 from damaker.pipeline import *
+import damaker_gui
 import damaker_gui.widgets as widgets
-from damaker_gui.widgets.ITabWidget import ITabWidget
 
-class PipelineWidget(QListWidget, ITabWidget):
+class PipelineWidget(QListWidget, widgets.ITabWidget):
     name: str = "Pipeline"
     icon: str = u":/flat-icons/icons/flat-icons/timeline.svg"
     def __init__(self, parent=None, operations=[]):
@@ -34,6 +35,16 @@ class PipelineWidget(QListWidget, ITabWidget):
     
     def getToolbar(self):
         return [self.btn_stop, self.btn_run]
+
+    def tabEnterFocus(self):
+        try:
+            damaker_gui.Window().operationList.apply.connect(self.addOperation)
+        except Exception: pass
+
+    def tabExitFocus(self):
+        try:
+            damaker_gui.Window().operationList.apply.disconnect(self.addOperation)
+        except Exception: pass
     
     def runPipeline(self):                
         self.pipelineThread.setPipeline(self)        
@@ -54,15 +65,22 @@ class PipelineWidget(QListWidget, ITabWidget):
         item = QListWidgetItem("")
         # item = QListWidgetItem(op.name)       
         self.addItem(item)
-        op_widget = widgets.OperationWidget(op, self) 
+        op_widget = widgets.OperationWidget(op, self, QGridLayout) 
         item.setSizeHint(QSize(op_widget.width(), op_widget.height()))        
         self.setItemWidget(item, op_widget)
+    
+    def addOpfromFunc(self, func: Callable):
+        self.addOperation(Operation(func, [], func.__name__))
     
     def removeOperation(self):
         self.takeItem(self.currentRow())
     
     def connectTo(self, widget: widgets.FunctionListWidget):
-        widget.operationTriggered.connect(lambda name: self.addOperation(Operation(widget.getFunction(name), [], name)))
+        widget.operationTriggered.connect(self.addOpfromFunc)
+    
+    def disconnectFrom(self, widget: widgets.FunctionListWidget):
+        widget.operationTriggered.disconnect(self.addOpFromFunc)
+        
 
 class PipelineRunnerThread(QThread):
     stopped = Signal()

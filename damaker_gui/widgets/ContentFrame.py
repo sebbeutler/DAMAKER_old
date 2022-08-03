@@ -12,6 +12,8 @@ class ToolBar(QFrame):
         self._layout.setMargin(0)
         self.setMinimumHeight(22)
         self.setLayout(self._layout)
+        self.setStyleSheet("background-color: rgb(119, 119, 119);")
+        
     
     def newAction(self, widget: QWidget):
         widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -45,7 +47,8 @@ class ContentFrame(QFrame):
     @property
     def tab(self) -> QTabWidget:
         if self._tab is None:
-            self.setStyleSheet("QFrame#" + self.objectName() + "{ background-color: rgb(172, 187, 205); border-radius: 3px; border: 1px solid rgb(205, 205, 205); }")
+            # self.setStyleSheet("QFrame#" + self.objectName() + "{ background-color: rgb(172, 187, 205); border-radius: 3px; border: 1px solid rgb(205, 205, 205); }")
+            self.setStyleSheet("QFrame#" + self.objectName() + "{ background-color: rgb(119, 119, 119); border: 0px; }")
             self._tab: QTabWidget = self.findChild(QTabWidget)
             self._tab.setMovable(True)
             self._tab.tabCloseRequested.connect(self.closeTab)

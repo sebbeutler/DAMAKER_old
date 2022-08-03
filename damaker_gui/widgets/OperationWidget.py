@@ -1,31 +1,32 @@
-from PySide2.QtWidgets import QGroupBox, QListWidget, QGridLayout, QLineEdit, QSizePolicy, QWidget, QLabel, QSpinBox, QDoubleSpinBox, QCheckBox
+from PySide2.QtWidgets import QFormLayout, QGroupBox, QListWidget, QGridLayout, QLineEdit, QSizePolicy, QWidget, QLabel, QSpinBox, QDoubleSpinBox, QCheckBox
 from PySide2.QtCore import *
 
-from damaker.pipeline import *
+import damaker_gui
 import damaker_gui.widgets as widgets
+from damaker.pipeline import *
 
 import inspect
 
-from damaker_gui.widgets.ITabWidget import ITabWidget
 
-class OperationWidget(QGroupBox, ITabWidget):
-    def __init__(self, op:Operation, pipeline: QListWidget=None):
+class OperationWidget(QGroupBox):
+    def __init__(self, op:Operation, pipeline: QListWidget=None, layoutType=QFormLayout):
         super().__init__(op.func.alias)
         self.op = op
         self.pipeline = pipeline
         
-        self._layout: QGridLayout = QGridLayout()
-        self._layout.setMargin(5)
+        self._layout: QFormLayout = layoutType()
+        self._layout.setMargin(20)
+        self._layout.setSpacing(15)
         self.setLayout(self._layout)
         
         self.setAcceptDrops(False)
         
         self.setStyleSheet("QGroupBox { border-radius: 3px; border: 1px solid rgb(72, 72, 72); }")
         
-        self.funcAlias = QLineEdit()
-        self.funcAlias.setStyleSheet("border-radius: 3px; border: 1px solid rgb(220, 220, 220);")
-        self.funcAlias.setPlaceholderText("Alias")
-        self.funcAlias.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        # self.funcAlias = QLineEdit()
+        # self.funcAlias.setStyleSheet("border-radius: 3px; border: 1px solid rgb(220, 220, 220);")
+        # self.funcAlias.setPlaceholderText("Alias")
+        # self.funcAlias.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
         
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         
@@ -34,26 +35,35 @@ class OperationWidget(QGroupBox, ITabWidget):
         self.setFixedHeight(len(self.parameters) / 3 + 1 * 200)
         self.setAcceptDrops(False)
     
-    def run(self):
+    
+    def updateOperation(self):
         args = []
         for widget in self.parameters.values():
             if hasattr(widget, 'getParameter'):
                 args.append(widget.getParameter(widget))
         self.op.args = args
+    
+    def run(self):
+        self.updateOperation()
         self.op.run()
+        
+    def getOperation(self) -> Operation:        
+        self.updateOperation()
+        return self.op.copy()
     
     def addEntry(self, name: str, widget: QWidget):
         widgets = len(self.parameters)
-        col = (widgets*2) % 6 + 1
+        col = (widgets*2) % 6
         row = int(widgets / 3)
-        self._layout.addWidget(QLabel(f"{name}:"), row, col, Qt.AlignmentFlag.AlignRight)
-        self._layout.addWidget(widget, row, col+1, Qt.AlignmentFlag.AlignLeft)
+        if issubclass(type(self._layout), QGridLayout):
+            self._layout.addWidget(QLabel(f"{name}:"), row, col, Qt.AlignmentFlag.AlignRight)
+            self._layout.addWidget(widget, row, col+1, Qt.AlignmentFlag.AlignLeft)
+        else:
+            self._layout.addRow(f"{name}:", widget)
         widget.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
     
     def initialize(self):
         widgets.clearLayout(self._layout, False)
-        
-        self._layout.addWidget(self.funcAlias, 0, 0, Qt.AlignmentFlag.AlignCenter)
         
         sign = signature(self.op.func)
         param = None
@@ -118,7 +128,7 @@ class OperationWidget(QGroupBox, ITabWidget):
             # CHOICES
             elif type(param.annotation) is type(enum.Enum):
                 formWidget = widgets.EnumComboBox(param.annotation)
-                formWidget.getParameter = lambda widget: widget.curerentText()
+                formWidget.getParameter = lambda widget: widget.currentText()
             
             # BOOLEAN
             elif param.annotation is bool:

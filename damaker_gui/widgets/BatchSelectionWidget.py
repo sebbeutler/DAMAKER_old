@@ -43,9 +43,9 @@ class BatchSelectionWidget(QScrollArea):
     def addMod(self):
         self.modCounter += 1
         self.ui.batch_form_layout.addRow("Mod {%d}: " % self.modCounter, QLineEdit())
-        self.ui.batch_form.adjustSize()
-        self.ui.BatchParametersContent.adjustSize()
-        self.adjustSize()
+        # self.ui.batch_form.adjustSize()
+        # self.ui.BatchParametersContent.adjustSize()
+        # self.adjustSize()
         
     def setParameters(self, params: BatchParameters):
         self.inputPath.setText(params.folder)

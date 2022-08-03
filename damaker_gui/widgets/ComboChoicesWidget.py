@@ -1,12 +1,10 @@
 from PySide2.QtWidgets import QComboBox, QSizePolicy
 
-from damaker_gui.widgets.ITabWidget import ITabWidget
-
-class OperationInputWidget(QComboBox, ITabWidget):
-    def __init__(self, operations: list[str]):
+class ComboChoicesWidget(QComboBox):
+    def __init__(self, items: list[str]):
         super().__init__()
-        for op in operations:
-            self.addItem(op)
+        for item in items:
+            self.addItem(item)
         self.addItem("None")
         self.setCurrentText("None")                    
         self.setDuplicatesEnabled(False)

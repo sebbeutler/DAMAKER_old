@@ -47,7 +47,6 @@ class MainWindow(QMainWindow):
         
         # -Operations- #
         self.operationList = widgets.FunctionListWidget()
-        self.pipeline.connectTo(self.operationList)
         self.ui.dock2.addTab(self.operationList)
         
         # self.ortho = Q

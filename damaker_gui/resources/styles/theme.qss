@@ -1,0 +1,78 @@
+QFrame {
+	border: 0px;
+}
+
+/* ----  TAB WIDGET ---- */
+
+QTabWidget {
+	background-color: rgb(218, 219, 221);
+	padding: 15px;
+	margin: 10px;
+}
+
+QTabBar {
+	background-color: rgb(0, 0, 0);
+	padding: 15px;
+	margin: 10px;
+    font-weight: bold;
+}
+
+QTabBar::pane {
+  border: none;
+}
+
+QTabBar::tab {
+    color: black;  
+	background-color: rgb(220, 220, 220);
+    border: 1px solid rgb(235, 235, 235); 
+    padding: 4px 10px 4px 10px;
+   border-radius: 2px;
+} 
+
+QTabBar::tab:hover {
+  background-color: rgb(227, 241, 240);
+} 
+
+QTabBar::tab:selected { 
+	background-color: rgb(222, 237, 255);
+}
+
+/* ---- SLIDER ---- */
+
+QSlider::groove:horizontal {
+    border-radius: 4px;
+    height: 18px;
+	margin: 0px;
+	background-color: rgb(72, 75, 75);
+}
+
+QSlider::handle:horizontal {
+    background-color: rgb(35, 31, 32);
+    border: none;
+    height: 18px;
+    width: 18px;
+    margin: 0px;
+	border-radius: 2px;
+}
+QSlider::handle:horizontal:hover {
+    background-color: rgb(42, 42, 42);
+}
+
+QSlider::groove:vertical {
+    border-radius: 9px;
+    width: 18px;
+    margin: 0px;
+	background-color: rgb(52, 59, 72);
+}
+
+QSlider::handle:vertical {
+    background-color: rgb(35, 31, 32);
+	border: none;
+    height: 18px;
+    width: 18px;
+    margin: 0px;
+	border-radius: 2px;
+}
+QSlider::handle:vertical:hover {
+    background-color: rgb(42, 42, 42);
+}
