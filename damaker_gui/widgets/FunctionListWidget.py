@@ -50,13 +50,13 @@ class FunctionListWidget(QWidget, widgets.ITabWidget):
         return [self.btn_reloadPlugins]
     
     def reload(self):
-        damaker.plugins = damaker.importPlugins()
         widgets.clearLayout(self._layout)
         self.menus.clear()
         self.loadFunctions()
         print("Reloaded operations ✔")
     
-    def loadFunctions(self):
+    def loadFunctions(self):        
+        damaker.plugins = damaker.importPlugins()
         self.functions = dict(getmembers(damaker.processing, isfunction))        
         self.functions.update(dict(getmembers(damaker.utils, isfunction)))
         self.functions.update(dict(getmembers(damaker.plugins, isfunction)))
