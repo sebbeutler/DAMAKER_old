@@ -1,7 +1,7 @@
 from PySide2.QtWidgets import QWidget, QSizePolicy, QHBoxLayout, QLineEdit, QPushButton, QFileDialog, QLabel
 
 class FilePickerWidget(QWidget):
-    def __init__(self, workspace: str, height: int=20):
+    def __init__(self, workspace: str, height: int=20, text=""):
         super().__init__()
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.layout = QHBoxLayout()
@@ -16,6 +16,7 @@ class FilePickerWidget(QWidget):
         self.setLayout(self.layout)
         self.setFixedHeight(height)
         self.workspace = workspace
+        self.setText(text)
     
     def setText(self, filePath):        
         self.textEdit.setText(filePath)
@@ -30,7 +31,7 @@ class FilePickerWidget(QWidget):
         self.setText(filePath)
 
 class FolderPickerWidget(QWidget):
-    def __init__(self, workspace: str, height: int=20, label: str=""):
+    def __init__(self, workspace: str, height: int=20, label: str="", text=""):
         super().__init__()
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.layout = QHBoxLayout()
@@ -47,6 +48,7 @@ class FolderPickerWidget(QWidget):
         self.setLayout(self.layout)
         self.setFixedHeight(height)
         self.workspace = workspace
+        self.setText(text)
     
     def setText(self, filePath):        
         self.textEdit.setText(filePath)

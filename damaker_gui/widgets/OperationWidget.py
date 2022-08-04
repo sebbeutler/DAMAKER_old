@@ -69,7 +69,13 @@ class OperationWidget(QGroupBox):
         param = None
         formWidget = None
         
-        for argName in sign.parameters:
+        args = list(sign.parameters.keys())
+        for i in range(len(args)):
+            argName = args[i]
+            opArg = None
+            if len(self.op.args) > i:
+                opArg = self.op.args[i]
+            
             param = sign.parameters[argName]
             if param.annotation == inspect._empty:
                 continue
@@ -79,7 +85,9 @@ class OperationWidget(QGroupBox):
                 spinBox = QSpinBox()
                 spinBox.setRange(-1000, 1000)
                 spinBox.setFixedHeight(18)
-                if param.default != inspect._empty:
+                if opArg != None:
+                    spinBox.setValue(opArg)
+                elif param.default != inspect._empty:
                     spinBox.setValue(int(param.default))
                 else:
                     spinBox.setValue(0)
@@ -91,7 +99,10 @@ class OperationWidget(QGroupBox):
                 spinBox = QDoubleSpinBox()
                 spinBox.setRange(-1000, 1000)
                 spinBox.setFixedHeight(18)
-                if param.default != inspect._empty:
+                
+                if opArg != None:
+                    spinBox.setValue(opArg)
+                elif param.default != inspect._empty:
                     spinBox.setValue(float(param.default))
                 else:
                     spinBox.setValue(0.0)                
@@ -101,25 +112,32 @@ class OperationWidget(QGroupBox):
             # CHANNEL
             if param.annotation in [widgets.Channel, widgets.Channels, widgets.BatchParameters, Mesh]:
                 if param.annotation is widgets.BatchParameters or 1:
-                    formWidget = widgets.BatchSelectionWidget()
+                    if opArg != None:
+                        formWidget = widgets.BatchSelectionWidget(opArg)
+                    else:
+                        formWidget = widgets.BatchSelectionWidget()
                     formWidget.getParameter = lambda widget: widget.getBatch()
+                # else:
+                #     formWidget = self.newOperationComboBox()
+            elif param.annotation is widgets.SingleChannel or param.annotation is StrFilePath:
+                if opArg != None:
+                    formWidget = widgets.FilePickerWidget(text=opArg)
                 else:
-                    formWidget = self.newOperationComboBox()
-            elif param.annotation is widgets.SingleChannel:
-                formWidget = widgets.FilePickerWidget(widgets.WorkspaceWidget.RootPath)
-                formWidget.getParameter = lambda widget: widget.text()
-            elif param.annotation is StrFilePath:
-                formWidget = widgets.FilePickerWidget(widgets.WorkspaceWidget.RootPath)
-                formWidget.getParameter = lambda widget: widget.text()
+                    formWidget = widgets.FilePickerWidget(widgets.WorkspaceWidget.RootPath)
             elif param.annotation is StrFolderPath:
-                formWidget = widgets.FolderPickerWidget(widgets.WorkspaceWidget.RootPath)
+                if opArg != None:
+                    formWidget = widgets.FolderPickerWidget(text=opArg)
+                else:
+                    formWidget = widgets.FolderPickerWidget(widgets.WorkspaceWidget.RootPath)
                 formWidget.getParameter = lambda widget: widget.text()
             
             # TEXT
             elif param.annotation is str:
                 textEdit = QLineEdit()
                 textEdit.setFixedHeight(18)
-                if param.default != inspect._empty:
+                if opArg != None:
+                    textEdit.setText(opArg)
+                elif param.default != inspect._empty:
                     textEdit.setText(param.default)
                 textEdit.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
                 formWidget = textEdit
@@ -127,13 +145,18 @@ class OperationWidget(QGroupBox):
             
             # CHOICES
             elif type(param.annotation) is type(enum.Enum):
-                formWidget = widgets.EnumComboBox(param.annotation)
+                if opArg != None:
+                    formWidget = widgets.EnumComboBox(param.annotation, text=str(opArg))
+                elif param.default != inspect._empty:
+                    formWidget = widgets.EnumComboBox(param.annotation)
                 formWidget.getParameter = lambda widget: widget.currentText()
             
             # BOOLEAN
             elif param.annotation is bool:
                 checkBox = QCheckBox("")
-                if param.default != inspect._empty:
+                if opArg != None:
+                    checkBox.setChecked(opArg)
+                elif param.default != inspect._empty:
                     checkBox.setChecked(param.default)
                 formWidget = checkBox
                 formWidget.getParameter = lambda widget: widget.isChecked()
