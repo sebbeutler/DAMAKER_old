@@ -7,6 +7,7 @@ import numpy as np
 
 import damaker
 from damaker.Channel import Channel
+from damaker.pipeline import Operation
 
 import damaker_gui
 import damaker_gui.widgets as widgets
@@ -66,6 +67,8 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
         self.slider.setOrientation(Qt.Horizontal)
         
         self.view: PreviewWidget = widgets.PreviewWidget([], fileInfo, self.slider)
+        self.view.channelsChanged.connect(self.changeTitle.emit)
+        
         self._layout.addWidget(self.view)
         self._layout.addWidget(self.slider)
         
@@ -123,11 +126,16 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
         if damaker_gui.Window() != None:
             damaker_gui.Window().lutSelector.updateForm(self)
             damaker_gui.Window().orthogonalProjection.connectTo(self)
+            damaker_gui.Window().operationList.apply.connect(self.applyOperation)
     
     def tabExitFocus(self):
         if damaker_gui.Window() != None:
             damaker_gui.Window().ui.dock2.removeTab(damaker_gui.Window().lutSelector)
             damaker_gui.Window().orthogonalProjection.disconnect(self)
+            damaker_gui.Window().operationList.apply.disconnect(self.applyOperation)
+    
+    def applyOperation(self, op: Operation):
+        print(op.name)
     
     def getToolbar(self):
         return [self.btn_3DView, self.btn_save]

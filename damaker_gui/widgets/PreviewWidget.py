@@ -59,7 +59,7 @@ def getLut(name: str) -> pg.ColorMap:
 class PreviewWidget(pg.ImageView):  
     mouseMoved = Signal(QMouseEvent, QPointF)
     channelAdded = Signal()
-    channelsChanged = Signal()
+    channelsChanged = Signal(str)
     
     def __init__(self, channels: list=[], fileInfo=None, slider: QSlider=None):
         super().__init__()
@@ -177,8 +177,9 @@ class PreviewWidget(pg.ImageView):
             self.fileInfo.preview = self
             self.fileInfo.update()
         
-        self.updateFrame(0) 
-        self.channelsChanged.emit()
+        self.updateFrame(0)
+        if len(self.channels) > 0:
+            self.channelsChanged.emit(list(self.channels.keys())[0].name)
     
     def removeChannel(self, channel: Channel):
         if channel not in self.channels.keys():

@@ -68,12 +68,13 @@ class ContentFrame(QFrame):
         self.currentTab = widget
         
     
-    def addTab(self, widget: QWidget, name: str="None"):
+    def addTab(self, widget: ITabWidget, name: str="None"):
         if issubclass(type(widget), ITabWidget):
             name = widget.name
             icon = QIcon()
             icon.addFile(widget.icon, QSize(), QIcon.Normal, QIcon.Off)
             widget.tabIndex = self.tab.addTab(widget, icon, name)
+            widget.changeTitle.connect(lambda title: self.tab.setTabText(widget.tabIndex, title))
         else:
             self.tab.addTab(widget, name)
         self.tab.setCurrentIndex(self.tab.count()-1)
