@@ -316,23 +316,6 @@ QTreeView::item:!selected:hover
 	color: #000;
 }
 
-
-QTreeView::branch:has-children:!has-siblings:closed,
-QTreeView::branch:closed:has-children:has-siblings 
-{
-	image: url(://tree-closed.png);
-
-}
-
-
-QTreeView::branch:open:has-children:!has-siblings,
-QTreeView::branch:open:has-children:has-siblings  
-{
-	image: url(://tree-open.png);
-
-}
-
-
 /*-----QLineEdit-----*/
 QLineEdit
 {
@@ -572,11 +555,11 @@ QSplitter::handle
 
 
 QSplitter::handle:horizontal {
-    width: 1px;
+    width: 7px;
 }
 
 QSplitter::handle:vertical {
-    height: 1px;
+    height: 7px;
 }</string>
    </property>
    <property name="orientation">
@@ -662,7 +645,7 @@ margin: 0px;</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>738</width>
+               <width>731</width>
                <height>307</height>
               </rect>
              </property>

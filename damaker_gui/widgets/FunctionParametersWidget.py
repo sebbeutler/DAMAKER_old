@@ -1,7 +1,7 @@
 from PySide2.QtWidgets import QFrame
+from deprecated import deprecated
 
 from damaker_gui.widgets.FilePickerWidget import FolderPickerWidget
-from damaker_gui.widgets.ITabWidget import ITabWidget
 from damaker_gui.windows.UI_FunctionParametersWidget import Ui_FunctionParameters
 
 def clearLayout(layout):
@@ -10,7 +10,8 @@ def clearLayout(layout):
         layout.removeWidget(widgetToRemove)
         widgetToRemove.setParent(None)
 
-class FunctionParametersWidget(QFrame, ITabWidget):
+@deprecated("Widget from V1")
+class FunctionParametersWidget(QFrame):
     def __init__(self):
         super().__init__()
         self.ui = Ui_FunctionParameters()

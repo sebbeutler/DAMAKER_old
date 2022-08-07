@@ -283,23 +283,6 @@ QTreeView::item:!selected:hover
 	color: #000;
 }
 
-
-QTreeView::branch:has-children:!has-siblings:closed,
-QTreeView::branch:closed:has-children:has-siblings 
-{
-	image: url(://tree-closed.png);
-
-}
-
-
-QTreeView::branch:open:has-children:!has-siblings,
-QTreeView::branch:open:has-children:has-siblings  
-{
-	image: url(://tree-open.png);
-
-}
-
-
 /*-----QLineEdit-----*/
 QLineEdit
 {

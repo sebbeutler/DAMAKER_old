@@ -22,6 +22,15 @@ class MainWindow(QMainWindow):
         
         # self.btn = QPushButton("test", self.ui.menubar)
         
+        # -Settings-
+        self.settings = widgets.AppSettingsWidget()
+        self.ui.dock4.addTab(self.settings)
+        
+        # -Workspace- #
+        self.workspace = widgets.WorkspaceWidget()
+        self.workspace.signalOpen.connect(self.openFile)        
+        self.ui.dock4.addTab(self.workspace)
+        
         # -Console- #
         self.ui.dock3.addTab(widgets.ConsoleWidget())
         
@@ -34,11 +43,6 @@ class MainWindow(QMainWindow):
         
         # -Orthogonal projection- #
         self.orthogonalProjection = widgets.OrthogonalProjectionWidget()
-        
-        # -Workspace- #
-        self.workspace = widgets.WorkspaceWidget()
-        self.workspace.signalOpen.connect(self.openFile)        
-        self.ui.dock4.addTab(self.workspace)
         
         # -Preview Z-Stack- #
         self.ui.dock1.addTab(widgets.PreviewFrame(fileInfo=self.fileInfo))

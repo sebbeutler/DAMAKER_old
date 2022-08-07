@@ -756,4 +756,12 @@
 <file>icons/flat-icons/workflow.svg</file>
 <file>icons/flat-icons/cube.png</file>
   </qresource>
+
+  <qresource prefix="flat-icons">
+    <file>styles/Eclippy.qss</file>
+    <file>styles/ExcelOffice.qss</file>
+    <file>styles/Integrid.qss</file>
+    <file>styles/theme.qss</file>
+  </qresource>
+  
 </RCC>
