@@ -5,13 +5,13 @@ import re
 from typing import Callable
 from .Channel import Channel, Channels, SingleChannel
 from .utils import *
-import enum
+
 
 class Operation:    
-    def __init__(self, func: Callable=None, args: list=[], name: str="", enabled: bool=True, opType=None):
+    def __init__(self, func: Callable, args: list=[], name: str="", enabled: bool=True, opType=None):
         self.func = func
         self.args = args
-        self.name = name
+        self.name = name if name != "" else func.__name__
         self.output = None
         self.enabled = enabled
         self.type = Operation if opType is None else opType

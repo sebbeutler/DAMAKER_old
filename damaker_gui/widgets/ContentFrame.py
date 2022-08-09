@@ -13,7 +13,6 @@ class ToolBar(QFrame):
         self.setMinimumHeight(22)
         self.setLayout(self._layout)
         self.setStyleSheet("background-color: rgb(119, 119, 119);")
-        
     
     def newAction(self, widget: QWidget):
         widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -65,8 +64,7 @@ class ContentFrame(QFrame):
             self.toolBar.newActions(widget.getToolbar())
             widget.tabEnterFocus()
         self.previousTab = self.currentTab
-        self.currentTab = widget
-        
+        self.currentTab = widget        
     
     def addTab(self, widget: ITabWidget, name: str="None"):
         if issubclass(type(widget), ITabWidget):
@@ -74,10 +72,16 @@ class ContentFrame(QFrame):
             icon = QIcon()
             icon.addFile(widget.icon, QSize(), QIcon.Normal, QIcon.Off)
             widget.tabIndex = self.tab.addTab(widget, icon, name)
-            widget.changeTitle.connect(lambda title: self.tab.setTabText(widget.tabIndex, title))
+            widget.changeTitle.connect(lambda title: self.setTitle(widget.tabIndex, title))
         else:
             self.tab.addTab(widget, name)
-        self.tab.setCurrentIndex(self.tab.count()-1)
+        # self.tab.setCurrentIndex(self.tab.count()-1)
+    
+    def setTitle(self, index: int, title: str):
+        widget = self.tab.widget(index)
+        if issubclass(type(widget), ITabWidget):
+            widget.name = title
+        self.tab.setTabText(index, title)        
     
     def closeTab(self, index) -> bool:
         if index < 0 or index >= self.tab.count():
@@ -101,5 +105,18 @@ class ContentFrame(QFrame):
             if widget == self.tab.widget(i):
                 return i
         return -1 # Not found
-        
+    
+    def getTabByName(self, name: str) -> QWidget:
+        for i in range(self.tab.count()):
+            if self.tab.tabText(i) == name:
+                return self.tab.widget(i)
+        return None
+
+    def getTabsByType(self, _type: type) -> list[QWidget]:
+        _widgets = []
+        for i in range(self.tab.count()):
+            widget = self.tab.widget(i)
+            if issubclass(type(widget), _type):
+                _widgets.append(widget)
+        return _widgets
         

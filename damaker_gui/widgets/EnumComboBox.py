@@ -12,3 +12,10 @@ class EnumComboBox(QComboBox):
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         if text != "":
             self.setCurrentText(text)
+    
+    def getEnumChoice(self):
+        choice = self.currentText()
+        for e in self.enum:
+            if e.name == choice:
+                return e
+        

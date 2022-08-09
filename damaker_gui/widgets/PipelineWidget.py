@@ -1,4 +1,5 @@
-from typing import Callable, overload
+from typing import Callable
+
 from PySide2.QtWidgets import QListWidget, QAbstractItemView, QAction, QPushButton, QListWidgetItem, QGridLayout
 from PySide2.QtCore import QSize, QThread, Signal, Slot, Qt
 
@@ -9,6 +10,7 @@ import damaker_gui.widgets as widgets
 class PipelineWidget(QListWidget, widgets.ITabWidget):
     name: str = "Pipeline"
     icon: str = u":/flat-icons/icons/flat-icons/timeline.svg"
+    
     def __init__(self, parent=None, operations=[]):
         super().__init__(parent)
         
@@ -38,12 +40,12 @@ class PipelineWidget(QListWidget, widgets.ITabWidget):
 
     def tabEnterFocus(self):
         try:
-            damaker_gui.Window().operationList.apply.connect(self.addOperation)
+            damaker_gui.Window().operationList.connectPipeline(self)
         except Exception: pass
 
     def tabExitFocus(self):
         try:
-            damaker_gui.Window().operationList.apply.disconnect(self.addOperation)
+            damaker_gui.Window().operationList.disconnectPipeline(self)
         except Exception: pass
     
     def runPipeline(self):                
@@ -65,7 +67,7 @@ class PipelineWidget(QListWidget, widgets.ITabWidget):
         item = QListWidgetItem("")
         # item = QListWidgetItem(op.name)       
         self.addItem(item)
-        op_widget = widgets.OperationWidget(op, self, QGridLayout) 
+        op_widget = widgets.OperationWidget(op=op, pipeline=self, layoutType=QGridLayout, batchMode=True) 
         item.setSizeHint(QSize(op_widget.width(), op_widget.height()))        
         self.setItemWidget(item, op_widget)
     
@@ -74,12 +76,6 @@ class PipelineWidget(QListWidget, widgets.ITabWidget):
     
     def removeOperation(self):
         self.takeItem(self.currentRow())
-    
-    def connectTo(self, widget: widgets.FunctionListWidget):
-        widget.operationTriggered.connect(self.addOpfromFunc)
-    
-    def disconnectFrom(self, widget: widgets.FunctionListWidget):
-        widget.operationTriggered.disconnect(self.addOpFromFunc)
         
 
 class PipelineRunnerThread(QThread):

@@ -10,11 +10,11 @@ class FileInfoWidget(QFrame, ITabWidget):
         self._layout = QFormLayout()
         self.setLayout(self._layout)
         
-        self._size = (QLabel("Size:"), QLabel())
-        self._realSize = (QLabel("Real size:"), QLabel())
-        self._pxSize = (QLabel("Pixel size:"), QLabel())
-        self._position = (QLabel("Position:"), QLabel())
-        self._value = (QLabel("Value:"), QLabel())
+        self._size = (QLabel("Size: "), QLabel())
+        self._realSize = (QLabel("Real size: "), QLabel())
+        self._pxSize = (QLabel("Pixel size: "), QLabel())
+        self._position = (QLabel("Position: "), QLabel())
+        self._value = (QLabel("Value: "), QLabel())
         
         self._layout.addRow(self._size[0], self._size[1])
         self._layout.addRow(self._realSize[0], self._realSize[1])
@@ -40,11 +40,11 @@ class FileInfoWidget(QFrame, ITabWidget):
                 mainChannel.px_sizes.X,
                 mainChannel.px_sizes.Y,
                 mainChannel.px_sizes.Z))
-        self._position[1].setText(f'x:{self.mx} y:{self.my} z:{self.preview.frameId}')
+        self._position[1].setText(f'x: {self.mx} y: {self.my} z: {self.preview.frameId}')
         if self.my < mainChannel.shape[1] and self.mx < mainChannel.shape[2]:
             values = ""
             for channel in self.preview.channels.keys():
-                values += f"Ch{channel.id}:{channel.data[self.preview.frameId][self.my][self.mx]}\n"
+                values += f"Ch{channel.id}: {channel.data[self.preview.frameId][self.my][self.mx]}\n"
             self._value[1].setText(values)
         else:
             self._value[1].setText('')

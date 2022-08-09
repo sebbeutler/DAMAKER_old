@@ -1,5 +1,6 @@
 from inspect import getmembers, isfunction  
 import re
+import traceback
 from typing import Callable
 
 from PySide2.QtWidgets import QWidget, QSplitter, QVBoxLayout, QSizePolicy, QMenu, QPushButton, QAction, QScrollArea
@@ -10,8 +11,10 @@ import damaker
 from damaker.pipeline import Operation
 import damaker.processing
 import damaker.utils
+
+import damaker_gui
 import damaker_gui.widgets as widgets
-from damaker_gui.widgets.OperationWidget import OperationWidget
+
 
 _menuStyleSheet = """
 QMenu {
@@ -51,7 +54,8 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
         self.functions: dict[str, function] = {}
         self.loadFunctions()    
         
-        self.operationTriggered.connect(self.editFunction)    
+        self.operationTriggered.connect(self.editFunction)
+        self.pipeline: widgets.PipelineWidget = None
         
         icon = QIcon()
         icon.addFile(u":/flat-icons/icons/flat-icons/refresh.svg", QSize(), QIcon.Normal, QIcon.Off)
@@ -62,15 +66,39 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
         icon.addFile(u":/flat-icons/icons/flat-icons/internal.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.btn_apply = QPushButton(icon, "Apply")
         self.btn_apply.clicked.connect(self.onApply)
+        
+        self.batchMode = False
+        self.btn_toggleBatchMode = QPushButton("Toggle batch mode")
+        self.btn_apply.clicked.connect(self.toggleBatchMode)
     
-    def editFunction(self, fname: str):
-        self.functionEdit.setWidget(OperationWidget(Operation(fname)))        
+    def toggleBatchMode(self):
+        pass
+    
+    def editFunction(self, func: Callable):
+        self.functionEdit.setWidget(widgets.OperationWidget(Operation(func)))        
         
     def getToolbar(self):
         return [self.btn_reloadPlugins, self.btn_apply]
     
     def onApply(self):
-        self.apply.emit(self.getOperation())
+        op = self.getOperation()
+        
+        if self.pipeline != None:
+            self.pipeline.addOperation(op.copy())
+            print("Added operation to pipeline ✔")
+            return
+        
+        print(f"🟢 Running operation: {op.name}")
+        try:
+            op.run()
+        except Exception as e:
+            print(f"🛑 Operation runtime error")
+            print(traceback.format_exc())
+            
+        # self.apply.emit(self.getOperation())
+        for preview in damaker_gui.Window().getTabsByType(widgets.PreviewFrame):
+            preview.view.updateFrame()
+        print("✅ Operation finished.")
     
     def reload(self):
         widgets.clearLayout(self.functionListLayout)
@@ -136,7 +164,15 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
         return FunctionListWidget._emptyFunc
     
     def getOperation(self) -> Operation:
-        widget: OperationWidget = self.functionEdit.widget()
-        if issubclass(type(widget), OperationWidget):
+        widget: widgets.OperationWidget = self.functionEdit.widget()
+        if issubclass(type(widget), widgets.OperationWidget):
             return widget.getOperation()
         return Operation(FunctionListWidget._emptyFunc)
+
+    def connectPipeline(self, widget):
+        if issubclass(type(widget), widgets.PipelineWidget):
+            self.pipeline = widget
+    
+    def disconnectPipeline(self, widget):
+        if self.pipeline == widget:
+            self.pipeline = None

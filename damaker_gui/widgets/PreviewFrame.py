@@ -87,7 +87,8 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
         self.btn_3DView.clicked.connect(self.add3DView)
         
         # -- ORTHO --
-        self.threadOrtho = ReslicerWorker()
+        self.threadOrtho = ReslicerWorker()        
+        self.threadOrtho.finished.connect(self.setProjections)
         self.idProj = (0, 0)
         self.projX: list[Channel] = None
         self.projY: list[Channel] = None
@@ -111,7 +112,6 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
     
     def loadOrthogonalViews(self):
         self.threadOrtho.channels = list(self.view.channels.keys())
-        self.threadOrtho.finished.connect(self.setProjections)
         self.threadOrtho.start()
         self.view.enableCross(True)
         print("Reslicing stack ...")
@@ -126,16 +126,11 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
         if damaker_gui.Window() != None:
             damaker_gui.Window().lutSelector.updateForm(self)
             damaker_gui.Window().orthogonalProjection.connectTo(self)
-            damaker_gui.Window().operationList.apply.connect(self.applyOperation)
     
     def tabExitFocus(self):
         if damaker_gui.Window() != None:
             damaker_gui.Window().ui.dock2.removeTab(damaker_gui.Window().lutSelector)
             damaker_gui.Window().orthogonalProjection.disconnect(self)
-            damaker_gui.Window().operationList.apply.disconnect(self.applyOperation)
-    
-    def applyOperation(self, op: Operation):
-        print(op.name)
     
     def getToolbar(self):
         return [self.btn_3DView, self.btn_save]

@@ -3,10 +3,14 @@ import os
 # TODO: exclude unused module. see: https://stackoverflow.com/questions/4890159/python-excluding-modules-pyinstaller
 
 # -Settings-
-_EXENAME = 'v0.2.7-alpha.DAMAKER'
-_STANDALONE = False
+_VERSION = '0.2.8'
 _ICON  = f'{os.path.dirname(__file__)}/damaker_gui/resources/icons/16x16/damaker.ico'
+_STANDALONE = True
 _COMPRESS = False
+_WINDOWED = True
+
+
+_EXENAME = f"v{_VERSION}-alpha.DAMAKER{'.standalone' if _STANDALONE else ''}{'.compressed' if _COMPRESS else ''}"
 
 # -Build commande-
 cmd = f"""pyinstaller
@@ -14,7 +18,7 @@ main.py
     -y
     -n {_EXENAME}{'.standalone' if _STANDALONE else '.full'}
     {'--onefile' if _STANDALONE else '' }
-    --windowed
+    {'--windowed' if _WINDOWED else ''}
     
     --icon={_ICON}
     {'--upx-dir=dist/upx-3.96-win64' if _COMPRESS else ' '}

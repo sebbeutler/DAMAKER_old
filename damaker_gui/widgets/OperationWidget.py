@@ -1,3 +1,4 @@
+import enum
 from PySide2.QtWidgets import QFormLayout, QGroupBox, QListWidget, QGridLayout, QLineEdit, QSizePolicy, QWidget, QLabel, QSpinBox, QDoubleSpinBox, QCheckBox
 from PySide2.QtCore import *
 
@@ -9,7 +10,7 @@ import inspect
 
 
 class OperationWidget(QGroupBox):
-    def __init__(self, op:Operation, pipeline: QListWidget=None, layoutType=QFormLayout):
+    def __init__(self, op:Operation, pipeline: QListWidget=None, batchMode=False, layoutType=QFormLayout):
         super().__init__(op.func.alias)
         self.op = op
         self.pipeline = pipeline
@@ -26,7 +27,7 @@ class OperationWidget(QGroupBox):
         # self.funcAlias = QLineEdit()
         # self.funcAlias.setStyleSheet("border-radius: 3px; border: 1px solid rgb(220, 220, 220);")
         # self.funcAlias.setPlaceholderText("Alias")
-        # self.funcAlias.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        # self.funcAlias.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferre
         
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         
@@ -111,14 +112,15 @@ class OperationWidget(QGroupBox):
             
             # CHANNEL
             if param.annotation in [widgets.Channel, widgets.Channels, widgets.BatchParameters, Mesh]:
-                if param.annotation is widgets.BatchParameters or 1:
+                if param.annotation is widgets.BatchParameters:
                     if opArg != None:
                         formWidget = widgets.BatchSelectionWidget(opArg)
                     else:
                         formWidget = widgets.BatchSelectionWidget()
                     formWidget.getParameter = lambda widget: widget.getBatch()
-                # else:
-                #     formWidget = self.newOperationComboBox()
+                else:
+                    formWidget = widgets.ChannelSelectorWidget()
+                    formWidget.getParameter = lambda widget: widget.getChannels()
             elif param.annotation is widgets.SingleChannel or param.annotation is StrFilePath:
                 if opArg != None:
                     formWidget = widgets.FilePickerWidget(text=opArg)
@@ -149,7 +151,7 @@ class OperationWidget(QGroupBox):
                     formWidget = widgets.EnumComboBox(param.annotation, text=str(opArg))
                 elif param.default != inspect._empty:
                     formWidget = widgets.EnumComboBox(param.annotation)
-                formWidget.getParameter = lambda widget: widget.currentText()
+                formWidget.getParameter = lambda widget: widget.getEnumChoice()
             
             # BOOLEAN
             elif param.annotation is bool:

@@ -397,16 +397,6 @@ class Ui_MainWindow(object):
 "}\n"
 "\n"
 "\n"
-"QComboBox::down-arrow \n"
-"{\n"
-"    image: url(://arrow-down.png);\n"
-"	width:8px;\n"
-"	height:8px;\n"
-"\n"
-""
-                        "}\n"
-"\n"
-"\n"
 "QComboBox::down-arrow:on \n"
 "{ \n"
 "    top: 1px;\n"
@@ -415,7 +405,8 @@ class Ui_MainWindow(object):
 "}\n"
 "\n"
 "\n"
-"QComboBox QListView\n"
+"QComboBox Q"
+                        "ListView\n"
 "{\n"
 "	background-color: #292929;\n"
 "    border-left-style: solid; \n"
@@ -467,18 +458,8 @@ class Ui_MainWindow(object):
 "QSpinBox::up-button:pressed \n"
 "{\n"
 "	background-color: #252525;\n"
-"    width: 16px; "
-                        "\n"
+"    width: 16px; \n"
 "    border-width: 1px;\n"
-"\n"
-"}\n"
-"\n"
-"\n"
-"QSpinBox::up-arrow \n"
-"{\n"
-"    image: url(://arrow-up.png);\n"
-"    width: 7px;\n"
-"    height: 7px;\n"
 "\n"
 "}\n"
 "\n"
@@ -486,7 +467,8 @@ class Ui_MainWindow(object):
 "QSpinBox::down-button \n"
 "{\n"
 "	border-bottom-right-radius:2px;\n"
-"	background-color: #777777;\n"
+""
+                        "	background-color: #777777;\n"
 "    width: 16px; \n"
 "    border-width: 1px;\n"
 "\n"
@@ -504,15 +486,6 @@ class Ui_MainWindow(object):
 "	background-color: #252525;\n"
 "    width: 16px; \n"
 "    border-width: 1px;\n"
-"\n"
-"}\n"
-"\n"
-"\n"
-"QSpinBox::down-arrow \n"
-"{\n"
-"    image: url(://arrow-down.png);\n"
-"    width: 7px;\n"
-"    height: 7px;\n"
 "\n"
 "}\n"
 "\n"
@@ -538,8 +511,7 @@ class Ui_MainWindow(object):
 "QStatusBar \n"
 "{\n"
 "	color: #fff;\n"
-""
-                        "	background-color: qlineargradient(spread:repeat, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(97, 100, 99, 255),stop:1 rgba(89, 89, 89, 255));\n"
+"	background-color: qlineargradient(spread:repeat, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(97, 100, 99, 255),stop:1 rgba(89, 89, 89, 255));\n"
 "\n"
 "}\n"
 "\n"
@@ -551,14 +523,6 @@ class Ui_MainWindow(object):
 "\n"
 "}\n"
 "\n"
-"\n"
-"/*-----QSizeGrip-----*/\n"
-"QSizeGrip \n"
-"{\n"
-"	background-color: image(\"./ressources/sizegrip.png\"); /*To replace*/\n"
-"\n"
-"}\n"
-"\n"
 "QSplitter::handle\n"
 "{\n"
 "	background-color: #777777;\n"
@@ -566,7 +530,8 @@ class Ui_MainWindow(object):
 "\n"
 "\n"
 "QSplitter::handle:horizontal {\n"
-"    width: 7px;\n"
+"    width: 7"
+                        "px;\n"
 "}\n"
 "\n"
 "QSplitter::handle:vertical {\n"
@@ -592,36 +557,6 @@ class Ui_MainWindow(object):
         self.dock1_tab.setObjectName(u"dock1_tab")
         self.dock1_tab.setStyleSheet(u"")
         self.dock1_tab.setTabsClosable(True)
-        self.dock1_tabPage1 = QFrame()
-        self.dock1_tabPage1.setObjectName(u"dock1_tabPage1")
-        self.dock1_tabPage1.setStyleSheet(u"background-color: rgb(244, 248, 249);\n"
-"margin: 0px;")
-        self.gridLayout = QGridLayout(self.dock1_tabPage1)
-        self.gridLayout.setObjectName(u"gridLayout")
-        self.horizontalSlider = QSlider(self.dock1_tabPage1)
-        self.horizontalSlider.setObjectName(u"horizontalSlider")
-        self.horizontalSlider.setOrientation(Qt.Horizontal)
-
-        self.gridLayout.addWidget(self.horizontalSlider, 2, 0, 1, 1)
-
-        self.listView = QListView(self.dock1_tabPage1)
-        self.listView.setObjectName(u"listView")
-
-        self.gridLayout.addWidget(self.listView, 1, 0, 1, 1)
-
-        self.scrollArea = QScrollArea(self.dock1_tabPage1)
-        self.scrollArea.setObjectName(u"scrollArea")
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollAreaWidgetContents = QWidget()
-        self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 731, 307))
-        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
-
-        self.gridLayout.addWidget(self.scrollArea, 0, 0, 1, 1)
-
-        icon1 = QIcon()
-        icon1.addFile(u":/flat-icons/icons/flat-icons/info.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.dock1_tab.addTab(self.dock1_tabPage1, icon1, "")
 
         self.layout_dock1.addWidget(self.dock1_tab)
 
@@ -696,6 +631,5 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"DAMAKER", None))
-        self.dock1_tab.setTabText(self.dock1_tab.indexOf(self.dock1_tabPage1), QCoreApplication.translate("MainWindow", u"Page", None))
     # retranslateUi
 

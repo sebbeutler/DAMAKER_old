@@ -757,7 +757,7 @@
 <file>icons/flat-icons/cube.png</file>
   </qresource>
 
-  <qresource prefix="flat-icons">
+  <qresource prefix="themes">
     <file>styles/Eclippy.qss</file>
     <file>styles/ExcelOffice.qss</file>
     <file>styles/Integrid.qss</file>
