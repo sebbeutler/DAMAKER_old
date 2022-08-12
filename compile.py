@@ -9,14 +9,13 @@ _STANDALONE = True
 _COMPRESS = False
 _WINDOWED = True
 
-
-_EXENAME = f"v{_VERSION}-alpha.DAMAKER{'.standalone' if _STANDALONE else ''}{'.compressed' if _COMPRESS else ''}"
+_EXENAME = f"v{_VERSION}-alpha.DAMAKER{'.standalone' if _STANDALONE else '.full'}{'.compressed' if _COMPRESS else ''}"
 
 # -Build commande-
 cmd = f"""pyinstaller
 main.py
     -y
-    -n {_EXENAME}{'.standalone' if _STANDALONE else '.full'}
+    -n {_EXENAME}
     {'--onefile' if _STANDALONE else '' }
     {'--windowed' if _WINDOWED else ''}
     
