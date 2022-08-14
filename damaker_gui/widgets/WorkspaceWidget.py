@@ -1,9 +1,9 @@
-from PySide2.QtWidgets import QTreeView, QFileSystemModel, QAbstractItemView, QPushButton, QFileDialog, QWidget
+from PySide2.QtWidgets import QTreeView, QFileSystemModel, QAbstractItemView, QPushButton, QFileDialog, QWidget, QSizePolicy
 from PySide2.QtCore import Signal
 
 import os, shutil
 
-from damaker_gui.widgets.ITabWidget import ITabWidget
+from damaker_gui.widgets.ITabWidget import ActionButton, ITabWidget
 
 class WorkspaceWidget(QTreeView, ITabWidget):
     name: str = "Workspace"
@@ -28,6 +28,7 @@ class WorkspaceWidget(QTreeView, ITabWidget):
         # self.setColumnHidden(2, True)
         # self.setColumnHidden(3, True)
         
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         self.setDragEnabled(True)
         self.setDragDropMode(QAbstractItemView.DragDropMode.DragOnly)
         self.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
@@ -37,20 +38,13 @@ class WorkspaceWidget(QTreeView, ITabWidget):
         
         self.file_buffer = ""
         
-        self.btn_copy = QPushButton("Copy")
-        self.btn_copy.clicked.connect(self.copy)
-        
-        self.btn_paste = QPushButton("Paste")
-        self.btn_paste.clicked.connect(self.paste)
-        
-        self.btn_delete = QPushButton("Delete")
-        self.btn_delete.clicked.connect(self.delete)
-        
-        self.btn_selectWorkspace = QPushButton("Select Workspace")
-        self.btn_selectWorkspace.clicked.connect(self.selectWorkspace)
-        
-        self.btn_open = QPushButton('Open')
-        self.btn_open.clicked.connect(self.open)
+    @property
+    def toolbar(self) -> list[ActionButton]:        
+        return [ActionButton(self.selectWorkspace, "Select Workspace"),
+                ActionButton(self.open, "Open"),
+                ActionButton(self.copy, "Copy"),
+                ActionButton(self.paste, "Paste"),
+                ActionButton(self.delete, "Delete")]
     
     def copy(self) -> bool:
         target = self.explorer.filePath(self.currentIndex())
@@ -90,6 +84,3 @@ class WorkspaceWidget(QTreeView, ITabWidget):
     
     def open(self):
         self.signalOpen.emit(self.explorer.filePath(self.currentIndex()))
-        
-    def getToolbar(self) -> list[QWidget]:        
-        return reversed([self.btn_selectWorkspace, self.btn_open, self.btn_copy, self.btn_paste, self.btn_delete])

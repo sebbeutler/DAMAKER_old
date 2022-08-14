@@ -17,7 +17,7 @@ def Window() -> MainWindow:
     return App.Window
 
 def run(exit=True):
-    App.Window = MainWindow()
+    MainWindow(App)
     # TODO: Splash screen
     print(sys.argv)
     if exit:

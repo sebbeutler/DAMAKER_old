@@ -8,10 +8,10 @@ import damaker_gui.widgets as widgets
 from damaker_gui.windows.UI_MainWindowV2 import *
 
 class MainWindow(QMainWindow):
-    tabChanged: Signal = Signal()    
 
-    def __init__(self, *args, **kwargs):
-        super(MainWindow, self).__init__(*args, **kwargs)
+    def __init__(self, app: QApplication):
+        super().__init__()
+        app.Window = self
         # self.show()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -20,57 +20,53 @@ class MainWindow(QMainWindow):
         # -Workspace- #
         self.workspace = widgets.WorkspaceWidget()
         self.workspace.signalOpen.connect(self.openFile)        
-        self.ui.dock4.addTab(self.workspace)
+        self.ui.dock2_2.addTab(self.workspace)
         
         # -Settings-
         self.settings = widgets.AppSettingsWidget()
-        self.ui.dock4.addTab(self.settings)
+        self.settings.theme.setTheme("Dark")
+        self.ui.dock2_2.addTab(self.settings)
         
         # -Console- #
-        self.ui.dock3.addTab(widgets.ConsoleWidget())
+        self.console = widgets.ConsoleWidget()
+        self.ui.dock2_2.addTab(self.console)
         
         # -FileInfo- #
         self.fileInfo = widgets.FileInfoWidget()
-        self.ui.dock2.addTab(self.fileInfo)
+        self.ui.dock2_1.addTab(self.fileInfo)
         
-        # -LUT selector- #
-        self.lutSelector = widgets.LutSelectorWidget()
+        # # -LUT selector- #
+        # self.lutSelector = widgets.LutSelectorWidget()
         
-        # -Orthogonal projection- #
-        self.orthogonalProjection = widgets.OrthogonalProjectionWidget()
+        # # -Orthogonal projection- #
+        # self.orthogonalProjection = widgets.OrthogonalProjectionWidget()
         
-        # -Preview Z-Stack- #
-        self.ui.dock1.addTab(widgets.PreviewFrame(fileInfo=self.fileInfo))
+        # # -Preview Z-Stack- #
+        # self.ui.dock1.addTab(widgets.PreviewFrame(fileInfo=self.fileInfo))
         
-        # -Pipeline- #
-        self.pipeline = widgets.PipelineWidget()
-        self.ui.dock1.addTab(self.pipeline)
+        # # -Pipeline- #
+        # self.pipeline = widgets.PipelineWidget()
+        # self.ui.dock1.addTab(self.pipeline)
         
-        # -Operations- #
-        self.operationList = widgets.FunctionListWidget()
-        self.ui.dock2.addTab(self.operationList)
+        # # -Operations- #
+        # self.operationList = widgets.FunctionListWidget()
+        # self.ui.dock2.addTab(self.operationList)
         
-        # -Open file from args- #
-        for arg in sys.argv[1:]:
-            self.openFile(arg)
+        # # -Open file from args- #
+        # for arg in sys.argv[1:]:
+        #     self.openFile(arg)
         
         self.showMaximized()
         
     @property
-    def docks(self) -> list[ContentFrame]:
-        return [self.ui.dock1, self.ui.dock2, self.ui.dock3, self.ui.dock4]
+    def docks(self) -> list[ContentDock]:
+        return [self.ui.dock1_1, self.ui.dock1_2, self.ui.dock2_1, self.ui.dock2_2, self.ui.dock2_3]
     
-    def addTab(self, dockId: int=1, widget: QWidget=QWidget(), tabName: str="None") -> QWidget:
-        if dockId == 1:
-            self.ui.dock1.addTab(widget, tabName)
-        if dockId == 2:
-            self.ui.dock2.addTab(widget, tabName)
-        if dockId == 3:
-            self.ui.dock3.addTab(widget, tabName)
-        if dockId == 4:
-            self.ui.dock4.addTab(widget, tabName)
-        self.tabChanged.emit()
-        return widget
+    def addTab(self, dockId: int=1, widget: QWidget=QWidget()) -> ContentDock:
+        for i in range(self.docks):
+            if i == dockId:
+                self.docks[i].addTab(widget)
+        return self
 
     def getTabByName(self, name: str) -> QWidget:
         for dock in self.docks:
@@ -89,14 +85,14 @@ class MainWindow(QMainWindow):
         for dock in self.docks:
             if dock.closeTab(dock.getWidgetIndex(widget)):
                 return True
-        self.tabChanged.emit()
-        return False                    
+        return False
     
     def openFile(self, path: str):
         if path.endswith(".tif") or path.endswith(".tiff"):
-            self.ui.dock1.addTab(widgets.PreviewFrame(path=path, fileInfo=self.fileInfo))
+            self.docks[0].addTab(widgets.PreviewFrame(path=path, fileInfo=self.fileInfo))
         else:
             self.ui.statusbar.showMessage(f"No suitable format found for file: '{path}'", 10000)
+            print(f"📛 No suitable format found for file: '{path}'")
         
     def keyPressEvent(self, event):
         # print(f"Key: {str(event.key())} Text Press: {str(event.text())}")

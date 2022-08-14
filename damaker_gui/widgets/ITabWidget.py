@@ -1,21 +1,19 @@
-from PySide2.QtWidgets import QWidget
+from typing import Callable
+from PySide2.QtWidgets import QWidget, QPushButton
 from PySide2.QtCore import Signal, QObject
 
+class ActionButton(QPushButton):
+    def __init__(self, onClick: Callable, *args):
+        super().__init__(*args)
+        self.function = onClick
+        self.clicked.connect(self.function)
+
 class ITabWidget:
-    tabIndex: int = -1
     name: str = "None"
     icon: str = u":/flat-icons/icons/flat-icons/questions.svg"
+    toolbar: list[ActionButton] = []
     
     changeTitle = Signal(str)
     
-    def tabExitFocus(self):
-        pass
-    
-    def tabEnterFocus(self):
-        pass
-    
     def closing(self):
         pass
-    
-    def getToolbar(self) -> list[QWidget]:
-        return []

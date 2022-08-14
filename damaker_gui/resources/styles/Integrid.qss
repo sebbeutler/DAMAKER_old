@@ -35,8 +35,7 @@ QWidget
 QLabel
 {
 	background-color: transparent;
-	color: #fff;
-
+	color: #000;
 }
 
 

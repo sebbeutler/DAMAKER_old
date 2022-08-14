@@ -14,7 +14,8 @@ class AppSettingsWidget(QWidget, widgets.ITabWidget):
         self._layout = QFormLayout()
         self.setLayout(self._layout)
         
-        self._layout.addRow("Theme: ", ThemeComboBox())
+        self.theme = ThemeComboBox()
+        self._layout.addRow("Theme: ", self.theme)
 
 class ThemeComboBox(QComboBox):
     def __init__(self, parent=None):
@@ -36,6 +37,6 @@ class ThemeComboBox(QComboBox):
         
         if file.open(QIODevice.ReadOnly | QFile.Text):
             text = QTextStream(file).readAll()
-            damaker_gui.Window().ui.splitter_horizontal.setStyleSheet(text)
+            damaker_gui.Window().setStyleSheet(text)
             file.close()
         
