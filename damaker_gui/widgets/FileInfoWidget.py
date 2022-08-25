@@ -1,5 +1,6 @@
 from PySide2.QtWidgets import QFrame, QFormLayout, QLabel
 
+import damaker_gui
 from damaker_gui.widgets.ITabWidget import ITabWidget
 
 class FileInfoWidget(QFrame, ITabWidget):
@@ -48,3 +49,10 @@ class FileInfoWidget(QFrame, ITabWidget):
             self._value[1].setText(values)
         else:
             self._value[1].setText('')
+        
+        status = f"\
+{self._size[0].text()} {self._size[1].text()} \
+{self._position[0].text()} {self._position[1].text()} \
+{self._value[0].text()} {self._value[1].text()} \
+"
+        damaker_gui.setStatusMessage(status, 15000)

@@ -16,6 +16,10 @@ def Window() -> MainWindow:
         App.Window = None
     return App.Window
 
+def setStatusMessage(msg: str, duration: int=0):
+    if Window() is None: return
+    Window().ui.statusbar.showMessage(msg, duration)
+
 def run(exit=True):
     MainWindow(App)
     # TODO: Splash screen

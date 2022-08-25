@@ -94,7 +94,7 @@ class ContentDock(QTabWidget):
             self.tab.removeTab(index)
     
     def getWidgetIndex(self, widget: QWidget) -> int:
-        for i in range(self.tab.count()):
+        for i in range(self.count()):
             if widget == self.widget(i).widget:
                 return i
         return -1 # Not found
@@ -143,13 +143,13 @@ class ContentDock(QTabWidget):
         e.accept()
 
     def dropEvent(self, e):
-        if e.source().parentWidget() == self:
+        sourceTab: ContentDock = e.source()
+        if sourceTab == self or not issubclass(type(sourceTab), ContentDock):
             return
 
         e.setDropAction(Qt.MoveAction)
         e.accept()
         
-        sourceTab: ContentDock = e.source()
         widget = sourceTab.widget(sourceTab.dragIndex)
         title = sourceTab.tabText(sourceTab.dragIndex)
         icon = QIcon()

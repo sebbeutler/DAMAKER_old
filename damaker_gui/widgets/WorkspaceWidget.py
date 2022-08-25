@@ -8,6 +8,14 @@ from damaker_gui.widgets.ITabWidget import ActionButton, ITabWidget
 class WorkspaceWidget(QTreeView, ITabWidget):
     name: str = "Workspace"
     icon: str = u":/flat-icons/icons/flat-icons/globe.svg"
+        
+    @property
+    def toolbar(self) -> list[ActionButton]:        
+        return [ActionButton(self.selectWorkspace, "Select Workspace"),
+                ActionButton(self.open, "Open"),
+                ActionButton(self.copy, "Copy"),
+                ActionButton(self.paste, "Paste"),
+                ActionButton(self.delete, "Delete")]
     
     signalOpen = Signal(str)
     RootPath = os.getcwd()
@@ -28,23 +36,16 @@ class WorkspaceWidget(QTreeView, ITabWidget):
         # self.setColumnHidden(2, True)
         # self.setColumnHidden(3, True)
         
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        self.setDragEnabled(True)
+        self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
         self.setDragDropMode(QAbstractItemView.DragDropMode.DragOnly)
         self.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
         self.setIndentation(15)
+        self.setDragEnabled(True)
         self.setWordWrap(True)
         self.setHeaderHidden(False)
+        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         
         self.file_buffer = ""
-        
-    @property
-    def toolbar(self) -> list[ActionButton]:        
-        return [ActionButton(self.selectWorkspace, "Select Workspace"),
-                ActionButton(self.open, "Open"),
-                ActionButton(self.copy, "Copy"),
-                ActionButton(self.paste, "Paste"),
-                ActionButton(self.delete, "Delete")]
     
     def copy(self) -> bool:
         target = self.explorer.filePath(self.currentIndex())

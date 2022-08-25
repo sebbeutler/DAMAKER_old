@@ -38,6 +38,7 @@ class Ui_MainWindow(object):
         self.splitter_horizontal.setHandleWidth(7)
         self.splitter_vertical1 = QSplitter(self.splitter_horizontal)
         self.splitter_vertical1.setObjectName(u"splitter_vertical1")
+        self.splitter_vertical1.setBaseSize(QSize(0, 900))
         self.splitter_vertical1.setStyleSheet(u"")
         self.splitter_vertical1.setOrientation(Qt.Horizontal)
         self.splitter_vertical1.setHandleWidth(7)

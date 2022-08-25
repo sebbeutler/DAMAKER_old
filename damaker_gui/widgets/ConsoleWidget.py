@@ -2,6 +2,7 @@ from PySide2.QtWidgets import QTextEdit, QSizePolicy
 from PySide2.QtGui import QTextCursor
 from PySide2.QtCore import Signal
 
+import damaker_gui
 from damaker_gui.widgets.ITabWidget import ActionButton, ITabWidget
 
 class ConsoleWidget(QTextEdit, ITabWidget):
@@ -20,9 +21,14 @@ class ConsoleWidget(QTextEdit, ITabWidget):
         import builtins
         
         self._print = builtins.print
-        builtins.print = lambda *args: [self.signalStreamOut.emit(str(txt)) for txt in args]
+        builtins.print = self.logger
         
         self.signalStreamOut.connect(self.addText)
+        self.signalStreamOut.connect(damaker_gui.setStatusMessage)
+    
+    def logger(self, *args):
+        for msg in args:
+            self.signalStreamOut.emit(str(msg)) 
     
     @property
     def toolbar(self) -> list[ActionButton]:        

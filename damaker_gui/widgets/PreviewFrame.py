@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QPushButton, QFrame, QVBoxLayout, QHBoxLayout, QHBoxLayout, QAction, QSlider, QFileDialog
+from PySide2.QtWidgets import QPushButton, QFrame, QVBoxLayout, QHBoxLayout, QHBoxLayout, QAction, QSlider, QFileDialog, QGraphicsSceneDragDropEvent
 from PySide2.QtGui import QIcon
 from PySide2.QtCore import Signal, Qt, QSize, QThread, Slot
 
@@ -11,6 +11,7 @@ from damaker.pipeline import Operation
 
 import damaker_gui
 import damaker_gui.widgets as widgets
+from damaker_gui.widgets.ITabWidget import ActionButton
 from damaker_gui.widgets.PreviewWidget import PreviewWidget
 
 class ChannelBtn(QPushButton):
@@ -50,18 +51,27 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
     # icon: str = u":/20x20/icons/20x20/cil-screen-desktop.png"
     icon: str = u":/flat-icons/icons/flat-icons/database.svg"
     
+    @property
+    def toolbar(self) -> list[ActionButton]:        
+        return [ActionButton(self.add3DView, "3D", u":/flat-icons/icons/flat-icons/cube.png"),
+                ActionButton(self.saveChannels, "Export", u":/flat-icons/icons/flat-icons/add_image.svg")]
+        
     def __init__(self, parent=None, path="", channels=[], fileInfo=None):
         super().__init__(parent)
+        
+        self.setAcceptDrops(True)
+        
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(3)
         self._layout.setMargin(0)
         
+        self.frame_btn_channels = QFrame()
+        self._layout.addWidget(self.frame_btn_channels)
+        
         self.layout_btn_channels = QHBoxLayout()
         self.layout_btn_channels.setMargin(0)
         self.layout_btn_channels.setSpacing(3)
-        f = QFrame()
-        f.setLayout(self.layout_btn_channels)
-        self._layout.addWidget(f)
+        self.frame_btn_channels.setLayout(self.layout_btn_channels)
         
         self.slider = QSlider()
         self.slider.setOrientation(Qt.Horizontal)
@@ -81,10 +91,6 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
         # -- 3D --
         self.thread3DView = widgets.Loader3DViewThread()
         self.preview3D = None
-        icon = QIcon()
-        icon.addFile(u":/flat-icons/icons/flat-icons/cube.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.btn_3DView = QPushButton(icon, "3D")
-        self.btn_3DView.clicked.connect(self.add3DView)
         
         # -- ORTHO --
         self.threadOrtho = ReslicerWorker()        
@@ -93,12 +99,6 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
         self.projX: list[Channel] = None
         self.projY: list[Channel] = None
         
-        icon = QIcon()
-        icon.addFile(u":/flat-icons/icons/flat-icons/add_image.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.btn_save = QPushButton(icon, "Export")
-        self.btn_save.clicked.connect(self.saveChannels)
-            
-        self.view.channelsChanged.connect(self.loadOrthogonalViews)
         self.view.channelsChanged.connect(self.updateBtnChannels)
         self.updateBtnChannels()
     
@@ -122,19 +122,6 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
         self.tabEnterFocus()
         print("Reslicing thread done ☑")
     
-    def tabEnterFocus(self):
-        if damaker_gui.Window() != None:
-            damaker_gui.Window().lutSelector.updateForm(self)
-            damaker_gui.Window().orthogonalProjection.connectTo(self)
-    
-    def tabExitFocus(self):
-        if damaker_gui.Window() != None:
-            damaker_gui.Window().ui.dock2.removeTab(damaker_gui.Window().lutSelector)
-            damaker_gui.Window().orthogonalProjection.disconnect(self)
-    
-    def getToolbar(self):
-        return [self.btn_3DView, self.btn_save]
-    
     def add3DView(self):
         self.thread3DView.setChannels(list(self.view.channels.keys()))
         self.thread3DView.setWidget(widgets.Preview3DWidget())
@@ -149,7 +136,7 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
             btn.channelRemoveTriggered.connect(self.removeChannel)
             self.layout_btn_channels.addWidget(btn)
         self.layout_btn_channels.addStretch()        
-        if damaker_gui.Window() != None:
+        if damaker_gui.Window() != None and hasattr(damaker_gui.Window(), 'lutSelector'):
             damaker_gui.Window().lutSelector.updateForm(self)
     
     def removeChannel(self, btn: QPushButton, id):
@@ -173,3 +160,29 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
                 else:
                     img.hide()
         self.view.updateFrame()
+    
+    def dropEvent(self, event: QGraphicsSceneDragDropEvent):
+        super().dropEvent(event)
+        
+        if event.mimeData().hasUrls:
+            event.accept()
+            links = []
+            for url in event.mimeData().urls():
+                links.append(str(url.toLocalFile()))
+            self.view.loadFiles(links)
+        else:
+            event.ignore()
+    
+    def dragEnterEvent(self, event):
+        super().dragEnterEvent(event)
+        if event.mimeData().hasUrls:
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event):
+        super().dragMoveEvent(event)
+        if event.mimeData().hasUrls:
+            event.accept()
+        else:
+            event.ignore()

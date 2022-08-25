@@ -86,8 +86,7 @@ class PreviewWidget(pg.ImageView):
         self.ui.menuBtn.hide()
         self.ui.roiPlot.setVisible(False)
         self.ui.roiPlot.hide()
-        self.setAcceptDrops(True)
-        # self.view.setBackgroundColor((32, 32, 32))   
+        self.view.setBackgroundColor((32, 32, 32))   
         
         self.textInfo = QLabel("Slide: ", self)
         self.textInfo.setMinimumWidth(100)
@@ -98,8 +97,6 @@ class PreviewWidget(pg.ImageView):
     
         self.scene._mouseMoveEvent = self.scene.mouseMoveEvent
         self.scene.mouseMoveEvent = self.mouseMoveEvent
-        
-        # self.view.setBackgroundColor(QColor.fromRgb(244, 248, 249))
         
         self.updateFrame()
     
@@ -187,14 +184,17 @@ class PreviewWidget(pg.ImageView):
         self.removeItem(self.channels[channel])
         del self.channels[channel]      
     
-    def loadChannels(self, filename: str):
+    def loadFile(self, filename: str):
         print(f"loading {filename}")
         fw = FileLoaderWorker(filename)
         fw.signals.loaded.connect(self.reset)
         self.threadpool.start(fw)
     
+    def loadFiles(self, files: list[str]):
+        self.loadFile(files)
+    
     def mouseMoveEvent(self, e: QGraphicsSceneMouseEvent):
-        self.scene._mouseMoveEvent(e)        
+        self.scene._mouseMoveEvent(e)      
         if len(self.channels) == 0:
             return
         m_pos = self.view.mapSceneToView(e.scenePos())
@@ -205,32 +205,6 @@ class PreviewWidget(pg.ImageView):
             self.fileInfo.preview = self
             self.fileInfo.update()
         self.mouseMoved.emit(e, m_pos)
-        
-    def dropEvent(self, event: QGraphicsSceneDragDropEvent):
-        super().dropEvent(event)
-        
-        if event.mimeData().hasUrls:
-            event.accept()
-            links = []
-            for url in event.mimeData().urls():
-                links.append(str(url.toLocalFile()))
-            self.loadChannels(links[0])
-        else:
-            event.ignore()
-    
-    def dragEnterEvent(self, event):
-        super().dragEnterEvent(event)
-        if event.mimeData().hasUrls:
-            event.accept()
-        else:
-            event.ignore()
-
-    def dragMoveEvent(self, event):
-        super().dragMoveEvent(event)
-        if event.mimeData().hasUrls:
-            event.accept()
-        else:
-            event.ignore()
     
     def updateTextInfo(self):
         vrange = self.view.viewRange()
@@ -278,8 +252,13 @@ class FileLoaderWorker(QRunnable):
 
     @Slot()
     def run(self):
-        channels = loadChannelsFromFile(self.filename)
-        if channels is None:
+        channels = []
+        if type(self.filename) is str:
+            channels += loadChannelsFromFile(self.filename)
+        elif type(self.filename) is list:
+            for file in self.filename:
+                channels += loadChannelsFromFile(file)
+        if len(channels) == 0:
             self.signals.error.emit()
         else:
             self.signals.loaded.emit(channels)

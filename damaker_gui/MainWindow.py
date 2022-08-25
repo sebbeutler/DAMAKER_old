@@ -42,7 +42,7 @@ class MainWindow(QMainWindow):
         # self.orthogonalProjection = widgets.OrthogonalProjectionWidget()
         
         # # -Preview Z-Stack- #
-        # self.ui.dock1.addTab(widgets.PreviewFrame(fileInfo=self.fileInfo))
+        self.ui.dock1_1.addTab(widgets.PreviewFrame(fileInfo=self.fileInfo))
         
         # # -Pipeline- #
         # self.pipeline = widgets.PipelineWidget()
@@ -57,6 +57,7 @@ class MainWindow(QMainWindow):
         #     self.openFile(arg)
         
         self.showMaximized()
+        self.setFocus(Qt.FocusReason.PopupFocusReason)
         
     @property
     def docks(self) -> list[ContentDock]:
