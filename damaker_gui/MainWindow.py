@@ -48,9 +48,9 @@ class MainWindow(QMainWindow):
         # self.pipeline = widgets.PipelineWidget()
         # self.ui.dock1.addTab(self.pipeline)
         
-        # # -Operations- #
-        # self.operationList = widgets.FunctionListWidget()
-        # self.ui.dock2.addTab(self.operationList)
+        # -Operations- #
+        self.operationList = widgets.FunctionListWidget()
+        self.ui.dock1_1.addTab(self.operationList)
         
         # # -Open file from args- #
         # for arg in sys.argv[1:]:
