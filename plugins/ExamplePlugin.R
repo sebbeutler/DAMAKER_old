@@ -1,9 +1,9 @@
-function(nb.int = 3) {
+a <- function(nb.int = 3) {
     print(paste("Plugin R script!", nb.int))
     return(TRUE)
 }
 
-function() {
+b <- function() {
     print("exercice2")
 }
 

@@ -1,5 +1,5 @@
 from inspect import getmembers, isfunction  
-import re
+import re, typing
 import traceback
 from typing import Callable
 
@@ -15,6 +15,7 @@ import damaker.utils
 import damaker_gui
 import damaker_gui.widgets as widgets
 
+import rpy2.robjects as robjects
 
 _menuStyleSheet = """
 QMenu {
@@ -106,11 +107,17 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
         self.loadFunctions()
         print("Reloaded operations ✔")
     
+    def convert_func_rpy2py(self, name, funcR):
+        funcPy = FunctionListWidget._emptyFunc
+    
     def loadFunctions(self):
         damaker.plugins = damaker.importPlugins()
         self.functions = dict(getmembers(damaker.processing, isfunction))        
         self.functions.update(dict(getmembers(damaker.utils, isfunction)))
         self.functions.update(dict(getmembers(damaker.plugins, isfunction)))
+        
+        print(dict(getmembers(damaker.plugins, lambda obj: isinstance(obj, robjects.functions.Function))))
+        
         self.categories = {"Plugins": []}
         
         for func in self.functions.values():
