@@ -11,3 +11,4 @@ SimpleITK
 py4j
 pyqtgraph
 PyOpenGL
+rpy2

@@ -1,16 +1,17 @@
 
-# To import a file 'plugins/myFile.py'
-# from .myFile import *
+# Python files #
+from .ExamplePlugin import *
 
-# Or put the functions directly here
 
-# # -Example 1- #
-# def myFunc(param1: str, param2: int) -> bool:
-# 	print("do something.")
-# 	return True
+# R files #
 
-# # -Example 2- #
-# from damaker.Channel import Channel
-# def myOperation(input: Channel) -> Channel:
-# 	# process channel here.
-# 	return input
+import os, sys
+import rpy2.robjects as robjects
+
+r = robjects.r
+data = r.source(f'{os.path.dirname(__file__)}/ExamplePlugin.R')
+
+for var in data:
+    if isinstance(var, robjects.functions.Function):
+        setattr(sys.modules[__name__], "f1", var)
+        # plugins.f1.rcall(keyvals=(("nb.int", 5),))

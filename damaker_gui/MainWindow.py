@@ -50,8 +50,9 @@ class MainWindow(QMainWindow):
         self.operationList = widgets.FunctionListWidget()
         self.ui.dock2_2.addTab(self.operationList)
         
-        self.ui.splitter_vertical1.setStretchFactor(0, 10)
-        self.ui.splitter_horizontal.setStretchFactor(1, 30)
+        # -Operations- #
+        self.operationList = widgets.FunctionListWidget()
+        self.ui.dock1_1.addTab(self.operationList)
         
         # -Open file from args- #
         for arg in sys.argv[1:]:
