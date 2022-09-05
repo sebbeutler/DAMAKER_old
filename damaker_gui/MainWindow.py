@@ -17,53 +17,55 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
         # self.setWindowFlag(Qt.FramelessWindowHint)
         
+        self._docks: list[ContentDock] = []
+        for key, value in self.ui.__dict__.items():
+            if key.startswith('dock'):
+                self._docks.append(value)        
+        
         # -Workspace- #
         self.workspace = widgets.WorkspaceWidget()
         self.workspace.signalOpen.connect(self.openFile)        
-        self.ui.dock2_2.addTab(self.workspace)
+        self.ui.dock1_2.addTab(self.workspace)
         
         # -Settings-
         self.settings = widgets.AppSettingsWidget()
         self.settings.theme.setTheme("Dark")
-        self.ui.dock2_2.addTab(self.settings)
+        self.ui.dock1_3.addTab(self.settings)
         
         # -Console- #
         self.console = widgets.ConsoleWidget()
-        self.ui.dock2_2.addTab(self.console)
-        
-        # -FileInfo- #
-        self.fileInfo = widgets.FileInfoWidget()
-        self.ui.dock2_1.addTab(self.fileInfo)
+        self.ui.dock1_3.addTab(self.console)
         
         # # -LUT selector- #
         # self.lutSelector = widgets.LutSelectorWidget()
         
-        # # -Orthogonal projection- #
-        # self.orthogonalProjection = widgets.OrthogonalProjectionWidget()
+        # -Preview Z-Stack- #
+        self.ui.dock1_1.addTab(widgets.PreviewFrame())
         
-        # # -Preview Z-Stack- #
-        self.ui.dock1_1.addTab(widgets.PreviewFrame(fileInfo=self.fileInfo))
+        # -Pipeline- #
+        self.pipeline = widgets.PipelineWidget()
+        self.ui.dock2_1.addTab(self.pipeline)
         
-        # # -Pipeline- #
-        # self.pipeline = widgets.PipelineWidget()
-        # self.ui.dock1.addTab(self.pipeline)
+        # -Operations- #
+        self.operationList = widgets.FunctionListWidget()
+        self.ui.dock2_2.addTab(self.operationList)
         
-        # # -Operations- #
-        # self.operationList = widgets.FunctionListWidget()
-        # self.ui.dock2.addTab(self.operationList)
+        self.ui.splitter_vertical1.setStretchFactor(0, 10)
+        self.ui.splitter_horizontal.setStretchFactor(1, 30)
         
-        # # -Open file from args- #
-        # for arg in sys.argv[1:]:
-        #     self.openFile(arg)
+        # -Open file from args- #
+        for arg in sys.argv[1:]:
+            self.openFile(arg)
         
         self.showMaximized()
         self.setFocus(Qt.FocusReason.PopupFocusReason)
         
     @property
     def docks(self) -> list[ContentDock]:
-        return [self.ui.dock1_1, self.ui.dock1_2, self.ui.dock2_1, self.ui.dock2_2, self.ui.dock2_3]
+        return self._docks
     
     def addTab(self, dockId: int=1, widget: QWidget=QWidget()) -> ContentDock:
+        raise "Select target dock !!!!"
         for i in range(self.docks):
             if i == dockId:
                 self.docks[i].addTab(widget)

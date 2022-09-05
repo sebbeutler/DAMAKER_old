@@ -16,7 +16,7 @@ class AppSettingsWidget(QWidget, widgets.ITabWidget):
         
         self.theme = ThemeComboBox()
         self._layout.addRow("Theme: ", self.theme)
-
+        
 class ThemeComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)

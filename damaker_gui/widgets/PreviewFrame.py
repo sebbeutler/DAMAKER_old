@@ -56,7 +56,7 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
         return [ActionButton(self.add3DView, "3D", u":/flat-icons/icons/flat-icons/cube.png"),
                 ActionButton(self.saveChannels, "Export", u":/flat-icons/icons/flat-icons/add_image.svg")]
         
-    def __init__(self, parent=None, path="", channels=[], fileInfo=None):
+    def __init__(self, parent=None, path="", channels=[]):
         super().__init__(parent)
         
         self.setAcceptDrops(True)
@@ -76,7 +76,7 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
         self.slider = QSlider()
         self.slider.setOrientation(Qt.Horizontal)
         
-        self.view: PreviewWidget = widgets.PreviewWidget([], fileInfo, self.slider)
+        self.view: PreviewWidget = widgets.PreviewWidget([], None, self.slider)
         self.view.channelsChanged.connect(self.changeTitle.emit)
         
         self._layout.addWidget(self.view)
