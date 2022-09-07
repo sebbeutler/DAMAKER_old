@@ -57,7 +57,7 @@ class ContentDock(QTabWidget):
         # self.toolBar = ToolBar()
         # self._tab.tabCloseRequested.connect(self.closeTab)
         # self._tab.currentChanged.connect(self.tabChanged)
-    
+         
     def addTab(self, widget: ITabWidget, title: str="New tab", icon: QIcon=None, focus: bool=False):
         if issubclass(type(widget), ITabWidget):
             icon = QIcon()
