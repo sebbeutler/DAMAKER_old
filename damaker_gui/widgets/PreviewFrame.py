@@ -46,7 +46,7 @@ class ReslicerWorker(QThread):
             left.append(damaker.processing._resliceLeft(channel))
         self.finished.emit(top, left)
 
-class PreviewFrame(QFrame, widgets.ITabWidget):
+class PreviewFrame(QFrame, widgets.IView):
     name: str = "Z-stack"
     # icon: str = u":/20x20/icons/20x20/cil-screen-desktop.png"
     icon: str = u":/flat-icons/icons/flat-icons/database.svg"
@@ -55,7 +55,7 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
     def toolbar(self) -> list[ActionButton]:        
         return [ActionButton(self.add3DView, "3D", u":/flat-icons/icons/flat-icons/cube.png"),
                 ActionButton(self.saveChannels, "Export", u":/flat-icons/icons/flat-icons/add_image.svg"),
-                ActionButton(None, "Orthogonal Views", u":/flat-icons/icons/flat-icons/")]
+                ActionButton(self.loadOrthogonalViews, "Orthogonal Views", u":/flat-icons/icons/flat-icons/grid.svg")]
         
     def __init__(self, parent=None, path="", channels=[]):
         super().__init__(parent)
@@ -84,7 +84,9 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
         self._layout.addWidget(self.slider)
         
         if path != "":
-            self.view.loadChannels(path)
+            self.view.loadFile(path)
+        self.view.channelsChanged.connect(self.requestFocus)
+        self.view.channelsChanged.connect(self.updated)
         
         if channels != []:
             self.view.addChannels(channels)
@@ -120,7 +122,6 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
     def setProjections(self, top, left):
         self.projX = left
         self.projY = top
-        self.tabEnterFocus()
         print("Reslicing thread done ☑")
     
     def add3DView(self):

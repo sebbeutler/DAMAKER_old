@@ -1,5 +1,6 @@
 from PySide2.QtWidgets import QFormLayout, QFrame, QComboBox
 import damaker_gui.widgets as widgets
+from damaker_gui.widgets.ITabWidget import IView
 from damaker_gui.widgets.PreviewWidget import _luts
 from . import clearLayout
 import damaker_gui
@@ -24,9 +25,11 @@ class LutSelectorWidget(QFrame, widgets.ITabWidget):
         self._layout = QFormLayout()
         self.setLayout(self._layout)
         self.target = target
+        damaker_gui.Window().tabSelected.connect(self.updateForm)
     
     def updateForm(self, target: widgets.PreviewFrame=None):
-        if target is None: return
+        if target is None or not issubclass(type(target), IView): return
+        print("UPDATE")
         self.target = target 
         clearLayout(self._layout)
         for chn in self.target.view.channels.keys():
@@ -36,8 +39,6 @@ class LutSelectorWidget(QFrame, widgets.ITabWidget):
             comboBox.setCurrentText(chn.lut.name)
             comboBox.currentTextChanged.connect(comboBox.updateChannelLUT)
             self._layout.addRow("Channel %d :" % chn.id, comboBox)
-        if damaker_gui.Window() != None and damaker_gui.Window().ui.dock2.getWidgetIndex(target) == -1:
-            damaker_gui.Window().addTab(2, self)
     
     def setChannelLUT(self, channel, colorMap):
         channel.lut = colorMap

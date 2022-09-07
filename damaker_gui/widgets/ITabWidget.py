@@ -3,6 +3,8 @@ from PySide2.QtWidgets import QWidget, QPushButton
 from PySide2.QtGui import QIcon
 from PySide2.QtCore import Signal, QObject, QSize
 
+import damaker_gui
+
 class ActionButton(QPushButton):
     def __init__(self, onClick: Callable, name: str="action", icon: str=""):
         if icon != "":
@@ -14,12 +16,23 @@ class ActionButton(QPushButton):
         self.function = onClick
         self.clicked.connect(self.function)
 
-class ITabWidget:
+class ITabWidget():
     name: str = "None"
     icon: str = u":/flat-icons/icons/flat-icons/questions.svg"
     toolbar: list[ActionButton] = []
     
+    focus = Signal(object)
     changeTitle = Signal(str)
+    
+    def tabEnterFocus(self):
+        pass
+    
+    def requestFocus(self):
+        self.focus.emit(self)
     
     def closing(self):
         pass
+
+class IView(ITabWidget):
+    def updated(self):
+        damaker_gui.Window().viewChanged.emit(self)

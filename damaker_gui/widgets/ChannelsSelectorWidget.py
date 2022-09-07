@@ -5,6 +5,7 @@ from damaker import Channels
 
 import damaker_gui
 import damaker_gui.widgets as widgets
+from damaker_gui.widgets.ITabWidget import IView
 
 class ChannelSelectorWidget(QFrame):
     def __init__(self, choices=[]):
@@ -25,6 +26,7 @@ class ChannelSelectorWidget(QFrame):
         
         damaker_gui.Window().tabChanged.connect(self.updateChoices)
         self.updateChoices()
+        damaker_gui.Window().viewChanged.connect(self.updateChoices)
         
     
     def addChannelEntry(self):
@@ -47,7 +49,7 @@ class ChannelSelectorWidget(QFrame):
             chn.setParent(None)
     
     def updateChoices(self):
-        self.choices = [widget.name for widget in damaker_gui.Window().getTabsByType(widgets.PreviewFrame)]
+        self.choices = [widget.name for widget in damaker_gui.Window().getTabsByType(IView)]
         
         for comboBox in self.comboBoxs:
             current = comboBox.currentText()

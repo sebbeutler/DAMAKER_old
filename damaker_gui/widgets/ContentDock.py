@@ -1,8 +1,9 @@
 import gc
+from typing import Callable
 
 from PySide2.QtWidgets import QFrame, QTabWidget, QHBoxLayout, QVBoxLayout, QWidget, QSizePolicy, QLayout, QTabWidget
 from PySide2.QtGui import QIcon, QMouseEvent, Qt, QPixmap, QDrag, QCursor, QRegion
-from PySide2.QtCore import QSize, QMimeData, QPoint
+from PySide2.QtCore import QSize, QMimeData, QPoint, Signal
 
 import damaker_gui.widgets as widgets
 from damaker_gui.widgets.ITabWidget import ITabWidget
@@ -45,6 +46,8 @@ class ContentFrame(QFrame):
                 widgetToRemove.setParent(None)        
 
 class ContentDock(QTabWidget):
+    tabChangedSignal = Signal()
+    
     def __init__(self, parent=None):
         super().__init__(parent)
         
@@ -57,18 +60,33 @@ class ContentDock(QTabWidget):
         # self.toolBar = ToolBar()
         # self._tab.tabCloseRequested.connect(self.closeTab)
         # self._tab.currentChanged.connect(self.tabChanged)
-         
+        self.currentChanged.connect(self.tabChanged)
+    
+    def tabChanged(self, index: int):
+        widget = self.getWidgetByIndex(index)
+        if issubclass(type(widget), ITabWidget):
+            widget.tabEnterFocus()
+    
     def addTab(self, widget: ITabWidget, title: str="New tab", icon: QIcon=None, focus: bool=False):
         if issubclass(type(widget), ITabWidget):
             icon = QIcon()
             icon.addFile(widget.icon, QSize(), QIcon.Normal, QIcon.Off)            
             super().addTab(ContentFrame(widget), icon, widget.name)
             widget.changeTitle.connect(lambda title: self.setTitle(widget, title))
+            widget.focus.connect(self.focusTab)
         else:
             super().addTab(widget, icon, title)
         if focus:
             self.setCurrentIndex(self.count()-1)
+        self.tabChangedSignal.emit()
     
+    def focusTab(self, widget: ITabWidget):
+        index = self.getWidgetIndex(widget)
+        if self.currentIndex() == index:
+            self.currentChanged.emit(index)
+        else:
+            self.setCurrentIndex(self.getWidgetIndex(widget))
+
     def setTitle(self, widget: QWidget, title: str):
         if issubclass(type(widget), ITabWidget):
             widget.name = title
@@ -92,12 +110,16 @@ class ContentDock(QTabWidget):
         index = self.getWidgetIndex(widget)
         if index != -1:
             self.tab.removeTab(index)
+            self.tabChangedSignal.emit()
     
     def getWidgetIndex(self, widget: QWidget) -> int:
         for i in range(self.count()):
             if widget == self.widget(i).widget:
                 return i
         return -1 # Not found
+    
+    def getWidgetByIndex(self, index) -> QWidget:
+        return self.widget(index).widget
     
     def getTabByName(self, name: str) -> QWidget:
         for i in range(self.count()):
@@ -112,6 +134,9 @@ class ContentDock(QTabWidget):
             if issubclass(type(widget), _type):
                 _widgets.append(widget)
         return _widgets
+    
+    def connectCurrentChanged(self, func: Callable):
+        self.currentChanged.connect(lambda x: func(self.getWidgetByIndex(x)))
     
     # -Drag & Drop tabs- #
     def mouseMoveEvent(self, e):

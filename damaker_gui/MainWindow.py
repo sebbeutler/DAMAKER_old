@@ -5,10 +5,14 @@ if __name__ == '__main__':
 
 import sys
 import damaker_gui.widgets as widgets
+from damaker_gui.widgets.ITabWidget import ITabWidget, IView
 from damaker_gui.windows.UI_MainWindowV2 import *
 
 class MainWindow(QMainWindow):
-
+    tabSelected = Signal(QWidget)
+    tabChanged = Signal()
+    viewChanged = Signal(IView)
+    
     def __init__(self, app: QApplication):
         super().__init__()
         app.Window = self
@@ -20,7 +24,10 @@ class MainWindow(QMainWindow):
         self._docks: list[ContentDock] = []
         for key, value in self.ui.__dict__.items():
             if key.startswith('dock'):
-                self._docks.append(value)        
+                dock: ContentDock = value
+                self._docks.append(dock)
+                dock.connectCurrentChanged(self.tabSelected.emit)
+                dock.tabChangedSignal.connect(self.tabChanged.emit)
         
         # -Workspace- #
         self.workspace = widgets.WorkspaceWidget()
@@ -36,9 +43,6 @@ class MainWindow(QMainWindow):
         self.console = widgets.ConsoleWidget()
         self.ui.dock1_3.addTab(self.console)
         
-        # # -LUT selector- #
-        # self.lutSelector = widgets.LutSelectorWidget()
-        
         # -Preview Z-Stack- #
         self.ui.dock1_1.addTab(widgets.PreviewFrame())
         
@@ -50,9 +54,9 @@ class MainWindow(QMainWindow):
         self.operationList = widgets.FunctionListWidget()
         self.ui.dock2_2.addTab(self.operationList)
         
-        # -Operations- #
-        self.operationList = widgets.FunctionListWidget()
-        self.ui.dock1_1.addTab(self.operationList)
+        # -LUT- #
+        self.colorMap = widgets.LutSelectorWidget()
+        self.ui.dock2_2.addTab(self.colorMap)
         
         # -Open file from args- #
         for arg in sys.argv[1:]:
@@ -64,6 +68,15 @@ class MainWindow(QMainWindow):
     @property
     def docks(self) -> list[ContentDock]:
         return self._docks
+    
+    @property
+    def currentViews(self) -> list[IView]:
+        views = []
+        for dock in self.docks:
+            widget = dock.currentWidget().widget
+            if issubclass(type(widget), IView):
+                views.append(widget)
+        return views            
     
     def addTab(self, dockId: int=1, widget: QWidget=QWidget()) -> ContentDock:
         raise "Select target dock !!!!"
@@ -93,7 +106,7 @@ class MainWindow(QMainWindow):
     
     def openFile(self, path: str):
         if path.endswith(".tif") or path.endswith(".tiff"):
-            self.docks[0].addTab(widgets.PreviewFrame(path=path, fileInfo=self.fileInfo))
+            self.docks[0].addTab(widgets.PreviewFrame(path=path))
         else:
             self.ui.statusbar.showMessage(f"No suitable format found for file: '{path}'", 10000)
             print(f"📛 No suitable format found for file: '{path}'")

@@ -28,10 +28,11 @@ QMenu::item::selected {
 }"""
 
 class FunctionListWidget(QSplitter, widgets.ITabWidget):
-    operationTriggered = Signal(object)
-    apply = Signal(Operation)
     name: str= "Operations"
     icon: str = u":/flat-icons/icons/flat-icons/services.svg"
+    
+    operationTriggered = Signal(object)
+    apply = Signal(Operation)
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -116,7 +117,7 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
         self.functions.update(dict(getmembers(damaker.utils, isfunction)))
         self.functions.update(dict(getmembers(damaker.plugins, isfunction)))
         
-        print(dict(getmembers(damaker.plugins, lambda obj: isinstance(obj, robjects.functions.Function))))
+        # print(dict(getmembers(damaker.plugins, lambda obj: isinstance(obj, robjects.functions.Function))))
         
         self.categories = {"Plugins": []}
         

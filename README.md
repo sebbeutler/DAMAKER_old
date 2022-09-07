@@ -12,7 +12,7 @@ conda create -n damaker python=3.9 -y
 conda activate damaker
 git clone https://github.com/subski/DAMAKER.git
 pip install -r Requirements.txt
-Optional:
+Recommended:
   conda install -c conda-forge scyjava -y
 ```
 

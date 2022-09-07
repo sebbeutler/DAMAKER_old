@@ -84,12 +84,26 @@ class Ui_MainWindow(object):
         self.dock2_1.setSizePolicy(sizePolicy)
         self.dock2_1.setStyleSheet(u"")
         self.splitter_vertical2.addWidget(self.dock2_1)
-        self.dock2_2 = ContentDock(self.splitter_vertical2)
+        self.splitter_horizontal2 = QSplitter(self.splitter_vertical2)
+        self.splitter_horizontal2.setObjectName(u"splitter_horizontal2")
+        sizePolicy1.setHeightForWidth(self.splitter_horizontal2.sizePolicy().hasHeightForWidth())
+        self.splitter_horizontal2.setSizePolicy(sizePolicy1)
+        self.splitter_horizontal2.setOrientation(Qt.Horizontal)
+        self.splitter_horizontal2.setOpaqueResize(True)
+        self.splitter_horizontal2.setHandleWidth(7)
+        self.dock2_2 = ContentDock(self.splitter_horizontal2)
         self.dock2_2.setObjectName(u"dock2_2")
         sizePolicy.setHeightForWidth(self.dock2_2.sizePolicy().hasHeightForWidth())
         self.dock2_2.setSizePolicy(sizePolicy)
         self.dock2_2.setStyleSheet(u"")
-        self.splitter_vertical2.addWidget(self.dock2_2)
+        self.splitter_horizontal2.addWidget(self.dock2_2)
+        self.dock2_3 = ContentDock(self.splitter_horizontal2)
+        self.dock2_3.setObjectName(u"dock2_3")
+        sizePolicy.setHeightForWidth(self.dock2_3.sizePolicy().hasHeightForWidth())
+        self.dock2_3.setSizePolicy(sizePolicy)
+        self.dock2_3.setStyleSheet(u"")
+        self.splitter_horizontal2.addWidget(self.dock2_3)
+        self.splitter_vertical2.addWidget(self.splitter_horizontal2)
         self.splitter_horizontal.addWidget(self.splitter_vertical2)
         MainWindow.setCentralWidget(self.splitter_horizontal)
         self.menubar = QMenuBar(MainWindow)
@@ -101,9 +115,6 @@ class Ui_MainWindow(object):
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
         MainWindow.setStatusBar(self.statusbar)
-        self.toolBar = QToolBar(MainWindow)
-        self.toolBar.setObjectName(u"toolBar")
-        MainWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
 
         self.retranslateUi(MainWindow)
 
@@ -112,6 +123,5 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"DAMAKER", None))
-        self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))
     # retranslateUi
 
