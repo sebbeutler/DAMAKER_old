@@ -54,7 +54,8 @@ class PreviewFrame(QFrame, widgets.ITabWidget):
     @property
     def toolbar(self) -> list[ActionButton]:        
         return [ActionButton(self.add3DView, "3D", u":/flat-icons/icons/flat-icons/cube.png"),
-                ActionButton(self.saveChannels, "Export", u":/flat-icons/icons/flat-icons/add_image.svg")]
+                ActionButton(self.saveChannels, "Export", u":/flat-icons/icons/flat-icons/add_image.svg"),
+                ActionButton(None, "Orthogonal Views", u":/flat-icons/icons/flat-icons/")]
         
     def __init__(self, parent=None, path="", channels=[]):
         super().__init__(parent)
