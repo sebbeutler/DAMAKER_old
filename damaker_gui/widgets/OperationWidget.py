@@ -11,7 +11,7 @@ import inspect
 class OperationWidget(QFrame):
     def __init__(self, parent=None, op:Operation=None, pipeline: QListWidget=None, batchMode=False, layoutType=QFormLayout):
         super().__init__(parent)
-        print("OPE")
+        
         self.op = op
         self.pipeline = pipeline
         

@@ -48,7 +48,9 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
         
         self.addWidget(self.functionList)
         
-        self.functionEdit = QScrollArea()
+        self.functionEdit = QWidget()
+        self.functionEditLayout = QVBoxLayout()
+        self.functionEdit.setLayout(self.functionEditLayout)
         self.addWidget(self.functionEdit)
         
         self.setHandleWidth(4)
@@ -68,7 +70,7 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
         pass
     
     def editFunction(self, func: Callable):
-        self.functionEdit.setWidget(widgets.FunctionForm(Operation(func)))        
+        self.functionEditLayout.addWidget(widgets.FunctionForm(Operation(func)))        
         
     def getToolbar(self):
         return [self.btn_reloadPlugins, self.btn_apply]
@@ -163,9 +165,10 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
         return FunctionListWidget._emptyFunc
     
     def getOperation(self) -> Operation:
-        widget: widgets.OperationWidget = self.functionEdit.widget()
+        widget: widgets.OperationWidget = self.functionEditLayout.itemAt(0).widget()
         if issubclass(type(widget), widgets.OperationWidget):
             return widget.getOperation()
+        print("No operation")
         return Operation(FunctionListWidget._emptyFunc)
 
     def connectPipeline(self, widget):

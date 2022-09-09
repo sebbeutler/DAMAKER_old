@@ -29,7 +29,6 @@ class LutSelectorWidget(QFrame, widgets.ITabWidget):
     
     def updateForm(self, target: widgets.PreviewFrame=None):
         if target is None or not issubclass(type(target), IView): return
-        print("UPDATE")
         self.target = target 
         clearLayout(self._layout)
         for chn in self.target.view.channels.keys():
