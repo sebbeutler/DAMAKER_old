@@ -2,7 +2,7 @@ import os, sys
 
 CURRENT_PATH = os.path.dirname(__file__)
 
-def loadRScript(filename):
+def _loadRScript(filename):
     import rpy2.robjects as robjects
     r = robjects.r
 
@@ -18,4 +18,4 @@ def loadRScript(filename):
 from .ExamplePlugin import *
 
 # R files #
-loadRScript('ExamplePlugin.R')
+_loadRScript('ExamplePlugin.R')

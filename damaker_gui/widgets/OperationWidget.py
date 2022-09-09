@@ -1,5 +1,5 @@
 import enum
-from PySide2.QtWidgets import QFormLayout, QGroupBox, QListWidget, QGridLayout, QLineEdit, QSizePolicy, QWidget, QLabel, QSpinBox, QDoubleSpinBox, QCheckBox
+from PySide2.QtWidgets import QFrame, QFormLayout, QGroupBox, QListWidget, QGridLayout, QLineEdit, QSizePolicy, QWidget, QLabel, QSpinBox, QDoubleSpinBox, QCheckBox
 from PySide2.QtCore import *
 
 import damaker_gui
@@ -8,10 +8,10 @@ from damaker.pipeline import *
 
 import inspect
 
-
-class OperationWidget(QGroupBox):
-    def __init__(self, op:Operation, pipeline: QListWidget=None, batchMode=False, layoutType=QFormLayout):
-        super().__init__(op.func.alias)
+class OperationWidget(QFrame):
+    def __init__(self, parent=None, op:Operation=None, pipeline: QListWidget=None, batchMode=False, layoutType=QFormLayout):
+        super().__init__(parent)
+        print("OPE")
         self.op = op
         self.pipeline = pipeline
         
@@ -22,8 +22,6 @@ class OperationWidget(QGroupBox):
         
         self.setAcceptDrops(False)
         
-        self.setStyleSheet("QGroupBox { border-radius: 3px; border: 1px solid rgb(72, 72, 72); }")
-        
         # self.funcAlias = QLineEdit()
         # self.funcAlias.setStyleSheet("border-radius: 3px; border: 1px solid rgb(220, 220, 220);")
         # self.funcAlias.setPlaceholderText("Alias")
@@ -32,7 +30,6 @@ class OperationWidget(QGroupBox):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         
         self.parameters = {}
-        self.initialize()
         self.setFixedHeight(len(self.parameters) / 3 + 1 * 200)
         self.setAcceptDrops(False)
     
@@ -175,3 +172,12 @@ class OperationWidget(QGroupBox):
             #     operations.append(item.name)
             # print(widget)
         return widgets.OperationInputWidget(operations)
+
+from damaker_gui.windows.UI_FunctionForm import Ui_FunctionForm
+
+class FunctionForm(QGroupBox):
+    def __init__(self, op:Operation, pipeline: QListWidget=None, batchMode=False, layoutType=QFormLayout):
+        super().__init__(op.func.alias)
+        
+        self.ui = Ui_FunctionForm()
+        self.ui.setupUi(self)

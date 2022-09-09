@@ -63,21 +63,12 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
         icon.addFile(u":/flat-icons/icons/flat-icons/refresh.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.btn_reloadPlugins = QPushButton(icon, "Refresh Plugins")
         self.btn_reloadPlugins.clicked.connect(self.reload)
-        
-        icon = QIcon()
-        icon.addFile(u":/flat-icons/icons/flat-icons/internal.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.btn_apply = QPushButton(icon, "Apply")
-        self.btn_apply.clicked.connect(self.onApply)
-        
-        self.batchMode = False
-        self.btn_toggleBatchMode = QPushButton("Toggle batch mode")
-        self.btn_apply.clicked.connect(self.toggleBatchMode)
     
     def toggleBatchMode(self):
         pass
     
     def editFunction(self, func: Callable):
-        self.functionEdit.setWidget(widgets.OperationWidget(Operation(func)))        
+        self.functionEdit.setWidget(widgets.FunctionForm(Operation(func)))        
         
     def getToolbar(self):
         return [self.btn_reloadPlugins, self.btn_apply]
