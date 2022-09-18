@@ -63,6 +63,7 @@ class ContentDock(QTabWidget):
         self.currentChanged.connect(self.tabChanged)
     
     def tabChanged(self, index: int):
+        # WARNING: Following breaks when the widget is not instance of ITabWidget
         widget = self.getWidgetByIndex(index)
         if issubclass(type(widget), ITabWidget):
             widget.tabEnterFocus()
@@ -75,7 +76,10 @@ class ContentDock(QTabWidget):
             widget.changeTitle.connect(lambda title: self.setTitle(widget, title))
             widget.focus.connect(self.focusTab)
         else:
-            super().addTab(widget, icon, title)
+            if icon is None:
+                super().addTab(widget, title)
+            else:
+                super().addTab(widget, icon, title)
         if focus:
             self.setCurrentIndex(self.count()-1)
         self.tabChangedSignal.emit()

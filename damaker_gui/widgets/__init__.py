@@ -9,6 +9,7 @@ def clearLayout(layout: QLayout, delete=False):
             if delete:
                 widgetToRemove.deleteLater()
 
+from .QFrameLayout import *
 from .BatchSelectionWidget import *
 from .ChannelsSelectorWidget import *
 from .EnumComboBox import *
@@ -30,3 +31,4 @@ from .AppSettingsWidget import *
 from .ContentDock import *
 from .DockHandler import *
 from .OperationWidget import *
+from .ColorAdjustWidget import *

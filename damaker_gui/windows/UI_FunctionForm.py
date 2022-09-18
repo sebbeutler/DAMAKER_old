@@ -90,6 +90,7 @@ class Ui_FunctionForm(object):
 
     def retranslateUi(self, FunctionForm):
         FunctionForm.setWindowTitle(QCoreApplication.translate("FunctionForm", u"GroupBox", None))
+        FunctionForm.setTitle(QCoreApplication.translate("FunctionForm", u"Function name", None))
         self.function_description.setText("")
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.fileTab), QCoreApplication.translate("FunctionForm", u"File", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.batchTab), QCoreApplication.translate("FunctionForm", u"Batch", None))

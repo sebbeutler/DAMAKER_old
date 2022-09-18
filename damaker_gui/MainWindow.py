@@ -58,6 +58,10 @@ class MainWindow(QMainWindow):
         self.colorMap = widgets.LutSelectorWidget()
         self.ui.dock2_2.addTab(self.colorMap)
         
+        # -Brightness&Contrast- #
+        self.colorAdjust = widgets.ColorAdjustWidget()
+        self.ui.dock2_2.addTab(self.colorAdjust)
+        
         # -Open file from args- #
         for arg in sys.argv[1:]:
             self.openFile(arg)
