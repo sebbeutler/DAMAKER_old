@@ -1,6 +1,14 @@
 import damaker_gui
 damaker_gui.run()
 
+# import damaker as dmk
+
+# chns = dmk.loadChannelsFromFile('C:/Users/PC/source/DAMAKER/resources/E1.tif')
+# res = dmk.processing.pixelIntensity(chns[0])
+
+# print(res.data)
+# print(len(res.data))
+
 # from damaker import plugins
 # print(plugins.myOperation.__annotations__)
 

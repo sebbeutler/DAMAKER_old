@@ -53,9 +53,10 @@ class ColorAdjustWidget(QFrameLayout, widgets.ITabWidget):
         self.figure = Figure(figsize=(0.5, 0.5))
         self.brightnessPlot = FigureCanvasQTAgg(self.figure)
         self.axes = self.figure.add_subplot(111)
-        self.axes.plot([1, 2,3], [1, 2 ,3])
+        self.axes.axis('off')
+        self.axes.stackplot([1, 2,3], [1, 2 ,3])
         
-        # self.layout.addWidget(self.brightnessPlot)
+        self.layout.addWidget(self.brightnessPlot)
         
         self.slider_max = ColorSlider("Maximum")
         self.layout.addWidget(self.slider_max)
@@ -123,7 +124,6 @@ class ColorAdjustWidget(QFrameLayout, widgets.ITabWidget):
         contrast = self.slider_contrast.value()
         for chn, img in self.previewMain.channels.items():
             dmk.processing.changeBrightnessAndContrast(chn, brightness, contrast)
-        self.reset(True)
         self.resetBrightnessContrast()
     
     def resetBrightnessContrast(self):
@@ -131,5 +131,3 @@ class ColorAdjustWidget(QFrameLayout, widgets.ITabWidget):
         self.slider_contrast.setValue(0)
         self.slider_min.setValue(0)
         self.slider_max.setValue(255)
-    
-        self.NeedUpdateSignal.emit()
