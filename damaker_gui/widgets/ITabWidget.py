@@ -17,7 +17,7 @@ class ActionButton(QPushButton):
         self.clicked.connect(self.function)
 
 class ITabWidget():
-    name: str = "None"
+    name: str = "Untitled"
     icon: str = u":/flat-icons/icons/flat-icons/questions.svg"
     toolbar: list[ActionButton] = []
     
@@ -36,3 +36,6 @@ class ITabWidget():
 class IView(ITabWidget):
     def updated(self):
         damaker_gui.Window().viewChanged.emit(self)
+    
+    def isView(obj):
+        return obj is not None and issubclass(type(obj), IView)

@@ -5,11 +5,11 @@ from PySide2.QtCore import Signal, Qt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from damaker.Channel import Channels
+from damaker_gui.widgets.ITabWidget import ActionButton, IView
 from damaker_gui.widgets.QFrameLayout import LayoutTypes, QFrameLayout
 
-from damaker_gui.windows.UI_MainWindow import Ui_MainWindow
-
 import damaker as dmk
+import damaker_gui as dmk_gui
 import damaker_gui.widgets as widgets
 
 class ColorSlider(QFrameLayout):
@@ -26,6 +26,7 @@ class ColorSlider(QFrameLayout):
         self.layout.addWidget(self.label)
         
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        
     
     def setLabel(self, name: str=""):
         self.label.setText(name)
@@ -46,9 +47,13 @@ class ColorAdjustWidget(QFrameLayout, widgets.ITabWidget):
     
     NeedUpdateSignal = Signal()
     
+    # @property
+    # def toolbar(self) -> list[ActionButton]:        
+    #     return [ActionButton(self.clearGraph, "Clear", u":/flat-icons/icons/flat-icons/cube.png")]
+    
     def __init__(self, parent=None):
         super().__init__(parent, LayoutTypes.Vertical, 20, 0)
-        self.channels = []
+        self.target = None
         
         self.figure = Figure(figsize=(0.5, 0.5))
         self.brightnessPlot = FigureCanvasQTAgg(self.figure)
@@ -58,13 +63,14 @@ class ColorAdjustWidget(QFrameLayout, widgets.ITabWidget):
         
         self.layout.addWidget(self.brightnessPlot)
         
-        self.slider_max = ColorSlider("Maximum")
+        self.slider_max = ColorSlider("Maximum", (0, 255))
+        self.slider_max.slider.setValue(255)
         self.layout.addWidget(self.slider_max)
-        self.slider_min = ColorSlider("Minimum")
+        self.slider_min = ColorSlider("Minimum", (0, 255))
         self.layout.addWidget(self.slider_min)
-        self.slider_brightness = ColorSlider("Brightness")
+        self.slider_brightness = ColorSlider("Brightness", (-255, 255))
         self.layout.addWidget(self.slider_brightness)
-        self.slider_contrast = ColorSlider("Contrast")
+        self.slider_contrast = ColorSlider("Contrast", (-255, 255))
         self.layout.addWidget(self.slider_contrast)
         
         self.slider_brightness.slider.valueChanged.connect(self.updateBrightnessContrast)
@@ -83,9 +89,28 @@ class ColorAdjustWidget(QFrameLayout, widgets.ITabWidget):
         
         self.layout.addWidget(self.btns)
         
+        dmk_gui.Window().tabSelected.connect(self.updateGraph)
+    
+    def updateGraph(self, target: widgets.PreviewFrame=None):
+        if not IView.isView(target): return
+        if not issubclass(type(target), widgets.PreviewFrame): return
+        
+        self.target = target.view
+    
+    def clearGraph(self):
+        self.axes.cla()
+        self.axes.axis('off')
+        self.brightnessPlot.draw()
+    
+    def updatePixelIntensity(self):
+        if self.target is None and len(self.target.channels) == 0: return
+        
+        channel = list(self.target.channels.keys())[0]
+        data = dmk.processing.pixelIntensity(channel, self.target.frameId)
+        self.clearGraph()
+        # TODO: plot px intensity
         
     def updateBrightnessContrastMinMax(self):
-        print("MIN")
         _min = self.slider_min.value()
         _max = self.slider_max.value()
         
@@ -99,10 +124,12 @@ class ColorAdjustWidget(QFrameLayout, widgets.ITabWidget):
     
     def updateBrightnessContrast(self, minMax: tuple=None):
         if type(minMax) is tuple:
-            brightness = minMax[0]
-            contrast = minMax[1]
+            brightness, contrast = minMax
+            
             self.slider_brightness.valueChanged.disconnect(self.updateBrightnessContrast)
             self.slider_contrast.valueChanged.disconnect(self.updateBrightnessContrast)
+            self.slider_brightness.setValue(brightness)
+            self.slider_contrast.setValue(contrast)
             self.slider_brightness.valueChanged.connect(self.updateBrightnessContrast)
             self.slider_contrast.valueChanged.connect(self.updateBrightnessContrast)
         else:
@@ -110,20 +137,28 @@ class ColorAdjustWidget(QFrameLayout, widgets.ITabWidget):
             contrast = self.slider_contrast.value()
             _min = -brightness + contrast
             _max = -brightness - contrast + 255
+            
             self.slider_min.valueChanged.disconnect(self.updateBrightnessContrastMinMax)
             self.slider_max.valueChanged.disconnect(self.updateBrightnessContrastMinMax)
+            self.slider_min.setValue(_min)
+            self.slider_max.setValue(_max)
             self.slider_min.valueChanged.connect(self.updateBrightnessContrastMinMax)
             self.slider_max.valueChanged.connect(self.updateBrightnessContrastMinMax)
         
-        for chn, img in self.channels:
-            frame = dmk.processing._changeFrameBrightnessAndContrast(chn.data[self.previewMain.frameId], brightness, contrast)
-            img.setImage(frame, autoLevels=False)
+        if len(self.target.channels) != 0:
+            for chn, img in self.target.channels.items():
+                frame = dmk.processing._changeFrameBrightnessAndContrast(chn.data[self.target.frameId], brightness, contrast)
+                img.setImage(frame, autoLevels=False)
+        
+        self.updatePixelIntensity()
+        
     
     def applyBrightnessContrast(self):
         brightness = self.slider_brightness.value()
         contrast = self.slider_contrast.value()
-        for chn, img in self.previewMain.channels.items():
-            dmk.processing.changeBrightnessAndContrast(chn, brightness, contrast)
+        if len(self.target.channels) != 0:
+            for chn, img in self.target.channels.items():
+                dmk.processing.changeBrightnessAndContrast(chn, brightness, contrast)
         self.resetBrightnessContrast()
     
     def resetBrightnessContrast(self):

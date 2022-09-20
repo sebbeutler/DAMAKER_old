@@ -28,7 +28,7 @@ class LutSelectorWidget(QFrame, widgets.ITabWidget):
         damaker_gui.Window().tabSelected.connect(self.updateForm)
     
     def updateForm(self, target: widgets.PreviewFrame=None):
-        if target is None or not issubclass(type(target), IView): return
+        if not IView.isView(target): return
         self.target = target 
         clearLayout(self._layout)
         for chn in self.target.view.channels.keys():

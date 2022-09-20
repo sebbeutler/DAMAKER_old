@@ -68,7 +68,7 @@ class ContentDock(QTabWidget):
         if issubclass(type(widget), ITabWidget):
             widget.tabEnterFocus()
     
-    def addTab(self, widget: ITabWidget, title: str="New tab", icon: QIcon=None, focus: bool=False):
+    def addTab(self, widget: ITabWidget, title: str="Untitled", icon: QIcon=None, focus: bool=False):
         if issubclass(type(widget), ITabWidget):
             icon = QIcon()
             icon.addFile(widget.icon, QSize(), QIcon.Normal, QIcon.Off)            

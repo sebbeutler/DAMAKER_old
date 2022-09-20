@@ -45,6 +45,7 @@ class MainWindow(QMainWindow):
         
         # -Preview Z-Stack- #
         self.ui.dock1_1.addTab(widgets.PreviewFrame())
+        self.ui.dock1_1.addTab(widgets.PreviewFrame())
         
         # -Pipeline- #
         self.pipeline = widgets.PipelineWidget()
