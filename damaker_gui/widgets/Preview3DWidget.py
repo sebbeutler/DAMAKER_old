@@ -5,13 +5,15 @@ from pyqtgraph.opengl import GLVolumeItem, GLViewWidget, GLGridItem
 import numpy as np
 import damaker
 
-from damaker.Channel import Channel
+from damaker.Channel import Channel, Channels
 import damaker.processing
 from damaker_gui.widgets.ITabWidget import IView
 
 class Preview3DWidget(GLViewWidget, IView):
     name: str = "3D View"
-    def __init__(self, parent=None, channels=None):
+    icon: str = u":/flat-icons/icons/flat-icons/cube.png"
+    
+    def __init__(self, parent=None, channels: Channels=None, name: str="Untitled"):
         super().__init__(parent)
                 
         g = GLGridItem()
@@ -22,7 +24,9 @@ class Preview3DWidget(GLViewWidget, IView):
         self.setCameraPosition(distance=1000)   
         
         if channels != None:
-            self.setChannels(channels)     
+            self.setChannels(channels)
+        
+        self.name = f'[3D] {name}'
     
     def addChannel(self, chn: Channel):
         chn = chn.copy()

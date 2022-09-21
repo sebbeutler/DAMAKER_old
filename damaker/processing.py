@@ -17,7 +17,7 @@ from py4j.java_gateway import JavaGateway
 from damaker.pipeline import BatchParameters
 
 from .utils import StrFilePath, StrFolderPath, channelsSave, _plotChannel, NamedArray, _axisQuantifSaveCSV
-from .Channel import Channel, Channels, SingleChannel
+from .Channel import Channel, Channels, SingleChannel, Frame
 
 def channelSelect(input: Channels, id: int=1) -> Channels:
     """
@@ -140,6 +140,9 @@ def pixelIntensity(input: Channel, frameId: int=-1) -> NamedArray:
     res.name = input.name
     res.data = px_intensity
     return res
+
+def _framePixelIntensity(input: Frame):
+    return pixelIntensity(Channel(data=[input]), 0)
 
 class ZProjectionTypes(enum.Enum):
     max = 0

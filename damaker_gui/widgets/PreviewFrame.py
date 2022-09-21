@@ -126,7 +126,7 @@ class PreviewFrame(QFrame, widgets.IView):
     
     def add3DView(self):
         self.thread3DView.setChannels(list(self.view.channels.keys()))
-        self.thread3DView.setWidget(widgets.Preview3DWidget())
+        self.thread3DView.setWidget(widgets.Preview3DWidget(name=self.name))
         self.thread3DView.loaded.connect(self.parentWidget().parentWidget().parentWidget().addTab)
         self.thread3DView.start()
         
@@ -188,3 +188,26 @@ class PreviewFrame(QFrame, widgets.IView):
             event.accept()
         else:
             event.ignore()
+
+class Loader3DViewThread(QThread):
+    loaded = Signal(widgets.Preview3DWidget)
+    def __init__(self, channels=[], widget: widgets.Preview3DWidget=None):
+        super().__init__()
+        self.channels = channels
+        self.widget = widget
+
+    def setChannels(self, channels):
+        self.channels = channels        
+    
+    def setWidget(self, widget):
+        self.widget = widget
+    
+    @Slot()
+    def run(self):
+        if self.channels == [] or self.widget is None:
+            return
+        self.setPriority(QThread.HighPriority)
+        print("Converting to 3D 🔅")   
+        self.widget.setChannels(self.channels)
+        self.loaded.emit(self.widget)
+        print("Finished 3D conversion ✅")

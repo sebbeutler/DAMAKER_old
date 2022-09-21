@@ -320,7 +320,6 @@ class PlanPage(Page):
                 return item.operation
         return None
     
-    #TODO: see if using operation as item data is useful
     def newOperationComboBox(self):
         operations = []
         for i in range(self.ui.list_operations.count()):

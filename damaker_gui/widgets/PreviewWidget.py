@@ -9,7 +9,6 @@ import damaker
 
 from damaker.Channel import Channel
 from damaker.utils import loadChannelsFromFile
-from damaker_gui.widgets.Preview3DWidget import Preview3DWidget
 # from damaker_gui.widgets import clearLayout
 
 from damaker_gui.windows import files_rc
@@ -191,7 +190,10 @@ class PreviewWidget(pg.ImageView):
         self.threadpool.start(fw)
     
     def loadFiles(self, files: list[str]):
-        self.loadFile(files)
+        if type(files) is str:
+            self.loadFile(files)
+        elif type(files) is list:
+            self.loadFile(files[0])
     
     def mouseMoveEvent(self, e: QGraphicsSceneMouseEvent):
         self.scene._mouseMoveEvent(e)      
@@ -262,25 +264,3 @@ class FileLoaderWorker(QRunnable):
             self.signals.error.emit()
         else:
             self.signals.loaded.emit(channels)
-
-class Loader3DViewThread(QThread):
-    loaded = Signal(Preview3DWidget)
-    def __init__(self, channels=[], widget: Preview3DWidget=None):
-        super().__init__()
-        self.channels = channels
-        self.widget = widget
-
-    def setChannels(self, channels):
-        self.channels = channels        
-    
-    def setWidget(self, widget):
-        self.widget = widget
-    
-    @Slot()
-    def run(self):
-        if self.channels == [] or self.widget is None:
-            return
-        self.setPriority(QThread.HighPriority)
-        print("Converting to 3D 🔅")   
-        self.widget.setChannels(self.channels)
-        self.loaded.emit(self.widget)
