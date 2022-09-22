@@ -12,3 +12,4 @@ py4j
 pyqtgraph
 PyOpenGL
 rpy2
+xmltodict

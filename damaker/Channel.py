@@ -3,12 +3,30 @@ import numpy as np
 from aicsimageio.writers import OmeTiffWriter
 from ome_types.model import OME
 import pyqtgraph as pg
+from typing import NamedTuple, Optional
+from enum import Enum
 
+class MesureUnits(Enum):
+    micro: str = 'µm'
+
+class PhysicalPixelUnit(NamedTuple):
+    Z: Optional[float]
+    Y: Optional[float]
+    X: Optional[float]
+
+class ChannelDimensions(NamedTuple):
+    SizeT: Optional[int]
+    SizeC: Optional[int]
+    SizeZ: Optional[int]
+    SizeY: Optional[int]
+    SizeX: Optional[int]
+    
 class Channel:
-    def __init__(self, name: str="", data: np.ndarray=[], physicalPixelSizes: PhysicalPixelSizes=None, id: int=0, lut: pg.ColorMap=None, metadata: OME=None):
+    def __init__(self, name: str="", data: np.ndarray=[], physicalPixelSizes: PhysicalPixelSizes=None, id: int=0, lut: pg.ColorMap=None, metadata: OME=None, units: PhysicalPixelUnit=None):
         self.name = name
         self.data = np.array(data)
         self.px_sizes = physicalPixelSizes
+        self.units = units
         self.id = id
         self.lut = lut
         self.metadata = metadata
@@ -19,6 +37,14 @@ class Channel:
     @property
     def shape(self):
         return self.data.shape
+
+    @property
+    def dims(self) -> ChannelDimensions:
+        return ChannelDimensions(self.shape[0],
+                                 self.shape[1],
+                                 self.shape[2],
+                                 self.shape[3],
+                                 self.shape[4],)
     
     def save(self, folderPath: str="", includeChannelId: bool=False, filename: str=""):
         if folderPath != "" and folderPath[-1] not in "/\\":

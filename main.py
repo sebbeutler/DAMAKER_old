@@ -1,13 +1,29 @@
+# %%
 import damaker_gui
 damaker_gui.run()
 
-# import damaker as dmk
 
-# chns = dmk.loadChannelsFromFile('C:/Users/PC/source/DAMAKER/resources/E1.tif')
-# res = dmk.processing.pixelIntensity(chns[0])
+#%%
 
-# print(res.data)
-# print(len(res.data))
+import damaker as dmk
+metadata = dmk.utils._loadMetadata_bioformats('/home/sdv/m1isdd/sbeutler/Bureau/DAMAKER/resources/E1.tif')
+# chns = dmk.loadChannelsFromFile('/home/sdv/m1isdd/sbeutler/Bureau/DAMAKER/resources/E1.tif')
+# dmk.utils.channelSave(chns[0], "./")
+
+# %%
+# import javabridge
+# import bioformats as bio
+
+# javabridge.start_vm(class_path=bio.JARS)
+
+# data = bio.get_omexml_metadata("/home/sdv/m1isdd/sbeutler/Bureau/DAMAKER/resources/E1.tif")
+
+# import xmltodict
+
+# dict_ome = xmltodict.parse(data)
+# dict_ome['OME']['Image']
+
+# %%
 
 # from damaker import plugins
 # print(plugins.myOperation.__annotations__)

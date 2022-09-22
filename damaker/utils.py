@@ -1,8 +1,9 @@
-import os
+from logging import exception
+import os, enum
 
 from tiffile import TiffFile
 
-from .Channel import Channel, Channels
+from .Channel import Channel, Channels, PhysicalPixelUnit
 
 import numpy as np
 from skimage import measure
@@ -10,6 +11,10 @@ from skimage import measure
 from aicsimageio.writers import OmeTiffWriter
 from aicsimageio.readers import bioformats_reader, OmeTiffReader
 from aicsimageio.types import PhysicalPixelSizes
+
+import javabridge
+import bioformats as bio
+import xmltodict
 
 from vedo import Mesh, Plotter
 
@@ -23,7 +28,12 @@ class NamedArray:
     name: str=""
     data: list=[]
 
-def loadChannelsFromFile(filename: StrFilePath):
+class ChannelLoaderType(enum.Enum):
+    TIFFILE = 0
+    AICSI = 1
+    BIOFORMATS = 2
+
+def loadChannelsFromFile(filename: StrFilePath, loader: ChannelLoaderType=ChannelLoaderType.TIFFILE)-> Channels:
     """
         Name: Import .tif
         Category: Import
@@ -32,26 +42,55 @@ def loadChannelsFromFile(filename: StrFilePath):
         print("[DAMAKER] Warning: file '" + filename + "' not found.")
         return None
     print("Loading channels . . .")
-    channels = _loadChannels_tiffile(filename)    
-    # channels = _loadChannels_aicsi(filename)    
     
-    biofile = bioformats_reader.BioFile(filename)    
-    metadata = biofile.ome_metadata
+    if loader is ChannelLoaderType.TIFFILE:
+        channels = _loadChannels_tiffile(filename)  
+    elif loader is ChannelLoaderType.AICSI:
+        channels = _loadChannels_aicsi(filename)  
+    elif loader is ChannelLoaderType.BIOFORMATS:
+        channels = _loadChannels_bioformats(filename)
     
+    # biofile = bioformats_reader.BioFile(filename)    
+    # metadata = biofile.ome_metadata
+    
+    # px_sizes = PhysicalPixelSizes(
+    #     metadata.images[0].pixels.physical_size_z,
+    #     metadata.images[0].pixels.physical_size_y,
+    #     metadata.images[0].pixels.physical_size_x
+    # )
+
+    metadata = _loadMetadata_bioformats(filename)
     px_sizes = PhysicalPixelSizes(
-        metadata.images[0].pixels.physical_size_z,
-        metadata.images[0].pixels.physical_size_y,
-        metadata.images[0].pixels.physical_size_x
+        float(metadata['Pixels']['@PhysicalSizeZ']),
+        float(metadata['Pixels']['@PhysicalSizeY']),
+        float(metadata['Pixels']['@PhysicalSizeX']),
+    )
+    units = PhysicalPixelUnit(
+        metadata['Pixels']['@PhysicalSizeZUnit'],
+        metadata['Pixels']['@PhysicalSizeYUnit'],
+        metadata['Pixels']['@PhysicalSizeXUnit'],
     )
     
     for ch in channels:
         if type(ch) is Channel:
-            # ch.metadata = metadata
+            ch.metadata = metadata
             ch.px_sizes = px_sizes
+            ch.units = units
             print(f'Loaded: {ch} ✔')
     return channels
 
-def _loadChannels_aicsi(filename: StrFilePath):
+def _loadChannels_bioformats(filename, StrFilePath) -> Channels:
+    raise Exception()
+
+def _loadMetadata_bioformats(filename: StrFilePath) -> dict:
+    javabridge.start_vm(class_path=bio.JARS)
+    data = bio.get_omexml_metadata("/home/sdv/m1isdd/sbeutler/Bureau/DAMAKER/resources/E1.tif")
+    dict_ome = xmltodict.parse(data)
+    return dict_ome['OME']['Image']
+    
+    # javabridge.kill_vm()
+
+def _loadChannels_aicsi(filename: StrFilePath) -> Channels:
     # verify if the file exist
     if not os.path.isfile(filename):
         print("[DAMAKER] Warning: file '" + filename + "' not found.")
@@ -69,7 +108,7 @@ def _loadChannels_aicsi(filename: StrFilePath):
     
     return channels
 
-def _loadChannels_tiffile(filename: StrFilePath):
+def _loadChannels_tiffile(filename: StrFilePath) -> Channels:
     # verify if the file exist
     if not os.path.isfile(filename):
         print("[DAMAKER] Warning: file '" + filename + "' not found.")
