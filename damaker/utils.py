@@ -1,20 +1,20 @@
 from logging import exception
 import os, enum
 
-from tiffile import TiffFile
-
 from .Channel import Channel, Channels, PhysicalPixelUnit
 
 import numpy as np
 from skimage import measure
 
+from tiffile import TiffFile
+
+# AICSio #
 from aicsimageio.writers import OmeTiffWriter
 from aicsimageio.readers import bioformats_reader, OmeTiffReader
 from aicsimageio.types import PhysicalPixelSizes
 
-import javabridge
-import bioformats as bio
-import xmltodict
+# BIOFORMATS #
+import javabridge, bioformats, xmltodict
 
 from vedo import Mesh, Plotter
 
@@ -82,13 +82,15 @@ def loadChannelsFromFile(filename: StrFilePath, loader: ChannelLoaderType=Channe
 def _loadChannels_bioformats(filename, StrFilePath) -> Channels:
     raise Exception()
 
-def _loadMetadata_bioformats(filename: StrFilePath) -> dict:
-    javabridge.start_vm(class_path=bio.JARS)
-    data = bio.get_omexml_metadata("/home/sdv/m1isdd/sbeutler/Bureau/DAMAKER/resources/E1.tif")
+def _loadMetadata_bioformats(filepath: StrFilePath) -> dict:
+    javabridge.start_vm(run_headless=True, class_path=bioformats.JARS)
+    javabridge.attach()
+
+    data = bioformats.get_omexml_metadata(filepath)
     dict_ome = xmltodict.parse(data)
-    return dict_ome['OME']['Image']
     
-    # javabridge.kill_vm()
+    
+    return dict_ome['OME']['Image']
 
 def _loadChannels_aicsi(filename: StrFilePath) -> Channels:
     # verify if the file exist

@@ -9,7 +9,7 @@ Download binaries: https://github.com/subski/DAMAKER/releases
 ### Download
 ```
 conda create -n dmk python=3.9 -y
-conda activate damaker
+conda activate dmk
 git clone https://github.com/subski/DAMAKER.git
 pip install -r Requirements.txt
 Recommended:

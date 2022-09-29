@@ -1,6 +1,5 @@
 import sys, os
 
-
 # DMK_DIR = os.path.dirname(sys.argv[0])
 DMK_DIR = os.getcwd()
 PLUGINS_DIR = f'{DMK_DIR}/plugins/'

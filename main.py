@@ -1,12 +1,17 @@
 # %%
+import os
+os.environ['JAVA_HOME'] = 'C:/Program Files/Java/jdk-11.0.13'
+import javabridge
 import damaker_gui
-damaker_gui.run()
+damaker_gui.run(exit=False)
+javabridge.kill_vm()
+
 
 
 #%%
 
-import damaker as dmk
-metadata = dmk.utils._loadMetadata_bioformats('/home/sdv/m1isdd/sbeutler/Bureau/DAMAKER/resources/E1.tif')
+# import damaker as dmk
+# metadata = dmk.utils._loadMetadata_bioformats('/home/sdv/m1isdd/sbeutler/Bureau/DAMAKER/resources/E1.tif')
 # chns = dmk.loadChannelsFromFile('/home/sdv/m1isdd/sbeutler/Bureau/DAMAKER/resources/E1.tif')
 # dmk.utils.channelSave(chns[0], "./")
 
