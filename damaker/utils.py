@@ -262,7 +262,7 @@ def _plotChannelRGB(ch_r: Channel=None, ch_g: Channel=None, ch_b: Channel=None):
     res = red + green + blue
     res = res.clip(0, 255)
         
-    plotChannel(Channel("", res))
+    _plotChannel(Channel("", res))
 
 def _plotFrameRGB(data_r=None, data_g=None, data_b=None):
     def getrgbF(arr, col):

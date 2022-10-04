@@ -745,6 +745,12 @@ def loadChannelsFromDir(input: BatchParameters) -> Channels:
     input.load()
     return input.all()
 
-def erosion(input: Channel, iterations: int, border_value: int=0, brute_force: bool=False) -> Channel:
+def erosion(input: Channel, bool, iterations: int, border_value: int=0, brute_force: bool=False) -> Channel:
     input.data = ndimage.binary_erosion(input.data, None, iterations, None, None, border_value, 0, brute_force)
     return input
+
+# scipy.ndimage.binary_dilation(input, structure=None, iterations=1, mask=None, output=None, border_value=0, origin=0, brute_force=False)[source]
+def dilation(input: Channel, iterations: int= 1, mask: Channel=None, border_value:int = 0, origin: int=0, brute_force: bool=False) -> Channel:
+    input.data = ndimage.binary_dilation(input.data, None, iterations, mask, border_value, origin, brute_force)
+    return input
+
