@@ -16,6 +16,15 @@ class Operation:
         self.enabled = enabled
         self.type = Operation if opType is None else opType
         self.outputPath = ""
+    
+    @property
+    def description(self) -> str:
+        return self.func.__doc__
+    
+    # Warning: self.func may not have the 'alias' attribute.
+    @property
+    def alias(self) -> str:
+        return self.func.alias
 
     def run(self):       
         arg_id = 0

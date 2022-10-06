@@ -14,6 +14,7 @@ class OperationWidget(QFrame):
         
         self.op = op
         self.pipeline = pipeline
+        self.parameters = {}
         
         self._layout: QFormLayout = layoutType()
         self._layout.setMargin(20)
@@ -28,11 +29,11 @@ class OperationWidget(QFrame):
         # self.funcAlias.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferre
         
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        
-        self.parameters = {}
-        self.setFixedHeight(len(self.parameters) / 3 + 1 * 200)
         self.setAcceptDrops(False)
+        
     
+    def setOperation(self, op: Operation):
+        self.op = op
     
     def updateOperation(self):
         args = []
@@ -163,21 +164,28 @@ class OperationWidget(QFrame):
             if formWidget != None:
                 self.addEntry(argName, formWidget)
                 self.parameters[argName] = formWidget
-    
-    def newOperationComboBox(self):
-        operations = []
-        for i in range(self.pipeline.count()):
-            widget = self.pipeline.itemWidget(self.pipeline.item(i))
-            # if type(item.operation) != widgets.BatchOperation:
-            #     operations.append(item.name)
-            # print(widget)
-        return widgets.OperationInputWidget(operations)
+        self.setFixedHeight(len(self.parameters) / 3 + 1 * 200)
+
 
 from damaker_gui.windows.UI_FunctionForm import Ui_FunctionForm
 
 class FunctionForm(QGroupBox):
-    def __init__(self, op:Operation, pipeline: QListWidget=None, batchMode=False, layoutType=QFormLayout):
+    def __init__(self, op:Operation, onApply: Callable=None, addToPipeline: Callable=None):
         super().__init__(op.func.alias)
+        
+        self.op = op
         
         self.ui = Ui_FunctionForm()
         self.ui.setupUi(self)
+        
+        self.setTitle(op.alias)
+        self.ui.function_description.setText(op.description)
+        self.ui.function_settings.setOperation(op)
+        self.ui.function_settings.initialize()
+        
+        self.operationWidget: widgets.OperationWidget = self.ui.function_settings
+
+        if onApply != None:
+            self.ui.btn_apply.clicked.connect(onApply)
+        if addToPipeline != None:
+            self.ui.btn_addToPipeline.clicked.connect(addToPipeline)

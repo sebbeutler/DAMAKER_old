@@ -9,6 +9,7 @@ import damaker
 
 from damaker.Channel import Channel
 from damaker.utils import loadChannelsFromFile
+import damaker_gui
 # from damaker_gui.widgets import clearLayout
 
 from damaker_gui.windows import files_rc
@@ -169,13 +170,21 @@ class PreviewWidget(pg.ImageView):
         
         self.sliderUpdateRange()
 
-        if self.fileInfo != None:
+        if self.fileInfo is not None:
             self.fileInfo.preview = self
             self.fileInfo.update()
         
         self.updateFrame(0)
         if len(self.channels) > 0:
-            self.channelsChanged.emit(list(self.channels.keys())[0].name)
+            name = list(self.channels.keys())[0].name
+            if damaker_gui.Window().getTabByName(name) is not None:
+                count = 0
+                while 1:
+                    count += 1
+                    name = f'{name} ({count})'
+                    if damaker_gui.Window().getTabByName(name) is None:
+                        break
+            self.channelsChanged.emit(name)
     
     def removeChannel(self, channel: Channel):
         if channel not in self.channels.keys():
@@ -209,14 +218,11 @@ class PreviewWidget(pg.ImageView):
         self.mouseMoved.emit(e, m_pos)
     
     def updateTextInfo(self):
+        if 0 in self.shape: return
         vrange = self.view.viewRange()
-        try:
-            zoom = "%.2f" % ((((vrange[0][0] - vrange[0][1]) / self.shape[2]) + ((vrange[1][0] - vrange[1][1]) / self.shape[1])) * -1 / 2)
-        except:
-            zoom = ""
+        zoom = "%.2f" % ((((vrange[0][0] - vrange[0][1]) / self.shape[2]) + ((vrange[1][0] - vrange[1][1]) / self.shape[1])) * -1 / 2)
         self.textInfo.setText(f"Slide: {self.frameId+1}/{self.shape[0]} Zoom: {zoom}")
         self.textInfo.adjustSize()
-        
     
     def viewMouseMoved(self, event: QMouseEvent):
         if self.sceneRect().contains(event.pos().x(), event.pos().y()):

@@ -39,14 +39,10 @@ class PipelineWidget(QListWidget, widgets.ITabWidget):
         return [self.btn_stop, self.btn_run]
 
     def tabEnterFocus(self):
-        try:
-            damaker_gui.Window().operationList.connectPipeline(self)
-        except Exception: pass
+        damaker_gui.Window().operationList.connectPipeline(self)
 
     def tabExitFocus(self):
-        try:
-            damaker_gui.Window().operationList.disconnectPipeline(self)
-        except Exception: pass
+        damaker_gui.Window().operationList.disconnectPipeline(self)
     
     def runPipeline(self):                
         self.pipelineThread.setPipeline(self)        

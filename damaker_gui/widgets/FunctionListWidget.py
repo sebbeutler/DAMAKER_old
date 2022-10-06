@@ -27,6 +27,7 @@ QMenu::item::selected {
     background-color: rgb(30,30,30);
 }"""
 
+# TODO: test scroll for long parametters and connect it to the view
 class FunctionListWidget(QSplitter, widgets.ITabWidget):
     name: str= "Operations"
     icon: str = u":/flat-icons/icons/flat-icons/services.svg"
@@ -70,18 +71,14 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
         pass
     
     def editFunction(self, func: Callable):
-        self.functionEditLayout.addWidget(widgets.FunctionForm(Operation(func)))        
+        widgets.clearLayout(self.functionEditLayout, delete=True)
+        self.functionEditLayout.addWidget(widgets.FunctionForm(Operation(func), self.onApply, self.addToPipeline))       
         
     def getToolbar(self):
         return [self.btn_reloadPlugins, self.btn_apply]
     
     def onApply(self):
         op = self.getOperation()
-        
-        if self.pipeline != None:
-            self.pipeline.addOperation(op.copy())
-            print("Added operation to pipeline ✔")
-            return
         
         print(f"🟢 Running operation: {op.name}")
         try:
@@ -94,6 +91,13 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
         for preview in damaker_gui.Window().getTabsByType(widgets.PreviewFrame):
             preview.view.updateFrame()
         print("✅ Operation finished.")
+    
+    # TODO: Connect to button add to pipeline
+    def addToPipeline(self):
+        op = self.getOperation()
+        if self.pipeline != None:
+            self.pipeline.addOperation(op.copy())
+            print("Added operation to pipeline ✔")
     
     def reload(self):
         widgets.clearLayout(self.functionListLayout)
@@ -165,7 +169,8 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
         return FunctionListWidget._emptyFunc
     
     def getOperation(self) -> Operation:
-        widget: widgets.OperationWidget = self.functionEditLayout.itemAt(0).widget()
+        form: widgets.FunctionForm = self.functionEditLayout.itemAt(0).widget()
+        widget: widgets.OperationWidget = form.operationWidget
         if issubclass(type(widget), widgets.OperationWidget):
             return widget.getOperation()
         print("No operation")

@@ -47,13 +47,13 @@ class MainWindow(QMainWindow):
         self.ui.dock1_1.addTab(widgets.PreviewFrame())
         self.ui.dock1_1.addTab(widgets.PreviewFrame())
         
-        # -Pipeline- #
-        self.pipeline = widgets.PipelineWidget()
-        self.ui.dock2_1.addTab(self.pipeline)
-        
         # -Operations- #
         self.operationList = widgets.FunctionListWidget()
         self.ui.dock2_2.addTab(self.operationList)
+        
+        # -Pipeline- #
+        self.pipeline = widgets.PipelineWidget()
+        self.ui.dock2_1.addTab(self.pipeline)
         
         # -LUT- #
         self.colorMap = widgets.LutSelectorWidget()
@@ -67,7 +67,8 @@ class MainWindow(QMainWindow):
         for arg in sys.argv[1:]:
             self.openFile(arg)
         
-        self.showMaximized()
+        # self.showMaximized()
+        self.show()
         self.setFocus(Qt.FocusReason.PopupFocusReason)
         
     @property
@@ -90,7 +91,7 @@ class MainWindow(QMainWindow):
                 self.docks[i].addTab(widget)
         return self
 
-    def getTabByName(self, name: str) -> QWidget:
+    def getTabByName(self, name: str) -> QWidget | None:
         for dock in self.docks:
             widget = dock.getTabByName(name)
             if widget != None:

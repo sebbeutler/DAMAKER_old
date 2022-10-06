@@ -26,20 +26,9 @@ class Ui_FunctionForm(object):
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.function_description = QLabel(FunctionForm)
         self.function_description.setObjectName(u"function_description")
+        self.function_description.setMargin(15)
 
         self.verticalLayout.addWidget(self.function_description)
-
-        self.tabWidget = QTabWidget(FunctionForm)
-        self.tabWidget.setObjectName(u"tabWidget")
-        self.tabWidget.setMinimumSize(QSize(0, 100))
-        self.fileTab = QWidget()
-        self.fileTab.setObjectName(u"fileTab")
-        self.tabWidget.addTab(self.fileTab, "")
-        self.batchTab = QWidget()
-        self.batchTab.setObjectName(u"batchTab")
-        self.tabWidget.addTab(self.batchTab, "")
-
-        self.verticalLayout.addWidget(self.tabWidget)
 
         self.function_settings = OperationWidget(FunctionForm)
         self.function_settings.setObjectName(u"function_settings")
@@ -82,9 +71,6 @@ class Ui_FunctionForm(object):
 
         self.retranslateUi(FunctionForm)
 
-        self.tabWidget.setCurrentIndex(0)
-
-
         QMetaObject.connectSlotsByName(FunctionForm)
     # setupUi
 
@@ -92,8 +78,6 @@ class Ui_FunctionForm(object):
         FunctionForm.setWindowTitle(QCoreApplication.translate("FunctionForm", u"GroupBox", None))
         FunctionForm.setTitle(QCoreApplication.translate("FunctionForm", u"Function name", None))
         self.function_description.setText("")
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.fileTab), QCoreApplication.translate("FunctionForm", u"File", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.batchTab), QCoreApplication.translate("FunctionForm", u"Batch", None))
         self.btn_addToPipeline.setText(QCoreApplication.translate("FunctionForm", u"Add to Pipeline", None))
         self.btn_run.setText(QCoreApplication.translate("FunctionForm", u"Run", None))
         self.btn_apply.setText(QCoreApplication.translate("FunctionForm", u"Apply", None))

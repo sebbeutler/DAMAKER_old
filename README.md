@@ -8,12 +8,14 @@ Download binaries: https://github.com/subski/DAMAKER/releases
 
 ### Download
 ```
-conda create -n dmk python=3.9 -y
-conda activate dmk
 git clone https://github.com/subski/DAMAKER.git
-pip install -r Requirements.txt
-Recommended:
+conda create -n dmk python=3.10 -y
+conda activate dmk
+# Recommended:
+  conda install -c conda-forge m2w64-gcc -y
   conda install -c conda-forge scyjava -y
+  conda install -c conda-forge javabridge -y
+pip install -r Requirements.txt
 ```
 
 ### Run
