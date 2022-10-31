@@ -58,11 +58,16 @@ class MainWindow(QMainWindow):
 
         # -LUT- #
         self.colorMap = widgets.LutSelectorWidget()
-        self.ui.dock2_2.addTab(self.colorMap)
+        self.ui.dock2_3.addTab(self.colorMap)
 
         # -Brightness&Contrast- #
         self.colorAdjust = widgets.ColorAdjustWidget()
         self.ui.dock2_2.addTab(self.colorAdjust)
+
+        # -ROIs- #
+        self.roi = widgets.ROIWidget()
+        self.ui.dock2_2.addTab(self.roi)
+        self.ui.dock2_2.setCurrentIndex(2)
 
         # -Open file from args- #
         for arg in sys.argv[1:]:

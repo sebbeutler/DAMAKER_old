@@ -34,4 +34,5 @@ from .AppSettingsWidget import *
 from .ContentDock import *
 from .DockHandler import *
 from .OperationWidget import *
+from .ROIWidget import *
 from .ColorAdjustWidget import *

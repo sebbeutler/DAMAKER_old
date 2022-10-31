@@ -1,3 +1,22 @@
+"""
+from PySide2.QtWidgets import QFrame, QHBoxLayout
+from PySide2.QtGui import QIcon
+from PySide2.QtCore import Qt
+
+import damaker_gui.widgets as widgets
+
+class TemplateITabWidget(QFrame, widgets.ITabWidget):
+    name: str = "ROI"
+    icon: str = u":/flat-icons/icons/flat-icons/radar_plot.svg"
+
+    @property
+    def toolbar(self) -> list[widgets.ActionButton]:
+        return [widgets.ActionButton(self.addSet, "New set", u":/flat-icons/icons/flat-icons/plus.png"),]
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+"""
+
 from typing import Callable
 from PySide2.QtWidgets import QWidget, QPushButton
 from PySide2.QtGui import QIcon
