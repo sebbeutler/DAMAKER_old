@@ -12,7 +12,7 @@ class MainWindow(QMainWindow):
     tabSelected = Signal(QWidget)
     tabChanged = Signal()
     viewChanged = Signal(IView)
-    
+
     def __init__(self, app: QApplication):
         super().__init__()
         app.Window = self
@@ -20,7 +20,7 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         # self.setWindowFlag(Qt.FramelessWindowHint)
-        
+
         self._docks: list[ContentDock] = []
         for key, value in self.ui.__dict__.items():
             if key.startswith('dock'):
@@ -28,53 +28,54 @@ class MainWindow(QMainWindow):
                 self._docks.append(dock)
                 dock.connectCurrentChanged(self.tabSelected.emit)
                 dock.tabChangedSignal.connect(self.tabChanged.emit)
-        
+
         # -Workspace- #
         self.workspace = widgets.WorkspaceWidget()
         self.workspace.signalOpen.connect(self.openFile)        
         self.ui.dock1_2.addTab(self.workspace)
-        
+
         # -Settings-
         self.settings = widgets.AppSettingsWidget()
         self.settings.theme.setTheme("Dark")
         self.ui.dock1_3.addTab(self.settings)
-        
+
         # -Console- #
         self.console = widgets.ConsoleWidget()
         self.ui.dock1_3.addTab(self.console)
-        
+
         # -Preview Z-Stack- #
         self.ui.dock1_1.addTab(widgets.PreviewFrame())
         self.ui.dock1_1.addTab(widgets.PreviewFrame())
-        
+
         # -Operations- #
         self.operationList = widgets.FunctionListWidget()
         self.ui.dock2_2.addTab(self.operationList)
-        
+
         # -Pipeline- #
-        self.pipeline = widgets.PipelineWidget()
+        self.pipeline = widgets.PipelineViewer()
         self.ui.dock2_1.addTab(self.pipeline)
-        
+        self.operationList.connectPipeline(self.pipeline)
+
         # -LUT- #
         self.colorMap = widgets.LutSelectorWidget()
         self.ui.dock2_2.addTab(self.colorMap)
-        
+
         # -Brightness&Contrast- #
         self.colorAdjust = widgets.ColorAdjustWidget()
         self.ui.dock2_2.addTab(self.colorAdjust)
-        
+
         # -Open file from args- #
         for arg in sys.argv[1:]:
             self.openFile(arg)
-        
+
         # self.showMaximized()
         self.show()
         self.setFocus(Qt.FocusReason.PopupFocusReason)
-        
+
     @property
     def docks(self) -> list[ContentDock]:
         return self._docks
-    
+
     @property
     def currentViews(self) -> list[IView]:
         views = []
@@ -82,8 +83,8 @@ class MainWindow(QMainWindow):
             widget = dock.currentWidget().widget
             if issubclass(type(widget), IView):
                 views.append(widget)
-        return views            
-    
+        return views
+
     def addTab(self, dockId: int=1, widget: QWidget=QWidget()) -> ContentDock:
         raise "Select target dock !!!!"
         for i in range(self.docks):
@@ -97,7 +98,7 @@ class MainWindow(QMainWindow):
             if widget != None:
                 return widget
         return None
-    
+
     def getTabsByType(self, _type: type) -> list[QWidget]:
         _widgets = []
         for dock in self.docks:
@@ -109,14 +110,14 @@ class MainWindow(QMainWindow):
             if dock.closeTab(dock.getWidgetIndex(widget)):
                 return True
         return False
-    
+
     def openFile(self, path: str):
         if path.endswith(".tif") or path.endswith(".tiff"):
             self.docks[0].addTab(widgets.PreviewFrame(path=path))
         else:
             self.ui.statusbar.showMessage(f"No suitable format found for file: '{path}'", 10000)
             print(f"📛 No suitable format found for file: '{path}'")
-        
+
     def keyPressEvent(self, event):
         # print(f"Key: {str(event.key())} Text Press: {str(event.text())}")
         if event.key() == Qt.Key_Escape:

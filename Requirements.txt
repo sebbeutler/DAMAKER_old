@@ -27,10 +27,10 @@ future==0.18.2
 idna==3.4
 imagecodecs==2022.9.26
 imageio==2.22.1
-jgo @ file:///home/conda/feedstock_root/build_artifacts/jgo_1652149144862/work
+jgo
 Jinja2==3.1.2
 jmespath==1.0.1
-JPype1 @ file:///D:/bld/jpype1_1653686425674/work
+JPype1 
 kiwisolver==1.4.4
 locket==1.0.0
 lxml==4.9.1
@@ -68,7 +68,7 @@ rpy2==3.5.4
 s3transfer==0.6.0
 scikit-image==0.19.3
 scipy==1.9.1
-scyjava @ file:///home/conda/feedstock_root/build_artifacts/scyjava_1663886912520/work
+scyjava
 setuptools==63.4.3
 shiboken2==5.15.2.1
 SimpleITK==2.2.0

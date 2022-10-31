@@ -20,22 +20,22 @@ class ITabWidget():
     name: str = "Untitled"
     icon: str = u":/flat-icons/icons/flat-icons/questions.svg"
     toolbar: list[ActionButton] = []
-    
+
     focus = Signal(object)
     changeTitle = Signal(str)
-    
+
     def tabEnterFocus(self):
         pass
-    
+
     def requestFocus(self):
         self.focus.emit(self)
-    
+
     def closing(self):
         pass
 
 class IView(ITabWidget):
     def updated(self):
         damaker_gui.Window().viewChanged.emit(self)
-    
+
     def isView(obj):
         return obj is not None and issubclass(type(obj), IView)

@@ -7,7 +7,7 @@ from .Channel import Channel, Channels, SingleChannel
 from .utils import *
 
 
-class Operation:    
+class Operation:
     def __init__(self, func: Callable, args: list=[], name: str="", enabled: bool=True, opType=None):
         self.func = func
         self.args = args
@@ -16,36 +16,38 @@ class Operation:
         self.enabled = enabled
         self.type = Operation if opType is None else opType
         self.outputPath = ""
-    
+        if not hasattr(self.func, 'alias'):
+            self.func.alias = self.name
+
     @property
     def description(self) -> str:
         return self.func.__doc__
-    
+
     # Warning: self.func may not have the 'alias' attribute.
     @property
     def alias(self) -> str:
         return self.func.alias
 
-    def run(self):       
+    def run(self):
         arg_id = 0
         sign = signature(self.func)
         arguments = []
-        
+
         for arg in self.args:
             if type(arg) is list:
-                outputs = []                    
+                outputs = []
                 for i in range(len(arg)):
                     if type(arg[i]) is Operation:
                         outputs.append(arg[i].output)
                     else:
-                        outputs.append(arg[i])                
+                        outputs.append(arg[i])
                 arguments.append(outputs)
             elif type(arg) is Operation:
-                arguments.append(arg.output)                    
+                arguments.append(arg.output)
             else:
-                arguments.append(arg)    
-                
-        batch_size = 0     
+                arguments.append(arg)
+
+        batch_size = 0
         sign = signature(self.func)
         arg_id = 0
         for name in sign.parameters:
@@ -54,17 +56,17 @@ class Operation:
                 arg = arguments[arg_id]
             else:
                 arg = param.default
-            
+
             if param.annotation is Channel and type(arg) is list:
                 batch_size = max(batch_size, len(arg))
             elif param.annotation is Channel and arg == None and param.default != None:
                 return
             arg_id += 1
-        
+
         if batch_size == 0:
             self.output = self.func(*arguments)
             return
-        
+
         self.output = []
         for i in range(batch_size):
             arg_id = 0
@@ -80,41 +82,41 @@ class Operation:
                 if param.annotation is Channel and arg == None and param.default != None:
                     return
                 arg_id += 1
-                
+
             if sign.return_annotation is Channels:
                 self.output += self.func(*args_tmp)
             else:
                 self.output.append(self.func(*args_tmp))
-    
+
     def __str__(self) -> str:
         return self.name
 
     def copy(self):
         return Operation(self.func, self.args.copy(), self.name, self.enabled)
-        
+
 
 class BatchParameters:
     folder: str=""
     mods: list[str] = []
     file: str=""
     associated: bool=True
-     
+
     output: list=[]
     fileList: list=[]
     fileListId: int=0
-    
+
     type: type=Channel
-    
+
     def load(self):
         self.fileList = []
-        
+
         if self.file == "*":
             for file in os.listdir(self.folder):
                 if os.path.isfile(self.folder + "/" + file):
                     self.fileList.append(file)
             print(f'batch files: {self.fileList}')
             return
-        
+
         def applyMod(file, modId, mods):
             fileList = []
             for mod in mods[modId].split(";"):
@@ -135,11 +137,11 @@ class BatchParameters:
         if len(self.mods) == 0:
             self.mods = [""]
         applyMod(self.file, 0, self.mods)
-        
+
         self.fileListId = 0
-                    
+
         print(f'batch files: {self.fileList}')
-    
+
     def next(self):
         if self.type is Channel: 
             self.output = loadChannelsFromFile(self.folder + "/" + self.fileList[self.fileListId])
@@ -164,7 +166,7 @@ class BatchParameters:
         while not self.finished():
             chns += self.next()
         return chns
-        
+
     def finished(self):
         return self.fileListId >= len(self.fileList)
 
@@ -187,19 +189,19 @@ class BatchOperation(Operation):
     def __init__(self, func=None, args=[], name="", enabled=True, outputPath=""):
         super().__init__(func, args, name, enabled, BatchOperation)
         self.outputPath = outputPath
-    
+
     def run(self):
         parameters: list[BatchParameters] = []
-        
+
         argId = 0
-        sign = signature(self.func)        
+        sign = signature(self.func)
         arguments = []
         for name in sign.parameters:
             param = sign.parameters[name]
             if param.annotation in [Channel, Mesh] and type(self.args[argId]) is BatchParameters:
                 self.args[argId].load()
                 parameters.append(self.args[argId])
-            
+
             if argId >= len(self.args):
                 continue
             elif param.annotation is SingleChannel:
@@ -215,17 +217,17 @@ class BatchOperation(Operation):
             else:
                 arguments.append(self.args[argId])
             argId += 1
-        
+
         if len(parameters) == 0:
             outputs = self.func(*arguments)
             if self.outputPath != "":
                 channelsSave(outputs, self.outputPath)
             return
-    
+
         while not parameters[0].finished():
             for param in parameters:
                 param.next()
-        
+
             outputs = []
             if not parameters[0].associated:
                 nb_channels = 1
@@ -233,7 +235,7 @@ class BatchOperation(Operation):
                 nb_channels = len(parameters[0].output)
             for i in range(nb_channels):
                 argId = 0
-                batch_args = []         
+                batch_args = []
                 for name in sign.parameters:
                     param = sign.parameters[name]
                     if param.annotation is Channel and type(arguments[argId]) is BatchParameters:
@@ -250,12 +252,12 @@ class BatchOperation(Operation):
             elif self.outputPath != "" and sign.return_annotation is NamedArray:
                 for out in outputs:
                     listSaveCSV(out, self.outputPath)
-            
-    
+
+
 class Pipeline:
     def __init__(self):
         self.operations: list[Operation] = []
-    
+
     def add(self, func, *args):
         op = Operation(func, args)
         self.operations.append(op)
@@ -264,11 +266,11 @@ class Pipeline:
     def addOperation(self, op):
         self.operations.append(op)
         return op
-    
+
     def run(self):
         for op in self.operations:
             op.run()
-    
+
     def load(self, filepath: str, functions: list):
         if not os.path.isfile(filepath):
             print(f'pipeline load: unkown file {filepath}')
@@ -300,7 +302,7 @@ class Pipeline:
                     op.args.append(arg)
                 operations[op.name] = op
         self.operations = list(operations.values())
-    
+
     def save(self, filepath: str):
         operations_json = []
         for op in self.operations:
@@ -335,17 +337,15 @@ class Pipeline:
 if __name__ == '__main__':
     def addition(a, b):
         return a + b
-    
+
     def print_list(l):
         for e in l:
             print(e)
 
     p = Pipeline()
-    
+
     step1 = p.add(addition, 1, 2)
     step2 = p.add(addition, 5, 6)
     step3 = p.add(print_list, [step1, step2])
-    
+
     p.run()
-    
-    

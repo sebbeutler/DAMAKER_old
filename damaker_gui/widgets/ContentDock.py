@@ -12,62 +12,62 @@ class ContentFrame(QFrame):
     def __init__(self, widget: ITabWidget, parent=None):        
         super().__init__(parent)
         self.widget: ITabWidget = widget
-        
+
         self._layout = QVBoxLayout()
         self._layout.setSpacing(0)
         self._layout.setMargin(0)
         self.setLayout(self._layout)
-        
+
         self.toolbar = QFrame()
         self.toolbar_layout = QHBoxLayout()
         self.toolbar_layout.setSpacing(0)
         self.toolbar_layout.setMargin(0)
         self.toolbar.setFixedHeight(22)
         self.toolbar.setLayout(self.toolbar_layout)
-        
+
         self._layout.addWidget(self.toolbar)
         self._layout.addWidget(self.widget)
 
         if self.widget is None or not issubclass(type(self.widget), ITabWidget):
             return
         self.refreshActions()
-            
+
     def refreshActions(self):
         self.clearActions()
         for action in self.widget.toolbar:
             self.toolbar_layout.addWidget(action)
         self.toolbar_layout.addStretch()
-    
+
     def clearActions(self):
         for i in reversed(range(self.toolbar_layout.count())): 
             widgetToRemove = self.toolbar_layout.itemAt(i).widget()
             self.toolbar_layout.removeWidget(widgetToRemove)
             if widgetToRemove != None:
-                widgetToRemove.setParent(None)        
+                widgetToRemove.setParent(None)
 
 class ContentDock(QTabWidget):
     tabChangedSignal = Signal()
-    
+
     def __init__(self, parent=None):
         super().__init__(parent)
-        
+
         self.setMovable(True)
         self.setAcceptDrops(True)
         self._tabBar = self.tabBar()
         self._tabBar.setMouseTracking(True)
         self.dragIndex = None
-        
+
         # self.toolBar = ToolBar()
         # self._tab.tabCloseRequested.connect(self.closeTab)
         # self._tab.currentChanged.connect(self.tabChanged)
         self.currentChanged.connect(self.tabChanged)
-    
+
     def tabChanged(self, index: int):
         # WARNING: Following breaks when the widget is not instance of ITabWidget
         widget = self.getWidgetByIndex(index)
         if issubclass(type(widget), ITabWidget):
             widget.tabEnterFocus()
-    
+
     def addTab(self, widget: ITabWidget, title: str="Untitled", icon: QIcon=None, focus: bool=False):
         if issubclass(type(widget), ITabWidget):
             icon = QIcon()
@@ -83,7 +83,7 @@ class ContentDock(QTabWidget):
         if focus:
             self.setCurrentIndex(self.count()-1)
         self.tabChangedSignal.emit()
-    
+
     def focusTab(self, widget: ITabWidget):
         index = self.getWidgetIndex(widget)
         if self.currentIndex() == index:
@@ -109,22 +109,22 @@ class ContentDock(QTabWidget):
         self.removeTab(index)
         gc.collect()
         return True
-    
+
     def removeTab(self, widget: QWidget):
         index = self.getWidgetIndex(widget)
         if index != -1:
             self.tab.removeTab(index)
             self.tabChangedSignal.emit()
-    
+
     def getWidgetIndex(self, widget: QWidget) -> int:
         for i in range(self.count()):
             if widget == self.widget(i).widget:
                 return i
         return -1 # Not found
-    
+
     def getWidgetByIndex(self, index) -> QWidget:
         return self.widget(index).widget
-    
+
     def getTabByName(self, name: str) -> QWidget:
         for i in range(self.count()):
             if self.tabText(i) == name:
@@ -138,10 +138,10 @@ class ContentDock(QTabWidget):
             if issubclass(type(widget), _type):
                 _widgets.append(widget)
         return _widgets
-    
+
     def connectCurrentChanged(self, func: Callable):
         self.currentChanged.connect(lambda x: func(self.getWidgetByIndex(x)))
-    
+
     # -Drag & Drop tabs- #
     def mouseMoveEvent(self, e):
         if e.buttons() != Qt.RightButton:
@@ -178,12 +178,12 @@ class ContentDock(QTabWidget):
 
         e.setDropAction(Qt.MoveAction)
         e.accept()
-        
+
         widget = sourceTab.widget(sourceTab.dragIndex)
         title = sourceTab.tabText(sourceTab.dragIndex)
         icon = QIcon()
-        
+
         #!Warning: Catch unhandled no attr exception 
         icon.addFile(widget.widget.icon, QSize(), QIcon.Normal, QIcon.Off)
-        
+
         self.addTab(widget=widget, title=title, icon=icon, focus=True)

@@ -1,3 +1,5 @@
+# type: ignore
+
 from inspect import getmembers, isfunction  
 import re, typing
 import traceback
@@ -31,14 +33,14 @@ QMenu::item::selected {
 class FunctionListWidget(QSplitter, widgets.ITabWidget):
     name: str= "Operations"
     icon: str = u":/flat-icons/icons/flat-icons/services.svg"
-    
+
     operationTriggered = Signal(object)
     apply = Signal(Operation)
-    
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.menus = []
-        
+
         # -Function list widget-
         self.functionList = QWidget()
         self.functionListLayout = QVBoxLayout()
@@ -46,78 +48,77 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
         self.functionListLayout.setSpacing(0)
         self.setMinimumWidth(150)
         self.functionList.setLayout(self.functionListLayout)
-        
+
         self.addWidget(self.functionList)
-        
+
         self.functionEdit = QWidget()
         self.functionEditLayout = QVBoxLayout()
         self.functionEdit.setLayout(self.functionEditLayout)
         self.addWidget(self.functionEdit)
-        
+
         self.setHandleWidth(4)
         self.categories: dict[str, list[function]] = {}
         self.functions: dict[str, function] = {}
-        self.loadFunctions()    
-        
+        self.loadFunctions()
+
         self.operationTriggered.connect(self.editFunction)
         self.pipeline: widgets.PipelineWidget = None
-        
+
         icon = QIcon()
         icon.addFile(u":/flat-icons/icons/flat-icons/refresh.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.btn_reloadPlugins = QPushButton(icon, "Refresh Plugins")
         self.btn_reloadPlugins.clicked.connect(self.reload)
-    
+
     def toggleBatchMode(self):
         pass
-    
+
     def editFunction(self, func: Callable):
         widgets.clearLayout(self.functionEditLayout, delete=True)
-        self.functionEditLayout.addWidget(widgets.FunctionForm(Operation(func), self.onApply, self.addToPipeline))       
-        
+        self.functionEditLayout.addWidget(widgets.FunctionForm(Operation(func), self.onApply, self.addToPipeline))
+
     def getToolbar(self):
         return [self.btn_reloadPlugins, self.btn_apply]
-    
+
     def onApply(self):
         op = self.getOperation()
-        
+
         print(f"🟢 Running operation: {op.name}")
         try:
             op.run()
         except Exception as e:
             print(f"🛑 Operation runtime error")
             print(traceback.format_exc())
-            
+
         # self.apply.emit(self.getOperation())
         for preview in damaker_gui.Window().getTabsByType(widgets.PreviewFrame):
             preview.view.updateFrame()
         print("✅ Operation finished.")
-    
-    # TODO: Connect to button add to pipeline
+
     def addToPipeline(self):
         op = self.getOperation()
         if self.pipeline != None:
             self.pipeline.addOperation(op.copy())
             print("Added operation to pipeline ✔")
-    
+
     def reload(self):
         widgets.clearLayout(self.functionListLayout)
         self.menus.clear()
         self.loadFunctions()
         print("Reloaded operations ✔")
-    
+
     def convert_func_rpy2py(self, name, funcR):
         funcPy = FunctionListWidget._emptyFunc
-    
+
     def loadFunctions(self):
         damaker.plugins = damaker.importPlugins()
         self.functions = dict(getmembers(damaker.processing, isfunction))        
         self.functions.update(dict(getmembers(damaker.utils, isfunction)))
         self.functions.update(dict(getmembers(damaker.plugins, isfunction)))
-        
+
         # print(dict(getmembers(damaker.plugins, lambda obj: isinstance(obj, robjects.functions.Function))))
-        
+
         self.categories = {"Plugins": []}
-        
+
         for func in self.functions.values():
             if func.__name__[0] == '_':
                 continue
@@ -126,7 +127,7 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
                 func.alias = name[0]
             else:
                 func.alias = func.__name__
-            
+
             category = re.findall('Category:\s*(.*)\n', str(func.__doc__))
             if len(category) > 0:
                 if not category[0] in self.categories.keys():
@@ -134,7 +135,7 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
                 self.categories[category[0]].append(func)
             else:
                 self.categories["Plugins"].append(func)
-        
+
         for cat, funcs in self.categories.items():
             if len(funcs) == 0:
                 continue
@@ -152,22 +153,22 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
             btn.setMenu(menu)
             btn.clicked.connect(btn.showMenu)
             self.functionListLayout.addWidget(btn)
-            
+
             # retain widgets in memory
             self.menus.append([menu, btn])
-            
+
         # self.functionListLayout.addStretch()
-    
+
     def _emptyFunc():
         pass
-    
+
     def getFunction(self, alias) -> Callable:
         for functions in self.categories.values():
             for func in functions:
                 if func.alias == alias:
                     return func
         return FunctionListWidget._emptyFunc
-    
+
     def getOperation(self) -> Operation:
         form: widgets.FunctionForm = self.functionEditLayout.itemAt(0).widget()
         widget: widgets.OperationWidget = form.operationWidget
@@ -177,9 +178,9 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
         return Operation(FunctionListWidget._emptyFunc)
 
     def connectPipeline(self, widget):
-        if issubclass(type(widget), widgets.PipelineWidget):
+        if issubclass(type(widget), widgets.PipelineWidget) or issubclass(type(widget), widgets.PipelineViewer):
             self.pipeline = widget
-    
+
     def disconnectPipeline(self, widget):
         if self.pipeline == widget:
             self.pipeline = None

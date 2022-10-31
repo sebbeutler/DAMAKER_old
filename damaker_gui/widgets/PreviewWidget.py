@@ -201,7 +201,7 @@ class PreviewWidget(pg.ImageView):
     def loadFiles(self, files: list[str]):
         if type(files) is str:
             self.loadFile(files)
-        elif type(files) is list:
+        elif type(files) is list and len(files) > 0:
             self.loadFile(files[0])
     
     def mouseMoveEvent(self, e: QGraphicsSceneMouseEvent):

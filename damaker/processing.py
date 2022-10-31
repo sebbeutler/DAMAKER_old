@@ -19,6 +19,14 @@ from damaker.pipeline import BatchParameters
 from .utils import StrFilePath, StrFolderPath, channelsSave, _plotChannel, NamedArray, _axisQuantifSaveCSV
 from .Channel import Channel, Channels, SingleChannel, Frame
 
+def _foo() -> None:
+    """
+        Name: Foo
+        Category: Bar
+        Desc: .
+    """
+    return None
+
 def channelSelect(input: Channels, id: int=1) -> Channels:
     """
         Name: Select channel by id

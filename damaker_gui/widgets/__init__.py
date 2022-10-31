@@ -22,6 +22,7 @@ from .PreviewWidget import *
 from .RecordFunctionsWidget import *
 from .WorkspaceWidget import *
 from .ConsoleWidget import *
+from .PipelineViewer import *
 from .PipelineWidget import *
 from .ITabWidget import *
 from .OrthogonalProjectionWidget import *
