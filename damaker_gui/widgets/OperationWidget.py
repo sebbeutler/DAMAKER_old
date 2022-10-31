@@ -1,10 +1,8 @@
 import enum
-from webbrowser import Opera
 from PySide2.QtWidgets import QFrame, QFormLayout, QGroupBox, QListWidget, QGridLayout, QLineEdit, QSizePolicy, QWidget, QLabel, QSpinBox, QDoubleSpinBox, QCheckBox
 from PySide2.QtCore import *
 import damaker
 
-import damaker_gui
 import damaker_gui.widgets as widgets
 from damaker.pipeline import *
 
@@ -39,7 +37,9 @@ class OperationWidget(QFrame):
     def updateOperation(self):
         args = []
         for widget in self.parameters.values():
-            if hasattr(widget, 'getParameter'):
+            if issubclass(type(widget), widgets.IParameterWidget):
+                args.append(widget.getValue())
+            elif hasattr(widget, 'getParameter'):
                 args.append(widget.getParameter(widget))
         self.op.args = args
 
@@ -111,15 +111,16 @@ class OperationWidget(QFrame):
 
             # CHANNEL
             if param.annotation in [widgets.Channel, widgets.Channels, widgets.BatchParameters, Mesh]:
-                if param.annotation is widgets.BatchParameters:
-                    if opArg != None:
-                        formWidget = widgets.BatchSelectionWidget(opArg)
-                    else:
-                        formWidget = widgets.BatchSelectionWidget()
-                    formWidget.getParameter = lambda widget: widget.getBatch()
-                else:
-                    formWidget = widgets.ChannelSelectorWidget()
-                    formWidget.getParameter = lambda widget: widget.getChannels()
+                # if param.annotation is widgets.BatchParameters:
+                #     if opArg != None:
+                #         formWidget = widgets.BatchSelectionWidget(opArg)
+                #     else:
+                #         formWidget = widgets.BatchSelectionWidget()
+                #     formWidget.getParameter = lambda widget: widget.getBatch()
+                # else:
+                #     formWidget = widgets.ChannelSelectorWidget()
+                #     formWidget.getParameter = lambda widget: widget.getChannels()
+                formWidget = widgets.InputWidget()
             elif param.annotation is widgets.SingleChannel or param.annotation is StrFilePath:
                 if opArg != None:
                     formWidget = widgets.FilePickerWidget(text=opArg)
@@ -166,7 +167,6 @@ class OperationWidget(QFrame):
                 self.addEntry(argName, formWidget)
                 self.parameters[argName] = formWidget
         self.setFixedHeight(len(self.parameters) / 3 + 1 * 200)
-
 
 from damaker_gui.windows.UI_FunctionForm import Ui_FunctionForm
 

@@ -9,8 +9,10 @@ def clearLayout(layout: QLayout, delete=False):
             if delete:
                 widgetToRemove.deleteLater()
 
+from .IParameterWidget import *
 from .QFrameLayout import *
 from .BatchSelectionWidget import *
+from .InputWidget import *
 from .ChannelsSelectorWidget import *
 from .EnumComboBox import *
 from .FileInfoWidget import *
