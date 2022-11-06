@@ -2,7 +2,7 @@ from PySide2.QtWidgets import QLineEdit, QScrollArea, QFormLayout, QSizePolicy
 
 import damaker_gui.widgets as widgets
 from damaker.pipeline import BatchParameters
-from damaker_gui.windows.UI_BatchParametersWidget import Ui_BatchParameters
+from damaker_gui.ui.UI_BatchParametersWidget import Ui_BatchParameters
 
 class BatchSelectionWidget(QScrollArea, widgets.IParameterWidget):
     def __init__(self, parameters: BatchParameters=None):

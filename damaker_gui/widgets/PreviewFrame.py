@@ -63,6 +63,22 @@ class PreviewFrame(QFrame, widgets.IView):
         self._layout.setSpacing(3)
         self._layout.setMargin(0)
 
+        # Slider #
+        self.slider = QSlider()
+        self.slider.setOrientation(Qt.Horizontal)
+
+        # View info #
+        self.info = widgets.FileInfoWidget()
+
+        # View #
+        self.view: widgets.PreviewWidget = widgets.PreviewWidget([], self.info, self.slider)
+        self.view.channelsChanged.connect(self.changeTitle.emit)
+
+        self._layout.addWidget(self.view)
+        self._layout.addWidget(self.slider)
+        self._layout.addWidget(self.info)
+
+        # Channels buttons #
         self.frame_btn_channels = QFrame()
         self._layout.addWidget(self.frame_btn_channels)
 
@@ -71,32 +87,23 @@ class PreviewFrame(QFrame, widgets.IView):
         self.layout_btn_channels.setSpacing(3)
         self.frame_btn_channels.setLayout(self.layout_btn_channels)
 
-        # Slider #
-        self.slider = QSlider()
-        self.slider.setOrientation(Qt.Horizontal)
-
-        # View #
-        self.view: widgets.PreviewWidget = widgets.PreviewWidget([], None, self.slider)
-        self.view.channelsChanged.connect(self.changeTitle.emit)
-
-        self._layout.addWidget(self.view)
-        self._layout.addWidget(self.slider)
-
         # ROI #
         self.roi_buttons = widgets.ROIButtons(self.view)
         self._layout.addWidget(self.roi_buttons)
 
-        # 3D THREAD #
+
+        # 3D loader thread #
         self.thread3DView = widgets.Loader3DViewThread()
         self.preview3D = None
 
-        # ORTHO THREAD #
+        # Orthogonal loader thread #
         self.threadOrtho = ReslicerWorker()        
         self.threadOrtho.finished.connect(self.setProjections)
         self.idProj = (0, 0)
         self.projX: list[Channel] = None
         self.projY: list[Channel] = None
 
+        # File preload from argument #
         if path != "":
             self.view.loadFile(path)
         self.view.channelsChanged.connect(self.requestFocus)
@@ -105,6 +112,7 @@ class PreviewFrame(QFrame, widgets.IView):
         if channels != []:
             self.view.addChannels(channels)
 
+        # Signals #
         self.view.channelsChanged.connect(self.updateBtnChannels)
         self.updateBtnChannels()
 

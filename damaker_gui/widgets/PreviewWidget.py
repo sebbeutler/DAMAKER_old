@@ -12,7 +12,7 @@ from damaker.utils import loadChannelsFromFile
 import damaker_gui
 # from damaker_gui.widgets import clearLayout
 
-from damaker_gui.windows import files_rc
+from damaker_gui.ui import files_rc
 
 lut_green = np.zeros((256, 3), np.uint8)
 lut_green[:, 1] = np.arange(256)

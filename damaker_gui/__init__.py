@@ -3,9 +3,9 @@ import os, sys
 # from __future__ import annotations
 
 _filedir = os.path.dirname(__file__)
-os.system(f"pyside2-uic -o {_filedir}/windows/UI_MainWindowV2.py --from-imports {_filedir}/windows/MainWindowV2.ui")
-os.system(f"pyside2-uic -o {_filedir}/windows/UI_BatchParametersWidget.py --from-imports {_filedir}/windows/BatchParametersWidget.ui")
-os.system(f"pyside2-uic -o {_filedir}/windows/UI_FunctionForm.py --from-imports {_filedir}/windows/FunctionForm.ui")
+os.system(f"pyside2-uic -o {_filedir}/ui/UI_MainWindowV2.py --from-imports {_filedir}/ui/MainWindowV2.ui")
+os.system(f"pyside2-uic -o {_filedir}/ui/UI_BatchParametersWidget.py --from-imports {_filedir}/ui/BatchParametersWidget.ui")
+os.system(f"pyside2-uic -o {_filedir}/ui/UI_FunctionForm.py --from-imports {_filedir}/ui/FunctionForm.ui")
 
 from PySide2.QtWidgets import QApplication
 App = QApplication(sys.argv)

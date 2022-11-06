@@ -168,7 +168,7 @@ class OperationWidget(QFrame):
                 self.parameters[argName] = formWidget
         self.setFixedHeight(len(self.parameters) / 3 + 1 * 200)
 
-from damaker_gui.windows.UI_FunctionForm import Ui_FunctionForm
+from damaker_gui.ui.UI_FunctionForm import Ui_FunctionForm
 
 class FunctionForm(QGroupBox):
     def __init__(self, op:Operation, onApply: Callable=None, addToPipeline: Callable=None):

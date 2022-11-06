@@ -1,12 +1,12 @@
 if __name__ == '__main__':
     import os
-    os.system("pyside2-uic -o ./damaker_gui/windows/UI_MainWindowV2.py --from-imports ./damaker_gui/windows/MainWindowV2.ui")
-    os.system("pyside2-uic -o ./damaker_gui/windows/UI_BatchParametersWidget.py --from-imports ./damaker_gui/windows/BatchParametersWidget.ui")
+    os.system("pyside2-uic -o ./damaker_gui/ui/UI_MainWindowV2.py --from-imports ./damaker_gui/ui/MainWindowV2.ui")
+    os.system("pyside2-uic -o ./damaker_gui/ui/UI_BatchParametersWidget.py --from-imports ./damaker_gui/ui/BatchParametersWidget.ui")
 
 import sys
 import damaker_gui.widgets as widgets
-from damaker_gui.widgets.ITabWidget import ITabWidget, IView
-from damaker_gui.windows.UI_MainWindowV2 import *
+from damaker_gui.widgets.ITabWidget import IView
+from damaker_gui.ui.UI_MainWindowV2 import *
 
 class MainWindow(QMainWindow):
     tabSelected = Signal(QWidget)

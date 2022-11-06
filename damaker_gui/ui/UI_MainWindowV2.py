@@ -47,7 +47,6 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.dock1_1.sizePolicy().hasHeightForWidth())
         self.dock1_1.setSizePolicy(sizePolicy)
         self.dock1_1.setStyleSheet(u"")
-        self.dock1_1.setTabsClosable(True)
         self.splitter_vertical1.addWidget(self.dock1_1)
         self.splitter_vertical1_1 = QSplitter(self.splitter_vertical1)
         self.splitter_vertical1_1.setObjectName(u"splitter_vertical1_1")
