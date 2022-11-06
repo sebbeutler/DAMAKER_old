@@ -17,7 +17,7 @@ class LUTComboBox(QComboBox):
                 self._callback(self.channel, lut)
 
 class LutSelectorWidget(QFrame, widgets.ITabWidget):
-    name: str = "Color map"
+    name: str = "LUT"
     icon: str = u":/flat-icons/icons/flat-icons/landscape.svg"
     
     def __init__(self, parent=None, target: widgets.PreviewFrame=None):
