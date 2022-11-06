@@ -40,24 +40,24 @@ class ROIButtons(QFrame):
         self._layout = QHBoxLayout()
         self.setLayout(self._layout)
 
-        self._layout.addWidget(widgets.ActionButton(self.addLine))
-        self._layout.addWidget(widgets.ActionButton(self.addPolyLine))
-        self._layout.addWidget(widgets.ActionButton(self.addRect))
-        self._layout.addWidget(widgets.ActionButton(self.addCircle))
-        self._layout.addWidget(widgets.ActionButton(self.addEllipse))
-        self._layout.addWidget(widgets.ActionButton(self.addCrosshair))
+        self._layout.addWidget(widgets.ActionButton(self.addLine, "Line"))
+        self._layout.addWidget(widgets.ActionButton(self.addPolyLine, "PolyLine"))
+        self._layout.addWidget(widgets.ActionButton(self.addRect, "Rect"))
+        self._layout.addWidget(widgets.ActionButton(self.addCircle, "Circle"))
+        self._layout.addWidget(widgets.ActionButton(self.addEllipse, "Ellipse"))
+        self._layout.addWidget(widgets.ActionButton(self.addCrosshair, "Crosshair"))
 
         self.roi_list: list[pg.ROI] = []
 
     def focusROI(self, roi):
         self.view.currentROI = roi
-    
+
     def addRoi(self, roi: pg.ROI):
         roi.setAcceptedMouseButtons(Qt.MouseButton.LeftButton)
         roi.sigClicked.connect(self.focusROI)
         self.view.addItem(roi)
         self.roi_list.append(roi)
-    
+
     def addLine(self):
         roi = pg.LineSegmentROI([[10, 64], [120,64]], pen='r')
         self.addRoi(roi)
