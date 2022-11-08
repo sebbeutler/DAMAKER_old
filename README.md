@@ -12,7 +12,8 @@ git clone https://github.com/subski/DAMAKER.git
 conda create -n dmk python=3.10 -y
 conda activate dmk
 # Recommended:
-  conda install -c conda-forge m2w64-gcc scyjava javabridge -y
+  conda install -c conda-forge m2w64-gcc scyjava javabridge openjdk -y
+  conda install -c anaconda pyqty
   conda install -c conda-forge scyjava -y
   conda install -c conda-forge javabridge -y
 pip install -r Requirements.txt
