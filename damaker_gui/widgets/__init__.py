@@ -9,6 +9,7 @@ def clearLayout(layout: QLayout, delete=False):
             if delete:
                 widgetToRemove.deleteLater()
 
+from .ITabWidget import *
 from .IParameterWidget import *
 from .QFrameLayout import *
 from .BatchSelectionWidget import *
@@ -26,7 +27,6 @@ from .WorkspaceWidget import *
 from .ConsoleWidget import *
 from .PipelineViewer import *
 from .PipelineWidget import *
-from .ITabWidget import *
 from .OrthogonalProjectionWidget import *
 from .LutSelectorWidget import *
 from .PreviewFrame import *

@@ -30,7 +30,7 @@ class ReslicerWorker(QThread):
     finished = Signal(list, list)
     loaded: bool = False
     def __init__(self, channels: Channel=[]):
-        super().__init__()        
+        super().__init__()
         self.channels = channels
 
     @Slot()
@@ -79,14 +79,10 @@ class PreviewFrame(QFrame, widgets.IView):
         # Channels buttons #
         self.frame_btn_channels = widgets.QFrameLayout(_type=widgets.LayoutTypes.Horizontal, spacing=0, margin=0)
 
-        # ROI #
-        self.roi_buttons = widgets.ROIButtons(self.view)
-
         # Buttons frame #
         self.action_frame = widgets.QFrameLayout(_type=widgets.LayoutTypes.Vertical, spacing=0, margin=0)
         self.action_frame.layout.addWidget(self.slider)
         self.action_frame.layout.addWidget(self.frame_btn_channels)
-        self.action_frame.layout.addWidget(self.roi_buttons)
 
         # Bottom frame #
         self.bottom_frame = widgets.QFrameLayout(_type=widgets.LayoutTypes.Horizontal, spacing=0, margin=0)

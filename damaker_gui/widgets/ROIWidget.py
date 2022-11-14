@@ -1,11 +1,20 @@
 from PySide2.QtWidgets import QListWidget, QListWidgetItem, QGroupBox, QHBoxLayout, QFrame
 from PySide2.QtGui import QIcon
-from PySide2.QtCore import Qt
+from PySide2.QtCore import Qt, Signal
 
 import damaker_gui.widgets as widgets
 import pyqtgraph as pg
 
-class ROIWidget(QListWidget, widgets.ITabWidget):
+class ROISet(QGroupBox):
+    def __init__(self, name: str="ROI set"):
+        super().__init__(name)
+        self.list = QListWidget(self)
+        self.list.addItem("test")
+
+    def addRoi(self, roi: pg.ROI):
+        print("Not implemented yet lol")
+
+class ROIWidget(widgets.QFrameLayout, widgets.ITabWidget):
     name: str = "ROI"
     icon: str = u":/flat-icons/icons/flat-icons/radar_plot.svg"
 
@@ -16,47 +25,42 @@ class ROIWidget(QListWidget, widgets.ITabWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.list = QListWidget()
+        self.layout.addWidget(self.list)
+
+        self.roi_btns = ROIButtons()
+        self.roi_btns.clicked.connect(self.addRoi)
+        self.layout.addWidget(self.roi_btns)
+
         self.addSet()
 
     def addSet(self):
         item = QListWidgetItem("ROI set")
-        self.addItem(item)
-        self.setItemWidget(item, ROISet("ROI set"))
+        self.list.addItem(item)
+        self.list.setItemWidget(item, ROISet("ROI set"))
 
-    def updateList(self):
-        pass
+    def currentSet(self) -> ROISet:
+        return self.list.itemWidget(self.list.currentItem())
 
-class ROISet(QGroupBox):
-    def __init__(self, name: str="ROI set"):
-        super().__init__(name)
+    def addRoi(self, roi: pg.ROI):
+        self.currentSet().addRoi(roi)
 
+class ROIButtons(widgets.QFrameLayout):
+    clicked = Signal(pg.ROI)
 
-class ROIButtons(QFrame):
-    def __init__(self, view=None):
-        super().__init__(None)
+    def __init__(self):
+        super().__init__()
 
-        self.view: widgets.PreviewWidget = view
-
-        self._layout = QHBoxLayout()
-        self.setLayout(self._layout)
-
-        self._layout.addWidget(widgets.ActionButton(self.addLine, "Line"))
-        self._layout.addWidget(widgets.ActionButton(self.addPolyLine, "PolyLine"))
-        self._layout.addWidget(widgets.ActionButton(self.addRect, "Rect"))
-        self._layout.addWidget(widgets.ActionButton(self.addCircle, "Circle"))
-        self._layout.addWidget(widgets.ActionButton(self.addEllipse, "Ellipse"))
-        self._layout.addWidget(widgets.ActionButton(self.addCrosshair, "Crosshair"))
-
-        self.roi_list: list[pg.ROI] = []
-
-    def focusROI(self, roi):
-        self.view.currentROI = roi
+        self.layout.addWidget(widgets.ActionButton(self.addLine, "Line"))
+        self.layout.addWidget(widgets.ActionButton(self.addPolyLine, "PolyLine"))
+        self.layout.addWidget(widgets.ActionButton(self.addRect, "Rect"))
+        self.layout.addWidget(widgets.ActionButton(self.addCircle, "Circle"))
+        self.layout.addWidget(widgets.ActionButton(self.addEllipse, "Ellipse"))
+        self.layout.addWidget(widgets.ActionButton(self.addCrosshair, "Crosshair"))
 
     def addRoi(self, roi: pg.ROI):
         roi.setAcceptedMouseButtons(Qt.MouseButton.LeftButton)
-        roi.sigClicked.connect(self.focusROI)
-        self.view.addItem(roi)
-        self.roi_list.append(roi)
+        self.clicked.emit(roi)
 
     def addLine(self):
         roi = pg.LineSegmentROI([[10, 64], [120,64]], pen='r')

@@ -98,8 +98,6 @@ class PreviewWidget(pg.ImageView):
         self.scene._mouseMoveEvent = self.scene.mouseMoveEvent
         self.scene.mouseMoveEvent = self.mouseMoveEvent
 
-        self.currentROI: pg.ROI|None = None
-        
         self.updateFrame()
 
     @property

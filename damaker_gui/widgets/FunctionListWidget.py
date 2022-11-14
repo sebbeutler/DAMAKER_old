@@ -19,16 +19,6 @@ import damaker_gui.widgets as widgets
 
 import rpy2.robjects as robjects
 
-_menuStyleSheet = """
-QMenu {
-    background-color: rgb(62,62,62);
-    color: rgb(255,255,255);
-    border: 1px solid #000;           
-}
-QMenu::item::selected {
-    background-color: rgb(30,30,30);
-}"""
-
 # TODO: test scroll for long parametters and connect it to the view
 class FunctionListWidget(QSplitter, widgets.ITabWidget):
     name: str= "Operations"
@@ -36,6 +26,10 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
 
     operationTriggered = Signal(object)
     apply = Signal(Operation)
+
+    @property
+    def toolbar(self) -> list[widgets.ActionButton]:
+        return [widgets.ActionButton(self.reload, "Refresh Plugins", u":/flat-icons/icons/flat-icons/refresh.svg"),]
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -64,20 +58,9 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
         self.operationTriggered.connect(self.editFunction)
         self.pipeline: widgets.PipelineWidget = None
 
-        icon = QIcon()
-        icon.addFile(u":/flat-icons/icons/flat-icons/refresh.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.btn_reloadPlugins = QPushButton(icon, "Refresh Plugins")
-        self.btn_reloadPlugins.clicked.connect(self.reload)
-
-    def toggleBatchMode(self):
-        pass
-
     def editFunction(self, func: Callable):
         widgets.clearLayout(self.functionEditLayout, delete=True)
         self.functionEditLayout.addWidget(widgets.FunctionForm(Operation(func), self.onApply, self.addToPipeline))
-
-    def getToolbar(self):
-        return [self.btn_reloadPlugins, self.btn_apply]
 
     def onApply(self):
         op = self.getOperation()
