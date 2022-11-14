@@ -48,7 +48,7 @@ class PreviewFrame(QFrame, widgets.IView):
     icon: str = u":/flat-icons/icons/flat-icons/database.svg"
 
     @property
-    def toolbar(self) -> list[widgets.ActionButton]:        
+    def toolbar(self) -> list[widgets.ActionButton]:
         return [widgets.ActionButton(self.add3DView, "3D", u":/flat-icons/icons/flat-icons/cube.png"),
                 widgets.ActionButton(self.saveChannels, "Export", u":/flat-icons/icons/flat-icons/add_image.svg"),
                 widgets.ActionButton(self.loadOrthogonalViews, "Orthogonal Views", u":/flat-icons/icons/flat-icons/grid.svg")]
@@ -75,23 +75,25 @@ class PreviewFrame(QFrame, widgets.IView):
         self.view.channelsChanged.connect(self.changeTitle.emit)
 
         self._layout.addWidget(self.view)
-        self._layout.addWidget(self.slider)
-        self._layout.addWidget(self.info)
 
         # Channels buttons #
-        self.frame_btn_channels = QFrame()
-        self._layout.addWidget(self.frame_btn_channels)
-
-        self.layout_btn_channels = QHBoxLayout()
-        self.layout_btn_channels.setMargin(0)
-        self.layout_btn_channels.setSpacing(3)
-        self.frame_btn_channels.setLayout(self.layout_btn_channels)
+        self.frame_btn_channels = widgets.QFrameLayout(_type=widgets.LayoutTypes.Horizontal, spacing=0, margin=0)
 
         # ROI #
         self.roi_buttons = widgets.ROIButtons(self.view)
-        self._layout.addWidget(self.roi_buttons)
 
+        # Buttons frame #
+        self.action_frame = widgets.QFrameLayout(_type=widgets.LayoutTypes.Vertical, spacing=0, margin=0)
+        self.action_frame.layout.addWidget(self.slider)
+        self.action_frame.layout.addWidget(self.frame_btn_channels)
+        self.action_frame.layout.addWidget(self.roi_buttons)
 
+        # Bottom frame #
+        self.bottom_frame = widgets.QFrameLayout(_type=widgets.LayoutTypes.Horizontal, spacing=0, margin=0)
+        self.bottom_frame.layout.addWidget(self.action_frame)
+        self.bottom_frame.layout.addWidget(self.info)
+        self._layout.addWidget(self.bottom_frame)
+        
         # 3D loader thread #
         self.thread3DView = widgets.Loader3DViewThread()
         self.preview3D = None
@@ -142,13 +144,13 @@ class PreviewFrame(QFrame, widgets.IView):
         self.thread3DView.start()
 
     def updateBtnChannels(self):
-        widgets.clearLayout(self.layout_btn_channels, True)
+        widgets.clearLayout(self.frame_btn_channels.layout, True)
         for chn in self.view.channels.keys():
             btn = ChannelBtn(f'Ch{chn.id}', chn.id)
             btn.channelToggled.connect(self.toggleChannel)
             btn.channelRemoveTriggered.connect(self.removeChannel)
-            self.layout_btn_channels.addWidget(btn)
-        self.layout_btn_channels.addStretch()        
+            self.frame_btn_channels.layout.addWidget(btn)
+        self.frame_btn_channels.layout.addStretch()        
         if damaker_gui.Window() != None and hasattr(damaker_gui.Window(), 'lutSelector'):
             damaker_gui.Window().lutSelector.updateForm(self)
 

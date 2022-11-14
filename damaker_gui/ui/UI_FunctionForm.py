@@ -1,54 +1,85 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/home/sdv/m1isdd/sbeutler/Bureau/DAMAKER/damaker_gui/ui/FunctionForm.ui',
-# licensing of '/home/sdv/m1isdd/sbeutler/Bureau/DAMAKER/damaker_gui/ui/FunctionForm.ui' applies.
-#
-# Created: Mon Nov  7 14:50:43 2022
-#      by: pyside2-uic  running on PySide2 5.12.2
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'FunctionForm.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.2
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
+
+from damaker_gui.widgets.OperationWidget import OperationWidget
+
 
 class Ui_FunctionForm(object):
     def setupUi(self, FunctionForm):
-        FunctionForm.setObjectName("FunctionForm")
+        if not FunctionForm.objectName():
+            FunctionForm.setObjectName(u"FunctionForm")
         FunctionForm.resize(400, 300)
-        self.verticalLayout = QtWidgets.QVBoxLayout(FunctionForm)
+        self.verticalLayout = QVBoxLayout(FunctionForm)
         self.verticalLayout.setSpacing(0)
+        self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.function_description = QtWidgets.QLabel(FunctionForm)
-        self.function_description.setText("")
+        self.function_description = QLabel(FunctionForm)
+        self.function_description.setObjectName(u"function_description")
         self.function_description.setMargin(15)
-        self.function_description.setObjectName("function_description")
+
         self.verticalLayout.addWidget(self.function_description)
+
         self.function_settings = OperationWidget(FunctionForm)
-        self.function_settings.setMinimumSize(QtCore.QSize(0, 100))
-        self.function_settings.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.function_settings.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.function_settings.setObjectName("function_settings")
+        self.function_settings.setObjectName(u"function_settings")
+        self.function_settings.setMinimumSize(QSize(0, 100))
+        self.function_settings.setFrameShape(QFrame.StyledPanel)
+        self.function_settings.setFrameShadow(QFrame.Raised)
+
         self.verticalLayout.addWidget(self.function_settings)
-        self.button_list = QtWidgets.QFrame(FunctionForm)
-        self.button_list.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.button_list.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.button_list.setObjectName("button_list")
-        self.horizontalLayout = QtWidgets.QHBoxLayout(self.button_list)
+
+        self.button_list = QFrame(FunctionForm)
+        self.button_list.setObjectName(u"button_list")
+        self.button_list.setFrameShape(QFrame.StyledPanel)
+        self.button_list.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout = QHBoxLayout(self.button_list)
         self.horizontalLayout.setSpacing(0)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem)
-        self.btn_addToPipeline = QtWidgets.QPushButton(self.button_list)
-        self.btn_addToPipeline.setObjectName("btn_addToPipeline")
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer)
+
+        self.btn_addToPipeline = QPushButton(self.button_list)
+        self.btn_addToPipeline.setObjectName(u"btn_addToPipeline")
+
         self.horizontalLayout.addWidget(self.btn_addToPipeline)
-        self.btn_run = QtWidgets.QPushButton(self.button_list)
-        self.btn_run.setObjectName("btn_run")
+
+        self.btn_run = QPushButton(self.button_list)
+        self.btn_run.setObjectName(u"btn_run")
+
         self.horizontalLayout.addWidget(self.btn_run)
-        self.btn_apply = QtWidgets.QPushButton(self.button_list)
-        self.btn_apply.setObjectName("btn_apply")
+
+        self.btn_apply = QPushButton(self.button_list)
+        self.btn_apply.setObjectName(u"btn_apply")
+
         self.horizontalLayout.addWidget(self.btn_apply)
+
+
         self.verticalLayout.addWidget(self.button_list)
 
+
         self.retranslateUi(FunctionForm)
-        QtCore.QMetaObject.connectSlotsByName(FunctionForm)
+
+        QMetaObject.connectSlotsByName(FunctionForm)
+    # setupUi
+
+    def retranslateUi(self, FunctionForm):
+        FunctionForm.setWindowTitle(QCoreApplication.translate("FunctionForm", u"GroupBox", None))
+        FunctionForm.setTitle(QCoreApplication.translate("FunctionForm", u"Function name", None))
+        self.function_description.setText("")
+        self.btn_addToPipeline.setText(QCoreApplication.translate("FunctionForm", u"Add to Pipeline", None))
+        self.btn_run.setText(QCoreApplication.translate("FunctionForm", u"Run", None))
+        self.btn_apply.setText(QCoreApplication.translate("FunctionForm", u"Apply", None))
+    # retranslateUi
+

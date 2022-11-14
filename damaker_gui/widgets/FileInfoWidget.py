@@ -33,8 +33,7 @@ class FileInfoWidget(QFrame, ITabWidget):
         if self.preview is None or len(self.preview.channels.keys()) == 0:
             return
         mainChannel = list(self.preview.channels.keys())[0]
-        self._size[1].setText(
-            f'Size: ({mainChannel.shape[2]}, {mainChannel.shape[1]}, {mainChannel.shape[0]})\n')
+        self._size[1].setText(f'({mainChannel.shape[2]}, {mainChannel.shape[1]}, {mainChannel.shape[0]})')
         if mainChannel.px_sizes != None:
             self._realSize[1].setText(f'(%.2f, %.2f, %.2f)' % (
                 mainChannel.shape[0]*mainChannel.px_sizes.X,
@@ -49,7 +48,7 @@ class FileInfoWidget(QFrame, ITabWidget):
         if self.my < mainChannel.shape[1] and self.mx < mainChannel.shape[2]:
             values = ""
             for channel in self.preview.channels.keys():
-                values += f"Ch{channel.id}: {channel.data[self.preview.frameId][self.my][self.mx]}\n"
+                values += f"Ch{channel.id}: {channel.data[self.preview.frameId][self.my][self.mx]}"
             self._value[1].setText(values)
         else:
             self._value[1].setText('')

@@ -1,21 +1,26 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/home/sdv/m1isdd/sbeutler/Bureau/DAMAKER/damaker_gui/ui/BatchParametersWidget.ui',
-# licensing of '/home/sdv/m1isdd/sbeutler/Bureau/DAMAKER/damaker_gui/ui/BatchParametersWidget.ui' applies.
-#
-# Created: Mon Nov  7 14:50:43 2022
-#      by: pyside2-uic  running on PySide2 5.12.2
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'BatchParametersWidget.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.2
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
+
+from  . import files_rc
 
 class Ui_BatchParameters(object):
     def setupUi(self, BatchParameters):
-        BatchParameters.setObjectName("BatchParameters")
+        if not BatchParameters.objectName():
+            BatchParameters.setObjectName(u"BatchParameters")
         BatchParameters.resize(309, 134)
-        BatchParameters.setMinimumSize(QtCore.QSize(309, 0))
-        BatchParameters.setStyleSheet("QScrollArea {\n"
+        BatchParameters.setMinimumSize(QSize(309, 0))
+        BatchParameters.setStyleSheet(u"QScrollArea {\n"
 " border-radius: 3px;\n"
 "border: 1px solid rgb(60, 60, 60);\n"
 "background-color: rgb(238, 248, 255);\n"
@@ -63,7 +68,8 @@ class Ui_BatchParameters(object):
 "QScrollBar::add-line:vertical:hover\n"
 "{\n"
 "    height:9px;width:8px;\n"
-"    border-image:url(:/image/4.png);\n"
+"    bor"
+                        "der-image:url(:/image/4.png);\n"
 "    subcontrol-position:bottom;\n"
 "}\n"
 "\n"
@@ -79,85 +85,118 @@ class Ui_BatchParameters(object):
 "    background:rgba(0,0,0,10%);\n"
 "    border-radius:4px;\n"
 "}")
-        BatchParameters.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        BatchParameters.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        BatchParameters.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        BatchParameters.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         BatchParameters.setWidgetResizable(True)
-        self.BatchParametersContent = QtWidgets.QFrame()
-        self.BatchParametersContent.setGeometry(QtCore.QRect(0, 0, 307, 132))
-        self.BatchParametersContent.setStyleSheet("")
-        self.BatchParametersContent.setObjectName("BatchParametersContent")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.BatchParametersContent)
+        self.BatchParametersContent = QFrame()
+        self.BatchParametersContent.setObjectName(u"BatchParametersContent")
+        self.BatchParametersContent.setGeometry(QRect(0, 0, 307, 132))
+        self.BatchParametersContent.setStyleSheet(u"")
+        self.verticalLayout = QVBoxLayout(self.BatchParametersContent)
         self.verticalLayout.setSpacing(0)
+        self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.topBar = QtWidgets.QFrame(self.BatchParametersContent)
+        self.topBar = QFrame(self.BatchParametersContent)
+        self.topBar.setObjectName(u"topBar")
         self.topBar.setEnabled(True)
-        self.topBar.setMaximumSize(QtCore.QSize(16777215, 25))
-        self.topBar.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.topBar.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.topBar.setObjectName("topBar")
-        self.horizontalLayout = QtWidgets.QHBoxLayout(self.topBar)
+        self.topBar.setMaximumSize(QSize(16777215, 25))
+        self.topBar.setFrameShape(QFrame.StyledPanel)
+        self.topBar.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout = QHBoxLayout(self.topBar)
         self.horizontalLayout.setSpacing(0)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        spacerItem = QtWidgets.QSpacerItem(320, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem)
-        self.btn_deploy = QtWidgets.QPushButton(self.topBar)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        self.horizontalSpacer = QSpacerItem(320, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer)
+
+        self.btn_deploy = QPushButton(self.topBar)
+        self.btn_deploy.setObjectName(u"btn_deploy")
+        sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btn_deploy.sizePolicy().hasHeightForWidth())
         self.btn_deploy.setSizePolicy(sizePolicy)
-        self.btn_deploy.setObjectName("btn_deploy")
+
         self.horizontalLayout.addWidget(self.btn_deploy)
+
+
         self.verticalLayout.addWidget(self.topBar)
-        self.batch_form = QtWidgets.QFrame(self.BatchParametersContent)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.batch_form.sizePolicy().hasHeightForWidth())
-        self.batch_form.setSizePolicy(sizePolicy)
-        self.batch_form.setMinimumSize(QtCore.QSize(0, 100))
-        self.batch_form.setStyleSheet("")
-        self.batch_form.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.batch_form.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.batch_form.setObjectName("batch_form")
-        self.batch_form_layout = QtWidgets.QFormLayout(self.batch_form)
-        self.batch_form_layout.setLabelAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
-        self.batch_form_layout.setFormAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
-        self.batch_form_layout.setObjectName("batch_form_layout")
-        self.label = QtWidgets.QLabel(self.batch_form)
-        self.label.setObjectName("label")
-        self.batch_form_layout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label)
-        self.filename_input = QtWidgets.QLineEdit(self.batch_form)
-        self.filename_input.setMaximumSize(QtCore.QSize(170, 16777215))
-        self.filename_input.setObjectName("filename_input")
-        self.batch_form_layout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.filename_input)
-        self.label_2 = QtWidgets.QLabel(self.batch_form)
-        self.label_2.setObjectName("label_2")
-        self.batch_form_layout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_2)
-        self.checkBox_associated = QtWidgets.QCheckBox(self.batch_form)
-        self.checkBox_associated.setText("")
+
+        self.batch_form = QFrame(self.BatchParametersContent)
+        self.batch_form.setObjectName(u"batch_form")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.batch_form.sizePolicy().hasHeightForWidth())
+        self.batch_form.setSizePolicy(sizePolicy1)
+        self.batch_form.setMinimumSize(QSize(0, 100))
+        self.batch_form.setStyleSheet(u"")
+        self.batch_form.setFrameShape(QFrame.StyledPanel)
+        self.batch_form.setFrameShadow(QFrame.Raised)
+        self.batch_form_layout = QFormLayout(self.batch_form)
+        self.batch_form_layout.setObjectName(u"batch_form_layout")
+        self.batch_form_layout.setLabelAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+        self.batch_form_layout.setFormAlignment(Qt.AlignHCenter|Qt.AlignTop)
+        self.label = QLabel(self.batch_form)
+        self.label.setObjectName(u"label")
+
+        self.batch_form_layout.setWidget(0, QFormLayout.LabelRole, self.label)
+
+        self.filename_input = QLineEdit(self.batch_form)
+        self.filename_input.setObjectName(u"filename_input")
+        self.filename_input.setMaximumSize(QSize(170, 16777215))
+
+        self.batch_form_layout.setWidget(0, QFormLayout.FieldRole, self.filename_input)
+
+        self.label_2 = QLabel(self.batch_form)
+        self.label_2.setObjectName(u"label_2")
+
+        self.batch_form_layout.setWidget(1, QFormLayout.LabelRole, self.label_2)
+
+        self.checkBox_associated = QCheckBox(self.batch_form)
+        self.checkBox_associated.setObjectName(u"checkBox_associated")
         self.checkBox_associated.setChecked(True)
-        self.checkBox_associated.setObjectName("checkBox_associated")
-        self.batch_form_layout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.checkBox_associated)
-        self.label_3 = QtWidgets.QLabel(self.batch_form)
-        self.label_3.setObjectName("label_3")
-        self.batch_form_layout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_3)
-        self.btn_add_mod = QtWidgets.QPushButton(self.batch_form)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.btn_add_mod.sizePolicy().hasHeightForWidth())
-        self.btn_add_mod.setSizePolicy(sizePolicy)
-        self.btn_add_mod.setText("")
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/16x16/icons/16x16/cil-plus.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+
+        self.batch_form_layout.setWidget(1, QFormLayout.FieldRole, self.checkBox_associated)
+
+        self.label_3 = QLabel(self.batch_form)
+        self.label_3.setObjectName(u"label_3")
+
+        self.batch_form_layout.setWidget(2, QFormLayout.LabelRole, self.label_3)
+
+        self.btn_add_mod = QPushButton(self.batch_form)
+        self.btn_add_mod.setObjectName(u"btn_add_mod")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.btn_add_mod.sizePolicy().hasHeightForWidth())
+        self.btn_add_mod.setSizePolicy(sizePolicy2)
+        icon = QIcon()
+        icon.addFile(u":/16x16/icons/16x16/cil-plus.png", QSize(), QIcon.Normal, QIcon.Off)
         self.btn_add_mod.setIcon(icon)
-        self.btn_add_mod.setObjectName("btn_add_mod")
-        self.batch_form_layout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.btn_add_mod)
+
+        self.batch_form_layout.setWidget(2, QFormLayout.FieldRole, self.btn_add_mod)
+
+
         self.verticalLayout.addWidget(self.batch_form)
+
         BatchParameters.setWidget(self.BatchParametersContent)
 
         self.retranslateUi(BatchParameters)
-        QtCore.QMetaObject.connectSlotsByName(BatchParameters)
+
+        QMetaObject.connectSlotsByName(BatchParameters)
+    # setupUi
+
+    def retranslateUi(self, BatchParameters):
+        self.BatchParametersContent.setWindowTitle(QCoreApplication.translate("BatchParameters", u"Frame", None))
+        self.btn_deploy.setText(QCoreApplication.translate("BatchParameters", u"Deploy", None))
+        self.label.setText(QCoreApplication.translate("BatchParameters", u"Expr.:", None))
+        self.filename_input.setText(QCoreApplication.translate("BatchParameters", u"*", None))
+        self.label_2.setText(QCoreApplication.translate("BatchParameters", u"Associated:", None))
+        self.checkBox_associated.setText("")
+        self.label_3.setText(QCoreApplication.translate("BatchParameters", u"Modalities:", None))
+        self.btn_add_mod.setText("")
+        pass
+    # retranslateUi
+
