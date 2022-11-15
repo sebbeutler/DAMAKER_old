@@ -24,9 +24,9 @@ class ChannelSelectorWidget(QFrame, widgets.IParameterWidget):
         self.btnAdd.clicked.connect(self.addChannelEntry)
         self._layout.addWidget(self.btnAdd)
 
-        damaker_gui.Window().tabChanged.connect(self.updateChoices)
+        damaker_gui.MainWindow.Instance.tabChanged.connect(self.updateChoices)
         self.updateChoices()
-        damaker_gui.Window().viewChanged.connect(self.updateChoices)
+        damaker_gui.MainWindow.Instance.viewChanged.connect(self.updateChoices)
 
 
     def addChannelEntry(self):
@@ -49,7 +49,7 @@ class ChannelSelectorWidget(QFrame, widgets.IParameterWidget):
             chn.setParent(None)
 
     def updateChoices(self):
-        self.choices = [widget.name for widget in damaker_gui.Window().getTabsByType(IView)]
+        self.choices = [widget.name for widget in damaker_gui.MainWindow.Instance.getTabsByType(IView)]
 
         for comboBox in self.comboBoxs:
             current = comboBox.currentText()
@@ -58,7 +58,7 @@ class ChannelSelectorWidget(QFrame, widgets.IParameterWidget):
 
     def getChannels(self) -> Channels:
         channels = []
-        previews: list[widgets.PreviewFrame] = damaker_gui.Window().getTabsByType(widgets.PreviewFrame)
+        previews: list[widgets.PreviewFrame] = damaker_gui.MainWindow.Instance.getTabsByType(widgets.PreviewFrame)
         choices = self.getValues()
 
         for preview in previews:

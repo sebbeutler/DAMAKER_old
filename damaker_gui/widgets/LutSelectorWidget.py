@@ -19,14 +19,14 @@ class LUTComboBox(QComboBox):
 class LutSelectorWidget(QFrame, widgets.ITabWidget):
     name: str = "LUT"
     icon: str = u":/flat-icons/icons/flat-icons/landscape.svg"
-    
+
     def __init__(self, parent=None, target: widgets.PreviewFrame=None):
         super().__init__(parent)
         self._layout = QFormLayout()
         self.setLayout(self._layout)
         self.target = target
-        damaker_gui.Window().tabSelected.connect(self.updateForm)
-    
+        damaker_gui.MainWindow.Instance.tabSelected.connect(self.updateForm)
+
     def updateForm(self, target: widgets.PreviewFrame=None):
         if not IView.isView(target): return
         self.target = target 
@@ -38,18 +38,17 @@ class LutSelectorWidget(QFrame, widgets.ITabWidget):
             comboBox.setCurrentText(chn.lut.name)
             comboBox.currentTextChanged.connect(comboBox.updateChannelLUT)
             self._layout.addRow("Channel %d :" % chn.id, comboBox)
-    
+
     def setChannelLUT(self, channel, colorMap):
         channel.lut = colorMap
         if channel in self.target.view.channels.keys():
             self.target.view.channels[channel].setColorMap(channel.lut)
-        
+
         for chn in self.target.projX + self.target.projY:
             if chn.id == channel.id:
                 chn.lut = channel.lut
-        
+
         self.target.view.updateFrame()
-        if damaker_gui.Window() != None:
-            damaker_gui.Window().orthogonalProjection.setColorMap(self.target, channel.id, channel.lut)
-            damaker_gui.Window().orthogonalProjection.updateFrames()
-        
+        if damaker_gui.MainWindow.Instance != None:
+            damaker_gui.MainWindow.Instance.orthogonalProjection.setColorMap(self.target, channel.id, channel.lut)
+            damaker_gui.MainWindow.Instance.orthogonalProjection.updateFrames()

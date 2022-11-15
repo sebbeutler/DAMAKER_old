@@ -81,7 +81,7 @@ class OperationWidget(QFrame):
                 continue
 
             # INT
-            if param.annotation is int:
+            elif param.annotation is int:
                 spinBox = QSpinBox()
                 spinBox.setRange(-1000, 1000)
                 spinBox.setFixedHeight(18)
@@ -95,7 +95,7 @@ class OperationWidget(QFrame):
                 formWidget = spinBox
 
             # FLOAT
-            if param.annotation is float:
+            elif param.annotation is float:
                 spinBox = QDoubleSpinBox()
                 spinBox.setRange(-1000, 1000)
                 spinBox.setFixedHeight(18)
@@ -110,7 +110,7 @@ class OperationWidget(QFrame):
                 formWidget = spinBox
 
             # CHANNEL
-            if param.annotation in [widgets.Channel, widgets.Channels, widgets.BatchParameters, Mesh]:
+            elif param.annotation in [widgets.Channel, widgets.Channels, widgets.BatchParameters, Mesh]:
                 # if param.annotation is widgets.BatchParameters:
                 #     if opArg != None:
                 #         formWidget = widgets.BatchSelectionWidget(opArg)
@@ -163,10 +163,14 @@ class OperationWidget(QFrame):
                 formWidget = checkBox
                 formWidget.getParameter = lambda widget: widget.isChecked()
 
+            # ROI
+            elif param.annotation is damaker.utils.Rect:
+                formWidget = widgets.RectROIInput()
+
             if formWidget != None:
                 self.addEntry(argName, formWidget)
                 self.parameters[argName] = formWidget
-        self.setFixedHeight(len(self.parameters) / 3 + 1 * 200)
+        # self.setFixedHeight(len(self.parameters) / 3 + 1 * 400)
 
 from damaker_gui.ui.UI_FunctionForm import Ui_FunctionForm
 

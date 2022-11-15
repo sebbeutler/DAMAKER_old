@@ -73,7 +73,7 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
             print(traceback.format_exc())
 
         # self.apply.emit(self.getOperation())
-        for preview in damaker_gui.Window().getTabsByType(widgets.PreviewFrame):
+        for preview in damaker_gui.MainWindow.Instance.getTabsByType(widgets.PreviewFrame):
             preview.view.updateFrame()
         print("✅ Operation finished.")
 

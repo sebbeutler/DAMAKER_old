@@ -1,6 +1,6 @@
-from PySide2.QtWidgets import QListWidget, QListWidgetItem, QGroupBox, QHBoxLayout, QFrame
+from PySide2.QtWidgets import QListWidget, QListWidgetItem, QGroupBox, QHBoxLayout, QFrame, QVBoxLayout
 from PySide2.QtGui import QIcon
-from PySide2.QtCore import Qt, Signal
+from PySide2.QtCore import Qt, Signal, QSize
 
 import damaker_gui.widgets as widgets
 import pyqtgraph as pg
@@ -8,8 +8,10 @@ import pyqtgraph as pg
 class ROISet(QGroupBox):
     def __init__(self, name: str="ROI set"):
         super().__init__(name)
-        self.list = QListWidget(self)
+        self.list = QListWidget()
         self.list.addItem("test")
+        self.setLayout(QVBoxLayout())
+        self.layout().addWidget(self.list)
 
     def addRoi(self, roi: pg.ROI):
         print("Not implemented yet lol")
@@ -36,6 +38,7 @@ class ROIWidget(widgets.QFrameLayout, widgets.ITabWidget):
 
     def addSet(self):
         item = QListWidgetItem("ROI set")
+        item.setSizeHint(QSize(0, 100))
         self.list.addItem(item)
         self.list.setItemWidget(item, ROISet("ROI set"))
 
@@ -49,7 +52,7 @@ class ROIButtons(widgets.QFrameLayout):
     clicked = Signal(pg.ROI)
 
     def __init__(self):
-        super().__init__()
+        super().__init__(_type=widgets.LayoutTypes.Horizontal)
 
         self.layout.addWidget(widgets.ActionButton(self.addLine, "Line"))
         self.layout.addWidget(widgets.ActionButton(self.addPolyLine, "PolyLine"))

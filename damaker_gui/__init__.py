@@ -1,5 +1,6 @@
 
 import os, sys
+from typing_extensions import Self
 # from __future__ import annotations
 
 _filedir = os.path.dirname(__file__)
@@ -14,14 +15,9 @@ App = QApplication(sys.argv)
 import damaker_gui.widgets as widgets
 from damaker_gui.ui.UI_MainWindowV2 import Ui_MainWindow
 
-def Window():
-    if not hasattr(App, 'Window'):
-        App.Window = None
-    return App.Window
-
 def setStatusMessage(msg: str, duration: int=0):
-    if Window() is None: return
-    Window().ui.statusbar.showMessage(msg, duration)
+    if MainWindow.Instance != None:
+        MainWindow.Instance.ui.statusbar.showMessage(msg, duration)
 
 def run(exit=True):
     MainWindow(App)
@@ -36,10 +32,12 @@ class MainWindow(QMainWindow):
     tabSelected = Signal(QWidget)
     tabChanged = Signal()
     viewChanged = Signal(widgets.IView)
+    Instance: None | Self = None
 
     def __init__(self, app: QApplication):
         super().__init__()
-        app.Window = self
+        MainWindow.Instance = self
+
         # self.show()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -67,6 +65,11 @@ class MainWindow(QMainWindow):
         self.console = widgets.ConsoleWidget()
         self.ui.dock1_3.addTab(self.console)
 
+        # -ROIs- #
+        self.roi = widgets.ROIWidget()
+        self.ui.dock2_2.addTab(self.roi)
+        self.ui.dock2_2.setCurrentIndex(2)
+
         # -Preview Z-Stack- #
         self.ui.dock1_1.addTab(widgets.PreviewFrame())
         self.ui.dock1_1.addTab(widgets.PreviewFrame())
@@ -87,11 +90,6 @@ class MainWindow(QMainWindow):
         # -Brightness&Contrast- #
         self.colorAdjust = widgets.ColorAdjustWidget()
         self.ui.dock2_2.addTab(self.colorAdjust)
-
-        # -ROIs- #
-        self.roi = widgets.ROIWidget()
-        self.ui.dock2_2.addTab(self.roi)
-        self.ui.dock2_2.setCurrentIndex(2)
 
         # -Open file from args- #
         for arg in sys.argv[1:]:
@@ -152,4 +150,3 @@ class MainWindow(QMainWindow):
         if event.key() == Qt.Key_Escape:
             self.close()
         return super().keyPressEvent(event)
-    

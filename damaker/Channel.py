@@ -4,10 +4,6 @@ from aicsimageio.writers import OmeTiffWriter
 from ome_types.model import OME
 import pyqtgraph as pg
 from typing import NamedTuple, Optional
-from enum import Enum
-
-class MesureUnits(Enum):
-    micro: str = 'µm'
 
 class PhysicalPixelUnit(NamedTuple):
     Z: Optional[float]
@@ -20,9 +16,9 @@ class ChannelDimensions(NamedTuple):
     SizeZ: Optional[int]
     SizeY: Optional[int]
     SizeX: Optional[int]
-    
+
 class Channel:
-    def __init__(self, name: str="", data: np.ndarray=[], physicalPixelSizes: PhysicalPixelSizes=None, id: int=0, lut: pg.ColorMap=None, metadata: OME=None, units: PhysicalPixelUnit=None):
+    def __init__(self, name: str="", data: np.ndarray=[], physicalPixelSizes: PhysicalPixelSizes=None, id: float=0, lut: pg.ColorMap=None, metadata: OME=None, units: PhysicalPixelUnit=None):
         self.name = name
         self.data = np.array(data)
         self.px_sizes = physicalPixelSizes
@@ -30,10 +26,10 @@ class Channel:
         self.id = id
         self.lut = lut
         self.metadata = metadata
-        
+
         self.show = True
         self.frames = None
-    
+
     @property
     def shape(self):
         return self.data.shape
@@ -45,7 +41,7 @@ class Channel:
                                  self.shape[2],
                                  self.shape[3],
                                  self.shape[4],)
-    
+
     def save(self, folderPath: str="", includeChannelId: bool=False, filename: str=""):
         if folderPath != "" and folderPath[-1] not in "/\\":
             folderPath += "/"
@@ -54,13 +50,13 @@ class Channel:
                 filename = f'{self.name}_C{self.id}.tif'
             else:
                 filename = f'{self.name}.tif'
-        
+
         if len(self.data.shape) == 3:
             OmeTiffWriter.save(self.data, folderPath + filename, physical_pixel_sizes=self.px_sizes, dim_order="ZYX")
         elif len(self.data.shape) == 4:
             OmeTiffWriter.save(self.data, folderPath + filename, physical_pixel_sizes=self.px_sizes, dim_order="CZYX")
         print(f'saved: {filename}') 
-        
+
     def copy(self):
         return Channel(self.name, self.data.copy(), self.px_sizes, self.id, self.lut)
 
@@ -70,13 +66,13 @@ class Channel:
         self.px_sizes = channel.px_sizes
         self.id = channel.id
         self.lut = channel.lut
-    
+
     def clone(self, data: np.ndarray):
         return Channel(self.name, data.copy(), self.px_sizes, self.id, self.lut)
 
     def free(self):
         del self.data
-    
+
     def __str__(self):
         if self.px_sizes != None:
             return f"'{self.name}' [C:{self.id}, size:{self.shape} px:(%.2f,%.2f,%.2f)" % (self.px_sizes.X,self.px_sizes.Y,self.px_sizes.Z)

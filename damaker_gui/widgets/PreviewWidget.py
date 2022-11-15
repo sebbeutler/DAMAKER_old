@@ -177,12 +177,12 @@ class PreviewWidget(pg.ImageView):
         self.updateFrame(0)
         if len(self.channels) > 0:
             name = list(self.channels.keys())[0].name
-            if damaker_gui.Window().getTabByName(name) is not None:
+            if damaker_gui.MainWindow.Instance.getTabByName(name) is not None:
                 count = 0
                 while 1:
                     count += 1
                     name = f'{name} ({count})'
-                    if damaker_gui.Window().getTabByName(name) is None:
+                    if damaker_gui.MainWindow.Instance.getTabByName(name) is None:
                         break
             self.channelsChanged.emit(name)
 

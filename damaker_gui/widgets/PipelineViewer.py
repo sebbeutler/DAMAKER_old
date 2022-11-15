@@ -44,7 +44,7 @@ class PipelineViewer(QSplitter, widgets.ITabWidget):
         return self.pipeline.addOperation(op)
 
     def tabEnterFocus(self):
-        damaker_gui.Window().operationList.connectPipeline(self)
+        damaker_gui.MainWindow.Instance.operationList.connectPipeline(self)
 
     def tabExitFocus(self):
-        damaker_gui.Window().operationList.disconnectPipeline(self)
+        damaker_gui.MainWindow.Instance.operationList.disconnectPipeline(self)

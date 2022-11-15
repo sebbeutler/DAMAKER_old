@@ -1,5 +1,6 @@
 from logging import exception
 import os, enum
+from enum import Enum
 
 from .Channel import Channel, Channels, PhysicalPixelUnit
 
@@ -32,6 +33,49 @@ class ChannelLoaderType(enum.Enum):
     TIFFILE = 0
     AICSI = 1
     BIOFORMATS = 2
+
+class MesureUnits(Enum):
+    micro: str = 'µm'
+
+class Size():
+    width: int
+    height: int
+
+class Point():
+    x: int
+    y: int
+
+class Line():
+    p1: Point
+    p2: Point
+
+class Rect():
+    pos: Point
+    size: Size
+
+class Circle():
+    center: Point
+    radius: int
+
+class Size():
+    width: int
+    height: int
+
+class PointF():
+    x: float
+    y: float
+
+class LineF():
+    p1: Point
+    p2: Point
+
+class RectF():
+    pos: Point
+    size: Size
+
+class CircleF():
+    center: Point
+    radius: float
 
 def loadChannelsFromFile(filename: StrFilePath, loader: ChannelLoaderType=ChannelLoaderType.TIFFILE)-> Channels:
     """
@@ -156,8 +200,8 @@ def channelSave(chn: Channel, folderPath: StrFolderPath, includeChannelId: bool=
 
 def channelsSave(channels: Channels, folderPath: StrFolderPath):
     """
-        Name: Combine channels
-        Category: Export
+        Name: Save stack
+        Category: Process
     """    
     if type(channels) is Channel:
         return channels.save(folderPath)
@@ -222,14 +266,14 @@ def _axisQuantifSaveCSV(axis_data, path: StrFolderPath, filename: str):
     listSaveCSV(axis_data[0], path, filename + "_front.csv")
     listSaveCSV(axis_data[1], path, filename + "_top.csv")
     listSaveCSV(axis_data[2], path, filename + "_left.csv")
-    
-def createDirectory(path: StrFolderPath):
+
+def _createDirectory(path: StrFolderPath):
     """
         Name: Create folder
         Category: Export
-    """ 
+    """
     os.makedirs(path, exist_ok=True)
-        
+
 
 import matplotlib.pyplot as plt
 from vedo.applications import Browser

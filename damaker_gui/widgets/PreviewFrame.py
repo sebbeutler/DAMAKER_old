@@ -147,8 +147,8 @@ class PreviewFrame(QFrame, widgets.IView):
             btn.channelRemoveTriggered.connect(self.removeChannel)
             self.frame_btn_channels.layout.addWidget(btn)
         self.frame_btn_channels.layout.addStretch()        
-        if damaker_gui.Window() != None and hasattr(damaker_gui.Window(), 'lutSelector'):
-            damaker_gui.Window().lutSelector.updateForm(self)
+        if damaker_gui.MainWindow.Instance != None and hasattr(damaker_gui.MainWindow.Instance, 'lutSelector'):
+            damaker_gui.MainWindow.Instance.lutSelector.updateForm(self)
 
     def removeChannel(self, btn: QPushButton, id):
         toDelete = None

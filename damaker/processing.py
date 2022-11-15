@@ -16,7 +16,7 @@ from py4j.java_gateway import JavaGateway
 
 from damaker.pipeline import BatchParameters
 
-from .utils import StrFilePath, StrFolderPath, channelsSave, _plotChannel, NamedArray, _axisQuantifSaveCSV
+import damaker.utils as utils
 from .Channel import Channel, Channels, SingleChannel, Frame
 
 def _foo() -> None:
@@ -50,12 +50,20 @@ def channelInvert(input: Channel) -> Channel:
     input.data = 255 - input.data
     return input
 
-def channelCrop(input: Channel, x1: int, y1: int, x2: int, y2: int) -> Channel:
+# def channelCrop(input: Channel, x1: int, y1: int, x2: int, y2: int) -> Channel:
+#     """
+#         Name: Crop
+#         Category: Transform
+#     """
+#     input.data = input.data[:, y1:y2, x1:x2]
+#     return input
+
+def channelCrop(input: Channel, target: utils.Rect) -> Channel:
     """
         Name: Crop
         Category: Transform
     """
-    input.data = input.data[:, y1:y2, x1:x2]
+    input.data = input.data[:, target.pos.y:target.size.y, target.pos.x:target.size.x]
     return input
 
 class cv_Interpolation(enum.Enum):
@@ -129,7 +137,7 @@ def channelFlip(input: Channel, flipType: FlipTypes=FlipTypes.horizontally) -> C
         input.data[i] = cv2.flip(input.data[i], flipType.value)
     return input
 
-def pixelIntensity(input: Channel, frameId: int=-1) -> NamedArray:
+def pixelIntensity(input: Channel, frameId: int=-1) -> utils.NamedArray:
     """
         Name: Pixel intensity
         Category: Quantification
@@ -144,7 +152,7 @@ def pixelIntensity(input: Channel, frameId: int=-1) -> NamedArray:
     for px in data:
         px_intensity[px] += 1
 
-    res = NamedArray()
+    res = utils.NamedArray()
     res.name = input.name
     res.data = px_intensity
     return res
@@ -385,7 +393,7 @@ def channelReverse(input: Channel) -> Channel:
 def _sliceVolume(data, s_z, s_y, s_x, threshold=0):
     return np.count_nonzero(data[data >= threshold]) * s_z * s_y * s_x
 
-def channelTotalVolume(input: Channel, minObjSize: int=0) -> NamedArray:
+def channelTotalVolume(input: Channel, minObjSize: int=0) -> utils.NamedArray:
     """
         Name: Global volume
         Category: Quantification
@@ -400,14 +408,14 @@ def channelTotalVolume(input: Channel, minObjSize: int=0) -> NamedArray:
         count.append(np.count_nonzero(l[f[i]] == i+1))
     count = np.array(count)
     
-    res = NamedArray()
+    res = utils.NamedArray()
     res.name = input.name
     res.data = count[count >= minObjSize].sum() * input.px_sizes.Z * input.px_sizes.Y * input.px_sizes.X
     res.data = [res.data]
     
     return res
 
-def channelVolumeArray(input: Channel) -> NamedArray:
+def channelVolumeArray(input: Channel) -> utils.NamedArray:
     """
         Name: Volume distribution
         Category: Quantification
@@ -419,12 +427,12 @@ def channelVolumeArray(input: Channel) -> NamedArray:
     for i in range(z):
         volumes.append(_sliceVolume(input.data[i], input.px_sizes.Z, input.px_sizes.Y, input.px_sizes.X))
     
-    res = NamedArray()
+    res = utils.NamedArray()
     res.name = "AxisQuantif_" + input.name
     res.data = volumes
     return res
 
-def channelAxisQuantification(input: Channel, outputPath: StrFolderPath):
+def channelAxisQuantification(input: Channel, outputPath: utils.StrFolderPath):
     """
         Name: Volume distribution per axis
         Category: Quantification
@@ -433,9 +441,9 @@ def channelAxisQuantification(input: Channel, outputPath: StrFolderPath):
     axisTop = channelVolumeArray(_resliceTop(input))
     axisLeft = channelVolumeArray(_resliceLeft(input))
     
-    _axisQuantifSaveCSV([axisFront, axisTop, axisLeft], outputPath, input.name)
+    utils._axisQuantifSaveCSV([axisFront, axisTop, axisLeft], outputPath, input.name)
 
-def meshCompareDistance(mesh1: Mesh, mesh2: Mesh, largest_region: bool=False) -> NamedArray:
+def meshCompareDistance(mesh1: Mesh, mesh2: Mesh, largest_region: bool=False) -> utils.NamedArray:
     """
         Name: Mesh distance
         Category: Quantification
@@ -500,7 +508,7 @@ def channelFromBinary(input: Channel) -> Channel:
     return input
 
 _jar_path = 'C:/Users/PC/source/DAMAKER/damaker/weka/bin/weka_segmentation_gateway.jar'
-def segmentation(input: Channel, classifier: StrFilePath) -> Channel:
+def segmentation(input: Channel, classifier: utils.StrFilePath) -> Channel:
     """
         Name: Apply Trainable Weka Segmentation 3D
         Category: Segmentation
@@ -527,7 +535,7 @@ def segmentation(input: Channel, classifier: StrFilePath) -> Channel:
     
     return input
 
-def segmentationMultiClassifier(input: Channel, classifiers: BatchParameters, outputDir: StrFolderPath):
+def segmentationMultiClassifier(input: Channel, classifiers: BatchParameters, outputDir: utils.StrFolderPath):
     """
         Name: Apply Trainable Weka Segmentation 3D (Multiple Classifiers)
         Category: Segmentation
@@ -637,7 +645,7 @@ def registration(input: Channel, reference: SingleChannel, nb_iteration: int=200
         return sitk.Resample(image, reference_image, transform, interpolator, default_value)
 
     def _plotImage(img):
-        _plotChannel(Channel("", sitk.GetArrayFromImage(img)))
+        utils._plotChannel(Channel("", sitk.GetArrayFromImage(img)))
 
     ref = _channelToImage(reference)
 
@@ -710,7 +718,7 @@ def registration(input: Channel, reference: SingleChannel, nb_iteration: int=200
     print(f'registration complete: {input}')
     return input
 
-def registrationMultiChannel(input: BatchParameters, reference: SingleChannel, refChannel: int=1, nb_iteration: int=200, outputPath: StrFolderPath="") -> None:
+def registrationMultiChannel(input: BatchParameters, reference: SingleChannel, refChannel: int=1, nb_iteration: int=200, outputPath: utils.StrFolderPath="") -> None:
     """
         Name: SITK Registration though reference
         Category: Registration
@@ -743,7 +751,7 @@ def registrationMultiChannel(input: BatchParameters, reference: SingleChannel, r
             )
             
             final.append(_imageToChannel(mov_res, chn))
-        channelsSave(final, outputPath)
+        utils.channelsSave(final, outputPath)
 
 def loadChannelsFromDir(input: BatchParameters) -> Channels:
     """

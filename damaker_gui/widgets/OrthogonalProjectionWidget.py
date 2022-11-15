@@ -24,7 +24,7 @@ class OrthogonalProjectionWidget(QSplitter, ITabWidget):
         
         try: self.target.mouseMoved.disconnect(self.moveCrosshair)
         except Exception: pass
-        damaker_gui.Window().addTab(2, self)
+        damaker_gui.MainWindow.Instance.addTab(2, self)
         
         self.target = widget        
         self.projX.updateFramePercentage(widget.idProj[0])
@@ -36,7 +36,7 @@ class OrthogonalProjectionWidget(QSplitter, ITabWidget):
         if self.target == widget:      
             self.projX.clear()
             self.projY.clear()
-            damaker_gui.Window().ui.dock2.removeTab(self)
+            damaker_gui.MainWindow.Instance.ui.dock2.removeTab(self)
             self.target = None
     
     def moveCrosshair(self, event: QGraphicsSceneMouseEvent, pos: QPointF):
