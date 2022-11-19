@@ -1,20 +1,26 @@
-from PySide2.QtWidgets import QListWidget, QListWidgetItem, QGroupBox, QHBoxLayout, QFrame, QVBoxLayout
-from PySide2.QtGui import QIcon
-from PySide2.QtCore import Qt, Signal, QSize
+from PySide6.QtWidgets import QListWidget, QListWidgetItem, QGroupBox, QHBoxLayout, QFrame, QVBoxLayout
+from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt, Signal, QSize
 
 import damaker_gui.widgets as widgets
 import pyqtgraph as pg
 
+from typing import Self
+
 class ROISet(QGroupBox):
-    def __init__(self, name: str="ROI set"):
+    def __init__(self, name: str="ROI set") -> Self:
         super().__init__(name)
         self.list = QListWidget()
         self.list.addItem("test")
         self.setLayout(QVBoxLayout())
         self.layout().addWidget(self.list)
 
-    def addRoi(self, roi: pg.ROI):
-        print("Not implemented yet lol")
+        return self
+
+    def addRoi(self, roi: pg.ROI) -> Self:
+        print(type(roi))
+        print(str(roi))
+        return self
 
 class ROIWidget(widgets.QFrameLayout, widgets.ITabWidget):
     name: str = "ROI"
@@ -24,7 +30,7 @@ class ROIWidget(widgets.QFrameLayout, widgets.ITabWidget):
     def toolbar(self) -> list[widgets.ActionButton]:
         return [widgets.ActionButton(self.addSet, "New set", u":/flat-icons/icons/flat-icons/plus.png"),]
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> Self:
         super().__init__(parent)
 
         self.list = QListWidget()
@@ -34,57 +40,67 @@ class ROIWidget(widgets.QFrameLayout, widgets.ITabWidget):
         self.roi_btns.clicked.connect(self.addRoi)
         self.layout.addWidget(self.roi_btns)
 
-        self.addSet()
+        return self.addSet()
 
-    def addSet(self):
+    def addSet(self) -> Self:
         item = QListWidgetItem("ROI set")
         item.setSizeHint(QSize(0, 100))
         self.list.addItem(item)
         self.list.setItemWidget(item, ROISet("ROI set"))
+        return self
 
     def currentSet(self) -> ROISet:
         return self.list.itemWidget(self.list.currentItem())
 
-    def addRoi(self, roi: pg.ROI):
+    def addRoi(self, roi: pg.ROI) -> Self:
         self.currentSet().addRoi(roi)
+        return self
 
 class ROIButtons(widgets.QFrameLayout):
     clicked = Signal(pg.ROI)
 
-    def __init__(self):
-        super().__init__(_type=widgets.LayoutTypes.Horizontal)
+    def __init__(self) -> Self:
+        super().__init__(_type=widgets.LayoutTypes.Horizontal).layout        \
+            .addWidget(widgets.ActionButton(self.addLine, "Line"))           \
+            .addWidget(widgets.ActionButton(self.addPolyLine, "PolyLine"))   \
+            .addWidget(widgets.ActionButton(self.addRect, "Rect"))           \
+            .addWidget(widgets.ActionButton(self.addCircle, "Circle"))       \
+            .addWidget(widgets.ActionButton(self.addEllipse, "Ellipse"))     \
+            .addWidget(widgets.ActionButton(self.addCrosshair, "Crosshair"))
 
-        self.layout.addWidget(widgets.ActionButton(self.addLine, "Line"))
-        self.layout.addWidget(widgets.ActionButton(self.addPolyLine, "PolyLine"))
-        self.layout.addWidget(widgets.ActionButton(self.addRect, "Rect"))
-        self.layout.addWidget(widgets.ActionButton(self.addCircle, "Circle"))
-        self.layout.addWidget(widgets.ActionButton(self.addEllipse, "Ellipse"))
-        self.layout.addWidget(widgets.ActionButton(self.addCrosshair, "Crosshair"))
+        return self
 
-    def addRoi(self, roi: pg.ROI):
+    def addRoi(self, roi: pg.ROI) -> Self:
         roi.setAcceptedMouseButtons(Qt.MouseButton.LeftButton)
         self.clicked.emit(roi)
+        return self
 
-    def addLine(self):
+    def addLine(self) -> Self:
         roi = pg.LineSegmentROI([[10, 64], [120,64]], pen='r')
         self.addRoi(roi)
+        return self
 
-    def addPolyLine(self):
+    def addPolyLine(self) -> Self:
         roi = pg.PolyLineROI([[10, 64], [120,64], [200,64]])
         self.addRoi(roi)
+        return self
 
-    def addRect(self):
+    def addRect(self) -> Self:
         roi = pg.RectROI([10, 64], [120,64])
         self.addRoi(roi)
+        return self
 
-    def addCircle(self):
+    def addCircle(self) -> Self:
         roi = pg.CircleROI([10, 64], radius=4)
         self.addRoi(roi)
+        return self
 
-    def addEllipse(self):
+    def addEllipse(self) -> Self:
         roi = pg.EllipseROI([10, 64], [20, 20])
         self.addRoi(roi)
+        return self
 
-    def addCrosshair(self):
+    def addCrosshair(self) -> Self:
         roi = pg.CrosshairROI([10, 64])
         self.addRoi(roi)
+        return self

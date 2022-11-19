@@ -1,1 +1,1 @@
-pyside2-rcc -o ../files_rc.py ../files.qrc
+PySide6-rcc -o ../files_rc.py ../files.qrc

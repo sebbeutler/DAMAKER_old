@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QLineEdit, QScrollArea, QFormLayout, QSizePolicy
+from PySide6.QtWidgets import QLineEdit, QScrollArea, QFormLayout, QSizePolicy
 
 import damaker_gui.widgets as widgets
 from damaker.pipeline import BatchParameters

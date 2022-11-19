@@ -1,5 +1,5 @@
-from PySide2.QtWidgets import QPushButton, QFrame, QVBoxLayout, QHBoxLayout, QHBoxLayout, QAction, QSlider, QFileDialog, QGraphicsSceneDragDropEvent
-from PySide2.QtCore import Signal, Qt, QThread, Slot
+from PySide6.QtWidgets import QPushButton, QFrame, QVBoxLayout, QHBoxLayout, QHBoxLayout, QAction, QSlider, QFileDialog, QGraphicsSceneDragDropEvent
+from PySide6.QtCore import Signal, Qt, QThread, Slot
 
 from aicsimageio.writers import OmeTiffWriter
 import numpy as np

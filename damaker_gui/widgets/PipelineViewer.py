@@ -1,6 +1,6 @@
 
-from PySide2.QtWidgets import QListWidget, QAbstractItemView, QAction, QPushButton, QListWidgetItem, QGridLayout, QSplitter
-from PySide2.QtCore import QSize, QThread, Signal, Slot, Qt
+from PySide6.QtWidgets import QListWidget, QAbstractItemView, QAction, QPushButton, QListWidgetItem, QGridLayout, QSplitter
+from PySide6.QtCore import QSize, QThread, Signal, Slot, Qt
 import damaker
 from damaker.pipeline import Operation
 import damaker_gui.widgets as widgets

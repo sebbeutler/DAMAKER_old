@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QComboBox, QSizePolicy
+from PySide6.QtWidgets import QComboBox, QSizePolicy
 
 class ComboChoicesWidget(QComboBox):
     def __init__(self, items: list[str]):

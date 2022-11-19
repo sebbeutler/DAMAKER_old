@@ -1,7 +1,7 @@
 """
-from PySide2.QtWidgets import QFrame, QHBoxLayout
-from PySide2.QtGui import QIcon
-from PySide2.QtCore import Qt
+from PySide6.QtWidgets import QFrame, QHBoxLayout
+from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt
 
 import damaker_gui.widgets as widgets
 
@@ -18,9 +18,9 @@ class TemplateITabWidget(QFrame, widgets.ITabWidget):
 """
 
 from typing import Callable
-from PySide2.QtWidgets import QWidget, QPushButton
-from PySide2.QtGui import QIcon
-from PySide2.QtCore import Signal, QObject, QSize
+from PySide6.QtWidgets import QWidget, QPushButton
+from PySide6.QtGui import QIcon
+from PySide6.QtCore import Signal, QObject, QSize
 
 import damaker_gui
 

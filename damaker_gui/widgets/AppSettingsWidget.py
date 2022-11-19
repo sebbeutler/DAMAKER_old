@@ -1,5 +1,5 @@
-from PySide2.QtWidgets import QWidget, QFormLayout, QComboBox, QSizePolicy
-from PySide2.QtCore import QFile, QIODevice, QTextStream
+from PySide6.QtWidgets import QWidget, QFormLayout, QComboBox, QSizePolicy
+from PySide6.QtCore import QFile, QIODevice, QTextStream
 
 import damaker_gui
 import damaker_gui.widgets as widgets

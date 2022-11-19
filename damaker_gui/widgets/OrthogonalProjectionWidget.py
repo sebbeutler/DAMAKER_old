@@ -1,6 +1,6 @@
 from damaker_gui.widgets import ITabWidget, PreviewWidget, PreviewFrame, QGraphicsSceneMouseEvent
-from PySide2.QtWidgets import QSplitter
-from PySide2.QtCore import Qt, QPointF
+from PySide6.QtWidgets import QSplitter
+from PySide6.QtCore import Qt, QPointF
 import damaker_gui
 
 class OrthogonalProjectionWidget(QSplitter, ITabWidget):

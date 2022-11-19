@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QLayout
+from PySide6.QtWidgets import QLayout
 
 def clearLayout(layout: QLayout, delete=False):
     for i in reversed(range(layout.count())): 

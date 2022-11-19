@@ -1,7 +1,7 @@
 from typing import Callable
 
-from PySide2.QtWidgets import QListWidget, QAbstractItemView, QAction, QPushButton, QListWidgetItem, QGridLayout
-from PySide2.QtCore import QSize, QThread, Signal, Slot, Qt
+from PySide6.QtWidgets import QListWidget, QAbstractItemView, QAction, QPushButton, QListWidgetItem, QGridLayout
+from PySide6.QtCore import QSize, QThread, Signal, Slot, Qt
 import damaker
 
 from damaker.pipeline import *

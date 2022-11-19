@@ -1,6 +1,6 @@
 import enum
-from PySide2.QtWidgets import QFrame, QFormLayout, QGroupBox, QListWidget, QGridLayout, QLineEdit, QSizePolicy, QWidget, QLabel, QSpinBox, QDoubleSpinBox, QCheckBox
-from PySide2.QtCore import *
+from PySide6.QtWidgets import QFrame, QFormLayout, QGroupBox, QListWidget, QGridLayout, QLineEdit, QSizePolicy, QWidget, QLabel, QSpinBox, QDoubleSpinBox, QCheckBox
+from PySide6.QtCore import *
 import damaker
 
 import damaker_gui.widgets as widgets

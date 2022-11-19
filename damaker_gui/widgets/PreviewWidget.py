@@ -1,6 +1,6 @@
-from PySide2.QtWidgets import QSlider, QGraphicsSceneMouseEvent, QSizePolicy, QLabel, QGraphicsSceneDragDropEvent
-from PySide2.QtGui import QMouseEvent, QPainter
-from PySide2.QtCore import Signal, QPointF, QThreadPool, QPoint, QObject, QRunnable, QThread, Slot
+from PySide6.QtWidgets import QSlider, QGraphicsSceneMouseEvent, QSizePolicy, QLabel, QGraphicsSceneDragDropEvent
+from PySide6.QtGui import QMouseEvent, QPainter
+from PySide6.QtCore import Signal, QPointF, QThreadPool, QPoint, QObject, QRunnable, QThread, Slot
 
 import pyqtgraph as pg
 

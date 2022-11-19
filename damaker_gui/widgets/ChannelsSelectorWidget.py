@@ -1,5 +1,5 @@
 from math import comb
-from PySide2.QtWidgets import QFrame, QVBoxLayout, QPushButton, QWidget, QHBoxLayout, QComboBox, QSizePolicy
+from PySide6.QtWidgets import QFrame, QVBoxLayout, QPushButton, QWidget, QHBoxLayout, QComboBox, QSizePolicy
 
 from damaker import Channels
 

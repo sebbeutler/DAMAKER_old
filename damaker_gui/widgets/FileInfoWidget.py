@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QFrame, QFormLayout, QLabel
+from PySide6.QtWidgets import QFrame, QFormLayout, QLabel
 
 import damaker_gui
 from damaker_gui.widgets.ITabWidget import ITabWidget
