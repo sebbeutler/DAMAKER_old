@@ -1,5 +1,5 @@
-from PySide6.QtWidgets import QFrame, QGridLayout, QSplitter
-from PySide6.QtCore import Qt
+from PySide2.QtWidgets import QFrame, QGridLayout, QSplitter
+from PySide2.QtCore import Qt
 
 import damaker_gui.widgets as widgets
 from damaker_gui.widgets.ContentDock import ContentDock

@@ -1,7 +1,6 @@
-from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QFormLayout, QGridLayout, QLayout
-from PySide6.QtCore import Qt
+from PySide2.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QFormLayout, QGridLayout, QLayout
+from PySide2.QtCore import Qt
 import enum
-from typing import Self
 
 class LayoutTypes(enum.Enum):
     Vertical = QVBoxLayout
@@ -10,16 +9,11 @@ class LayoutTypes(enum.Enum):
     Grid = QGridLayout
 
 class QFrameLayout(QFrame):
-    def __init__(self, parent=None, _type: LayoutTypes=LayoutTypes.Vertical, spacing: int=4, margin: int=4) -> Self:
+    def __init__(self, parent=None, _type: LayoutTypes=LayoutTypes.Vertical, spacing: int=4, margin: int=4):
         super().__init__(parent)
-
+        
         layout = _type.value()
         self.setLayout(layout)        
         self.layout: QLayout = layout
         self.layout.setSpacing(spacing)
         self.layout.setMargin(margin)
-        return self
-
-    def addWidget(self, *args) -> Self:
-        self.addWidget(*args)
-        return self

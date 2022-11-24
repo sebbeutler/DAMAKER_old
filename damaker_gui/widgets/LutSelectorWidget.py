@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QFormLayout, QFrame, QComboBox
+from PySide2.QtWidgets import QFormLayout, QFrame, QComboBox
 import damaker_gui.widgets as widgets
 from damaker_gui.widgets.ITabWidget import IView
 from damaker_gui.widgets.PreviewWidget import _luts

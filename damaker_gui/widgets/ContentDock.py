@@ -1,9 +1,9 @@
 import gc
 from typing import Callable
 
-from PySide6.QtWidgets import QFrame, QTabWidget, QHBoxLayout, QVBoxLayout, QWidget, QSizePolicy, QLayout, QTabWidget
-from PySide6.QtGui import QIcon, QMouseEvent, Qt, QPixmap, QDrag, QCursor, QRegion
-from PySide6.QtCore import QSize, QMimeData, QPoint, Signal
+from PySide2.QtWidgets import QFrame, QTabWidget, QHBoxLayout, QVBoxLayout, QWidget, QSizePolicy, QLayout, QTabWidget
+from PySide2.QtGui import QIcon, QMouseEvent, Qt, QPixmap, QDrag, QCursor, QRegion
+from PySide2.QtCore import QSize, QMimeData, QPoint, Signal
 
 import damaker_gui.widgets as widgets
 from damaker_gui.widgets.ITabWidget import ITabWidget

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QVBoxLayout, QListWidget, QHBoxLayout, QPushButton, QListWidgetItem
+from PySide2.QtWidgets import QVBoxLayout, QListWidget, QHBoxLayout, QPushButton, QListWidgetItem
 
 from damaker.pipeline import Operation
 

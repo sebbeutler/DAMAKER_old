@@ -1,4 +1,4 @@
-from PySide6.QtGui import QQuaternion, QVector4D, QVector3D
+from PySide2.QtGui import QQuaternion, QVector4D, QVector3D
 
 from pyqtgraph.opengl import GLVolumeItem, GLViewWidget, GLGridItem
 

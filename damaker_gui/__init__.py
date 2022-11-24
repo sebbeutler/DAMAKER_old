@@ -4,12 +4,12 @@ from typing_extensions import Self
 # from __future__ import annotations
 
 _filedir = os.path.dirname(__file__)
-os.system(f"PySide6-uic -o {_filedir}/ui/UI_MainWindowV2.py --from-imports {_filedir}/ui/MainWindowV2.ui")
-os.system(f"PySide6-uic -o {_filedir}/ui/UI_BatchParametersWidget.py --from-imports {_filedir}/ui/BatchParametersWidget.ui")
-os.system(f"PySide6-uic -o {_filedir}/ui/UI_FunctionForm.py --from-imports {_filedir}/ui/FunctionForm.ui")
+os.system(f"pyside2-uic -o {_filedir}/ui/UI_MainWindowV2.py --from-imports {_filedir}/ui/MainWindowV2.ui")
+os.system(f"pyside2-uic -o {_filedir}/ui/UI_BatchParametersWidget.py --from-imports {_filedir}/ui/BatchParametersWidget.ui")
+os.system(f"pyside2-uic -o {_filedir}/ui/UI_FunctionForm.py --from-imports {_filedir}/ui/FunctionForm.ui")
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
-from PySide6.QtCore import Signal, Qt
+from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
+from PySide2.QtCore import Signal, Qt
 App = QApplication(sys.argv)
 
 import damaker_gui.widgets as widgets
@@ -32,7 +32,7 @@ class MainWindow(QMainWindow):
     tabSelected = Signal(QWidget)
     tabChanged = Signal()
     viewChanged = Signal(widgets.IView)
-    Instance: None | Self = None
+    Instance: None = None
 
     def __init__(self, app: QApplication):
         super().__init__()
@@ -119,7 +119,7 @@ class MainWindow(QMainWindow):
                 self.docks[i].addTab(widget)
         return self
 
-    def getTabByName(self, name: str) -> QWidget | None:
+    def getTabByName(self, name: str) -> QWidget:
         for dock in self.docks:
             widget = dock.getTabByName(name)
             if widget != None:

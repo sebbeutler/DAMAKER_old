@@ -1,7 +1,7 @@
 from smtpd import PureProxy
 from typing import Callable
-from PySide6.QtWidgets import QFrame, QVBoxLayout, QSlider, QLabel, QSizePolicy, QPushButton
-from PySide6.QtCore import Signal, Qt
+from PySide2.QtWidgets import QFrame, QVBoxLayout, QSlider, QLabel, QSizePolicy, QPushButton
+from PySide2.QtCore import Signal, Qt
 
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg

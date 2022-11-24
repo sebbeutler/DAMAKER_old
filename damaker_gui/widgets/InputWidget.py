@@ -1,5 +1,5 @@
-from PySide6.QtWidgets import QTabWidget
-from PySide6.QtCore import *
+from PySide2.QtWidgets import QTabWidget
+from PySide2.QtCore import *
 
 import damaker_gui.widgets as widgets
 

@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QTextEdit, QSizePolicy
-from PySide6.QtGui import QTextCursor
-from PySide6.QtCore import Signal
+from PySide2.QtWidgets import QTextEdit, QSizePolicy
+from PySide2.QtGui import QTextCursor
+from PySide2.QtCore import Signal
 
 import damaker_gui
 from damaker_gui.widgets.ITabWidget import ActionButton, ITabWidget

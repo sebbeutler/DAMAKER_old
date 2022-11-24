@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QSizePolicy, QHBoxLayout, QLineEdit, QPushButton, QFileDialog, QLabel
+from PySide2.QtWidgets import QWidget, QSizePolicy, QHBoxLayout, QLineEdit, QPushButton, QFileDialog, QLabel
 
 import damaker_gui.widgets as widgets
 

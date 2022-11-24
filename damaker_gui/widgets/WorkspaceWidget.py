@@ -1,5 +1,5 @@
-from PySide6.QtWidgets import QTreeView, QFileSystemModel, QAbstractItemView, QPushButton, QFileDialog, QWidget, QSizePolicy
-from PySide6.QtCore import Signal
+from PySide2.QtWidgets import QTreeView, QFileSystemModel, QAbstractItemView, QPushButton, QFileDialog, QWidget, QSizePolicy
+from PySide2.QtCore import Signal
 
 import os, shutil
 

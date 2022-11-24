@@ -1,5 +1,5 @@
-from PySide6.QtWidgets import QFrame, QLabel, QPushButton, QSizePolicy
-from PySide6.QtCore import Qt, Signal
+from PySide2.QtWidgets import QFrame, QLabel, QPushButton, QSizePolicy
+from PySide2.QtCore import Qt, Signal
 
 import damaker as dmk
 import damaker_gui as dmk_gui

@@ -5,9 +5,9 @@ import re, typing
 import traceback
 from typing import Callable
 
-from PySide6.QtWidgets import QWidget, QSplitter, QVBoxLayout, QSizePolicy, QMenu, QPushButton, QAction, QScrollArea
-from PySide6.QtGui import QIcon
-from PySide6.QtCore import Signal, QSize
+from PySide2.QtWidgets import QWidget, QSplitter, QVBoxLayout, QSizePolicy, QMenu, QPushButton, QAction, QScrollArea
+from PySide2.QtGui import QIcon
+from PySide2.QtCore import Signal, QSize
 
 import damaker
 from damaker.pipeline import Operation
