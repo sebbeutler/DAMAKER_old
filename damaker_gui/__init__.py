@@ -54,42 +54,42 @@ class MainWindow(QMainWindow):
         # -Workspace- #
         self.workspace = widgets.WorkspaceWidget()
         self.workspace.signalOpen.connect(self.openFile)        
-        self.ui.dock1_2.addTab(self.workspace)
+        self.ui.dock3.addTab(self.workspace)
 
         # -Settings-
         self.settings = widgets.AppSettingsWidget()
         self.settings.theme.setTheme("Dark")
-        self.ui.dock1_3.addTab(self.settings)
+        self.ui.dock3.addTab(self.settings)
 
         # -Console- #
         self.console = widgets.ConsoleWidget()
-        self.ui.dock1_3.addTab(self.console)
+        self.ui.dock3.addTab(self.console)
 
         # -ROIs- #
         self.roi = widgets.ROIWidget()
-        self.ui.dock2_2.addTab(self.roi)
-        self.ui.dock2_2.setCurrentIndex(2)
+        self.ui.dock4.addTab(self.roi)
+        self.ui.dock4.setCurrentIndex(2)
 
         # -Preview Z-Stack- #
-        self.ui.dock1_1.addTab(widgets.PreviewFrame())
-        self.ui.dock1_1.addTab(widgets.PreviewFrame())
+        self.ui.dock1.addTab(widgets.PreviewFrame())
+        self.ui.dock1.addTab(widgets.PreviewFrame())
 
         # -Operations- #
         self.operationList = widgets.FunctionListWidget()
-        self.ui.dock2_2.addTab(self.operationList)
+        self.ui.dock4.addTab(self.operationList)
 
         # -Pipeline- #
         self.pipeline = widgets.PipelineViewer()
-        self.ui.dock2_1.addTab(self.pipeline)
+        self.ui.dock2.addTab(self.pipeline)
         self.operationList.connectPipeline(self.pipeline)
 
         # -LUT- #
         self.colorMap = widgets.LutSelectorWidget()
-        self.ui.dock2_3.addTab(self.colorMap)
+        self.ui.dock4.addTab(self.colorMap)
 
         # -Brightness&Contrast- #
         self.colorAdjust = widgets.ColorAdjustWidget()
-        self.ui.dock2_2.addTab(self.colorAdjust)
+        self.ui.dock4.addTab(self.colorAdjust)
 
         # -Open file from args- #
         for arg in sys.argv[1:]:

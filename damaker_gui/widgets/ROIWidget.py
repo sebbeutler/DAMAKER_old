@@ -14,7 +14,9 @@ class ROISet(QGroupBox):
         self.layout().addWidget(self.list)
 
     def addRoi(self, roi: pg.ROI):
-        print("Not implemented yet lol")
+        item = QListWidgetItem(roi.__str__())
+        item.roi = roi
+        self.list.addItem(item)
 
 class ROIWidget(widgets.QFrameLayout, widgets.ITabWidget):
     name: str = "ROI"
@@ -22,7 +24,11 @@ class ROIWidget(widgets.QFrameLayout, widgets.ITabWidget):
 
     @property
     def toolbar(self) -> list[widgets.ActionButton]:
-        return [widgets.ActionButton(self.addSet, "New set", u":/flat-icons/icons/flat-icons/plus.png"),]
+        return [
+            widgets.ActionButton(self.addSet, "New set", u":/flat-icons/icons/flat-icons/plus.png"),
+            widgets.ActionButton(self.removeRoi, "Delete ROI"),
+            widgets.ActionButton(self.toggleROI, "Show/Hide"),
+        ]
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -46,7 +52,17 @@ class ROIWidget(widgets.QFrameLayout, widgets.ITabWidget):
         return self.list.itemWidget(self.list.currentItem())
 
     def addRoi(self, roi: pg.ROI):
-        self.currentSet().addRoi(roi)
+        roi_set = self.currentSet()
+        if roi_set != None:
+            roi_set.addRoi(roi)
+
+    def removeRoi(self):
+        roi_set: ROISet = self.currentSet()
+        if roi_set != None:
+            roi_set.list.takeItem(roi_set.list.currentRow())
+
+    def toggleROI(self):
+        raise "Note implemented"
 
 class ROIButtons(widgets.QFrameLayout):
     clicked = Signal(pg.ROI)
