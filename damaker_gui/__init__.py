@@ -28,15 +28,18 @@ def run(exit=True):
     else:
         App.exec_()
 
+def views() -> list[widgets.IView]:
+    return MainWindow.Instance.currentViews
+
 class MainWindow(QMainWindow):
     tabSelected = Signal(QWidget)
     tabChanged = Signal()
     viewChanged = Signal(widgets.IView)
-    Instance: None = None
+    Instance = None
 
     def __init__(self, app: QApplication):
         super().__init__()
-        MainWindow.Instance = self
+        MainWindow.Instance: MainWindow = self
 
         # self.show()
         self.ui = Ui_MainWindow()
@@ -90,6 +93,10 @@ class MainWindow(QMainWindow):
         # -Brightness&Contrast- #
         self.colorAdjust = widgets.ColorAdjustWidget()
         self.ui.dock4.addTab(self.colorAdjust)
+
+        # -Record- #
+        self.record = widgets.RecordFunctionsWidget()
+        self.ui.dock4.addTab(self.record)
 
         # -Open file from args- #
         for arg in sys.argv[1:]:

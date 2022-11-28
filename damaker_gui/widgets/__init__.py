@@ -10,8 +10,10 @@ def clearLayout(layout: QLayout, delete=False):
                 widgetToRemove.deleteLater()
 
 from .ITabWidget import *
-from .IParameterWidget import *
+from .QLabelFont import *
 from .QFrameLayout import *
+from .ROIWidget import *
+from .IParameterWidget import *
 from .BatchSelectionWidget import *
 from .InputWidget import *
 from .ChannelsSelectorWidget import *
@@ -20,8 +22,8 @@ from .FileInfoWidget import *
 from .FilePickerWidget import *
 from .FunctionListWidget import *
 from .ComboChoicesWidget import *
+from .StackView import *
 from .Preview3DWidget import *
-from .PreviewWidget import *
 from .RecordFunctionsWidget import *
 from .WorkspaceWidget import *
 from .ConsoleWidget import *
@@ -34,5 +36,4 @@ from .AppSettingsWidget import *
 from .ContentDock import *
 from .DockHandler import *
 from .OperationWidget import *
-from .ROIWidget import *
 from .ColorAdjustWidget import *

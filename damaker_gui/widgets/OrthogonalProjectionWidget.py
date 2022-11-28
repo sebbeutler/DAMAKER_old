@@ -1,4 +1,4 @@
-from damaker_gui.widgets import ITabWidget, PreviewWidget, PreviewFrame, QGraphicsSceneMouseEvent
+from damaker_gui.widgets import ITabWidget, StackView, PreviewFrame, QGraphicsSceneMouseEvent
 from PySide2.QtWidgets import QSplitter
 from PySide2.QtCore import Qt, QPointF
 import damaker_gui
@@ -11,8 +11,8 @@ class OrthogonalProjectionWidget(QSplitter, ITabWidget):
 
         self.target: PreviewFrame = target
         
-        self.projX = PreviewWidget()
-        self.projY = PreviewWidget()
+        self.projX = StackView()
+        self.projY = StackView()
         self.addWidget(self.projX)
         self.addWidget(self.projY)
         

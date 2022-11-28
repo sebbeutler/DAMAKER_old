@@ -1,0 +1,13 @@
+README.md
+setup.py
+damaker/Channel.py
+damaker/__init__.py
+damaker/pipeline.py
+damaker/processing.py
+damaker/utils.py
+damaker.egg-info/PKG-INFO
+damaker.egg-info/SOURCES.txt
+damaker.egg-info/dependency_links.txt
+damaker.egg-info/requires.txt
+damaker.egg-info/top_level.txt
+damaker_gui/__init__.py

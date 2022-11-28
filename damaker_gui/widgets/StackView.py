@@ -1,18 +1,15 @@
-from PySide2.QtWidgets import QSlider, QGraphicsSceneMouseEvent, QSizePolicy, QLabel, QGraphicsSceneDragDropEvent
+from PySide2.QtWidgets import QSlider, QGraphicsSceneMouseEvent, QSizePolicy, QLabel
 from PySide2.QtGui import QMouseEvent, QPainter
-from PySide2.QtCore import Signal, QPointF, QThreadPool, QPoint, QObject, QRunnable, QThread, Slot
+from PySide2.QtCore import Signal, QPointF, QThreadPool, QPoint, QObject, QRunnable, Slot
 
 import pyqtgraph as pg
 
 import numpy as np
-import damaker
 
 from damaker.Channel import Channel
 from damaker.utils import loadChannelsFromFile
-import damaker_gui
-# from damaker_gui.widgets import clearLayout
 
-from damaker_gui.ui import files_rc
+import damaker_gui
 
 lut_green = np.zeros((256, 3), np.uint8)
 lut_green[:, 1] = np.arange(256)
@@ -56,7 +53,7 @@ def getLut(name: str) -> pg.ColorMap:
             return lut
     return _luts[0] # Default
 
-class PreviewWidget(pg.ImageView):  
+class StackView(pg.ImageView):
     mouseMoved = Signal(QMouseEvent, QPointF)
     channelAdded = Signal()
     channelsChanged = Signal(str)

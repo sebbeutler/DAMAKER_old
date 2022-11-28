@@ -2,6 +2,7 @@ from PySide2.QtWidgets import QListWidget, QListWidgetItem, QGroupBox, QHBoxLayo
 from PySide2.QtGui import QIcon
 from PySide2.QtCore import Qt, Signal, QSize
 
+import damaker_gui as gui
 import damaker_gui.widgets as widgets
 import pyqtgraph as pg
 
@@ -9,14 +10,20 @@ class ROISet(QGroupBox):
     def __init__(self, name: str="ROI set"):
         super().__init__(name)
         self.list = QListWidget()
-        self.list.addItem("test")
         self.setLayout(QVBoxLayout())
         self.layout().addWidget(self.list)
+        self.visible = False
 
     def addRoi(self, roi: pg.ROI):
-        item = QListWidgetItem(roi.__str__())
+        item = QListWidgetItem(str(type(roi))[36:-5])
         item.roi = roi
         self.list.addItem(item)
+
+    def hideRoi(self):
+        pass
+
+    def showRoi(self):
+        pass
 
 class ROIWidget(widgets.QFrameLayout, widgets.ITabWidget):
     name: str = "ROI"
@@ -27,7 +34,7 @@ class ROIWidget(widgets.QFrameLayout, widgets.ITabWidget):
         return [
             widgets.ActionButton(self.addSet, "New set", u":/flat-icons/icons/flat-icons/plus.png"),
             widgets.ActionButton(self.removeRoi, "Delete ROI"),
-            widgets.ActionButton(self.toggleROI, "Show/Hide"),
+            widgets.ActionButton(self.toggleROI, "Show/Hide Set"),
         ]
 
     def __init__(self, parent=None):
@@ -41,14 +48,18 @@ class ROIWidget(widgets.QFrameLayout, widgets.ITabWidget):
         self.layout.addWidget(self.roi_btns)
 
         self.addSet()
+        self.list.setCurrentRow(0)
 
-    def addSet(self):
+
+    def addSet(self) -> ROISet:
         item = QListWidgetItem("ROI set")
         item.setSizeHint(QSize(0, 100))
         self.list.addItem(item)
-        self.list.setItemWidget(item, ROISet("ROI set"))
+        roi_set = ROISet("ROI set")
+        self.list.setItemWidget(item, roi_set)
+        return roi_set
 
-    def currentSet(self) -> ROISet:
+    def currentSet(self) -> ROISet: 
         return self.list.itemWidget(self.list.currentItem())
 
     def addRoi(self, roi: pg.ROI):
@@ -62,7 +73,13 @@ class ROIWidget(widgets.QFrameLayout, widgets.ITabWidget):
             roi_set.list.takeItem(roi_set.list.currentRow())
 
     def toggleROI(self):
-        raise "Note implemented"
+        roi_set: ROISet = self.currentSet()
+        if roi_set != None:
+            for view in gui.views():
+                view: widgets.PreviewFrame = view
+                view.toggleRoiSet(roi_set)
+        else:
+            print('No Roi set selected')
 
 class ROIButtons(widgets.QFrameLayout):
     clicked = Signal(pg.ROI)

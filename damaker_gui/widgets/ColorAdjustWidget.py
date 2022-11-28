@@ -96,7 +96,7 @@ class ColorAdjustWidget(QFrameLayout, widgets.ITabWidget):
         dmk_gui.MainWindow.Instance.tabSelected.connect(self.updateGraph)
     
     def updateGraph(self, target: widgets.PreviewFrame=None):
-        if not IView.isView(target): return
+        if not IView.isInstance(target): return
         if not issubclass(type(target), widgets.PreviewFrame): return
         
         if self.target != None:

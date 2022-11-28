@@ -1,7 +1,7 @@
 # %%
 import os
 # os.environ['JAVA_HOME'] = 'C:/Program Files/Java/jdk-11.0.13'
-os.environ["JAVA_HOME"] = "C:/Users/PC/anaconda3/envs/dmk/Library" 
+# os.environ["JAVA_HOME"] = "C:/Users/PC/anaconda3/envs/dmk/Library" 
 
 import javabridge
 import damaker_gui
@@ -9,6 +9,32 @@ damaker_gui.run(exit=False)
 javabridge.kill_vm()
 
 
+
+#%%
+from PIL import Image
+from PIL.TiffTags import TAGS
+#%%
+with Image.open('resources/E1.tif') as img:
+    print(img.__dict__)
+
+#%%
+import exifread
+# Open image file for reading (binary mode)
+f = open('resources/E1.tif', 'rb')
+
+# Return Exif tags
+tags = exifread.process_file(f)
+
+with open('out.tmp', 'w') as file:
+    file.write(str(tags))
+
+#%%
+from aicsimageio import AICSImage
+
+# Get an AICSImage object
+img = AICSImage('resources/E1.tif')  # selects the first scene found
+a = img.data  # returns 5D TCZYX numpy array
+b = img.xarray_data.
 
 #%%
 
@@ -43,7 +69,7 @@ javabridge.kill_vm()
 
 
 # import damaker
-# from damaker_gui.widgets.PreviewWidget import getLut
+# from damaker_gui.widgets.StackView import getLut
 # import pyqtgraph as pg
 # import numpy as np
 # import tiffile
