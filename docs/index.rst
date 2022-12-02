@@ -6,6 +6,6 @@ Manual
 .. toctree::
    :maxdepth: 2
 
-   channel
+   imagestack
    processing
    widget

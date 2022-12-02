@@ -1,4 +1,6 @@
-import sys, os
+import enum
+import os
+import sys
 
 # DMK_DIR = os.path.dirname(sys.argv[0])
 DMK_DIR = os.getcwd()
@@ -36,10 +38,41 @@ def importPlugins():
     import plugins
     return plugins
 
-from .Channel import *
-from .pipeline import *
-from .processing import *
+from .dmktypes import *
+from .ImageStack import *
+# from .pipeline import *
+# from .processing import *
 from .utils import *
 
-def load(*args):
-    return loadChannelsFromFile(*args)
+
+class BuiltInDataLoader(enum.Enum):
+    TIFFILE = utils._dataloader_tiffile
+    AICSI = utils._dataloader_aicsi
+    BIOFORMATS = utils._dataloader_bioformats
+
+class BuiltInMetadataLoader(enum.Enum):
+    BIOFORMATS = utils._metadataloader_bioformats
+
+def load(filepath: FilePathStr, data_loader=BuiltInDataLoader.TIFFILE, metadata_loader=BuiltInMetadataLoader.BIOFORMATS) -> ImageStack:
+    """
+        Name: Import file
+        Category: Import
+    """
+    # biofile = bioformats_reader.BioFile(filepath)
+    # metadata = biofile.ome_metadata
+    # px_sizes = PhysicalPixelSizes(
+    #     metadata.images[0].pixels.physical_size_z,
+    #     metadata.images[0].pixels.physical_size_y,
+    #     metadata.images[0].pixels.physical_size_x
+    # )
+
+    if not os.path.isfile(filepath):
+        print("Cannot load '" + filepath + "', file not found.")
+        return None
+
+    stack = ImageStack()
+
+    return stack                            \
+        .setDataLoader(data_loader)         \
+        .setMetadataLoader(metadata_loader) \
+        .loadAll(filepath)

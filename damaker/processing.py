@@ -17,7 +17,6 @@ from py4j.java_gateway import JavaGateway
 from damaker.pipeline import BatchParameters
 
 import damaker.utils as utils
-from .Channel import Channel, Channels, SingleChannel, Frame
 
 def _foo() -> None:
     """
@@ -432,7 +431,7 @@ def channelVolumeArray(input: Channel) -> utils.NamedArray:
     res.data = volumes
     return res
 
-def channelAxisQuantification(input: Channel, outputPath: utils.StrFolderPath):
+def channelAxisQuantification(input: Channel, outputPath: utils.FolderPathStr):
     """
         Name: Volume distribution per axis
         Category: Quantification
@@ -508,7 +507,7 @@ def channelFromBinary(input: Channel) -> Channel:
     return input
 
 _jar_path = 'C:/Users/PC/source/DAMAKER/damaker/weka/bin/weka_segmentation_gateway.jar'
-def segmentation(input: Channel, classifier: utils.StrFilePath) -> Channel:
+def segmentation(input: Channel, classifier: utils.FilePathStr) -> Channel:
     """
         Name: Apply Trainable Weka Segmentation 3D
         Category: Segmentation
@@ -535,7 +534,7 @@ def segmentation(input: Channel, classifier: utils.StrFilePath) -> Channel:
     
     return input
 
-def segmentationMultiClassifier(input: Channel, classifiers: BatchParameters, outputDir: utils.StrFolderPath):
+def segmentationMultiClassifier(input: Channel, classifiers: BatchParameters, outputDir: utils.FolderPathStr):
     """
         Name: Apply Trainable Weka Segmentation 3D (Multiple Classifiers)
         Category: Segmentation
@@ -718,7 +717,7 @@ def registration(input: Channel, reference: SingleChannel, nb_iteration: int=200
     print(f'registration complete: {input}')
     return input
 
-def registrationMultiChannel(input: BatchParameters, reference: SingleChannel, refChannel: int=1, nb_iteration: int=200, outputPath: utils.StrFolderPath="") -> None:
+def registrationMultiChannel(input: BatchParameters, reference: SingleChannel, refChannel: int=1, nb_iteration: int=200, outputPath: utils.FolderPathStr="") -> None:
     """
         Name: SITK Registration though reference
         Category: Registration

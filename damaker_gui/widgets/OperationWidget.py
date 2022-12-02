@@ -121,12 +121,12 @@ class OperationWidget(QFrame):
                 #     formWidget = widgets.ChannelSelectorWidget()
                 #     formWidget.getParameter = lambda widget: widget.getChannels()
                 formWidget = widgets.InputWidget()
-            elif param.annotation is widgets.SingleChannel or param.annotation is StrFilePath:
+            elif param.annotation is widgets.SingleChannel or param.annotation is FilePathStr:
                 if opArg != None:
                     formWidget = widgets.FilePickerWidget(text=opArg)
                 else:
                     formWidget = widgets.FilePickerWidget(widgets.WorkspaceWidget.RootPath)
-            elif param.annotation is StrFolderPath:
+            elif param.annotation is FolderPathStr:
                 if opArg != None:
                     formWidget = widgets.FolderPickerWidget(text=opArg)
                 else:

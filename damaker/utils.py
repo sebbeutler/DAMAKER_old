@@ -1,8 +1,7 @@
-from logging import exception
-import os, enum
-from enum import Enum
+import os
 
-from .Channel import Channel, Channels, PhysicalPixelUnit
+from .dmktypes import *
+from .ImageStack import *
 
 import numpy as np
 from skimage import measure
@@ -10,132 +9,48 @@ from skimage import measure
 from tiffile import TiffFile
 
 # AICSio #
-from aicsimageio.writers import OmeTiffWriter
-from aicsimageio.readers import bioformats_reader, OmeTiffReader
-from aicsimageio.types import PhysicalPixelSizes
+# from aicsimageio.writers import OmeTiffWriter
+# from aicsimageio.readers import bioformats_reader, OmeTiffReader
+# from aicsimageio.types import PhysicalPixelSizes
 
 # BIOFORMATS #
 import javabridge, bioformats, xmltodict
 
 from vedo import Mesh, Plotter
 
-class StrFilePath(str):
-    pass
-
-class StrFolderPath(str):
-    pass
-
-class NamedArray:
-    name: str=""
-    data: list=[]
-
-class ChannelLoaderType(enum.Enum):
-    TIFFILE = 0
-    AICSI = 1
-    BIOFORMATS = 2
-
-class MesureUnits(Enum):
-    micro: str = 'µm'
-
-class Size():
-    width: int
-    height: int
-
-class Point():
-    x: int
-    y: int
-
-class Line():
-    p1: Point
-    p2: Point
-
-class Rect():
-    pos: Point
-    size: Size
-
-class Circle():
-    center: Point
-    radius: int
-
-class Size():
-    width: int
-    height: int
-
-class PointF():
-    x: float
-    y: float
-
-class LineF():
-    p1: Point
-    p2: Point
-
-class RectF():
-    pos: Point
-    size: Size
-
-class CircleF():
-    center: Point
-    radius: float
-
-def loadChannelsFromFile(filename: StrFilePath, loader: ChannelLoaderType=ChannelLoaderType.TIFFILE)-> Channels:
-    """
-        Name: Import .tif
-        Category: Import
-    """
-    if not os.path.isfile(filename):
-        print("[DAMAKER] Warning: file '" + filename + "' not found.")
-        return None
-    print("Loading channels . . .")
-
-    if loader is ChannelLoaderType.TIFFILE:
-        channels = _loadChannels_tiffile(filename)  
-    elif loader is ChannelLoaderType.AICSI:
-        channels = _loadChannels_aicsi(filename)  
-    elif loader is ChannelLoaderType.BIOFORMATS:
-        channels = _loadChannels_bioformats(filename)
-
-    # biofile = bioformats_reader.BioFile(filename)    
-    # metadata = biofile.ome_metadata
-
-    # px_sizes = PhysicalPixelSizes(
-    #     metadata.images[0].pixels.physical_size_z,
-    #     metadata.images[0].pixels.physical_size_y,
-    #     metadata.images[0].pixels.physical_size_x
-    # )
-
-    metadata = _loadMetadata_bioformats(filename)
-    px_sizes = PhysicalPixelSizes(
-        float(metadata['Pixels']['@PhysicalSizeZ']),
-        float(metadata['Pixels']['@PhysicalSizeY']),
-        float(metadata['Pixels']['@PhysicalSizeX']),
-    )
-    units = PhysicalPixelUnit(
-        metadata['Pixels']['@PhysicalSizeZUnit'],
-        metadata['Pixels']['@PhysicalSizeYUnit'],
-        metadata['Pixels']['@PhysicalSizeXUnit'],
-    )
-
-    for ch in channels:
-        if type(ch) is Channel:
-            ch.metadata = metadata
-            ch.px_sizes = px_sizes
-            ch.units = units
-            print(f'Loaded: {ch} ✔')
-    return channels
-
-def _loadChannels_bioformats(filename, StrFilePath) -> Channels:
+def _dataloader_bioformats(filename, StrFilePath) -> ImageStack:
     raise Exception()
 
-def _loadMetadata_bioformats(filepath: StrFilePath) -> dict:
-    javabridge.start_vm(run_headless=True, class_path=bioformats.JARS)
+def _metadataloader_bioformats(filepath: FilePathStr, _kill_vm=False) -> ImageStackMetadata:
+    javabridge.start_vm(run_headless=True, class_path=bioformats.JARS, max_heap_size='500M')
+
+    # JAVABRIDGE SILENT / NO LOG #
+    myloglevel="ERROR"  # user string argument for logLevel.
+    rootLoggerName = javabridge.get_static_field("org/slf4j/Logger","ROOT_LOGGER_NAME", "Ljava/lang/String;")
+    rootLogger = javabridge.static_call("org/slf4j/LoggerFactory","getLogger", "(Ljava/lang/String;)Lorg/slf4j/Logger;", rootLoggerName)
+    logLevel = javabridge.get_static_field("ch/qos/logback/classic/Level",myloglevel, "Lch/qos/logback/classic/Level;")
+    javabridge.call(rootLogger, "setLevel", "(Lch/qos/logback/classic/Level;)V", logLevel)
+
     javabridge.attach()
 
     data = bioformats.get_omexml_metadata(filepath)
     dict_ome = xmltodict.parse(data)
 
-    return dict_ome['OME']['Image']
+    if _kill_vm:
+        javabridge.kill_vm()
 
-def _loadChannels_aicsi(filename: StrFilePath) -> Channels:
+    metadata = ImageStackMetadata()
+    metadata.pixelsize = PixelSize(
+        float(dict_ome['OME']['Image']['Pixels']['@PhysicalSizeZ']),
+        float(dict_ome['OME']['Image']['Pixels']['@PhysicalSizeY']),
+        float(dict_ome['OME']['Image']['Pixels']['@PhysicalSizeX']),
+    )
+    metadata.unit = MesureUnit.strToUnit(dict_ome['OME']['Image']['Pixels']['@PhysicalSizeZUnit'])
+
+    print('✔')
+    return metadata
+
+def _dataloader_aicsi(filename: FilePathStr) -> ImageStack:
     # verify if the file exist
     if not os.path.isfile(filename):
         print("[DAMAKER] Warning: file '" + filename + "' not found.")
@@ -153,12 +68,7 @@ def _loadChannels_aicsi(filename: StrFilePath) -> Channels:
 
     return channels
 
-def _loadChannels_tiffile(filename: StrFilePath) -> Channels:
-    # verify if the file exist
-    if not os.path.isfile(filename):
-        print("[DAMAKER] Warning: file '" + filename + "' not found.")
-        return None
-
+def _dataloader_tiffile(filename: FilePathStr) -> np.ndarray:
     with TiffFile(filename) as file:
         data = file.asarray()
         axes = file.series[0].axes
@@ -178,41 +88,32 @@ def _loadChannels_tiffile(filename: StrFilePath) -> Channels:
             transpose.append(axesorder[char])
 
     data = data.transpose(tuple(transpose))
+    print('✔')
+    return data
 
-    # Split the file by channel
-    if len(data.shape) == 4:
-        chns = []
-        for i in range(data.shape[0]):
-            chns.append(Channel(fn, data[i], id=i+1, metadata=metadata))
-        return chns
-    elif len(data.shape) == 3:
-        return [Channel(fn, data, id=1, metadata=metadata)]
-    elif len(data.shape) == 2:
-        return [Channel(fn, data[np.newaxis], id=1, metadata=metadata)]
-
-def channelSave(chn: Channel, folderPath: StrFolderPath, includeChannelId: bool=False):
+def channelSave(chn: ImageStack, folderPath: FolderPathStr, includeChannelId: bool=False):
     """
         Name: Save channel
         Category: Export
     """ 
     chn.save(folderPath, includeChannelId)
 
-def channelsSave(channels: Channels, folderPath: StrFolderPath):
+def channelsSave(channels: ImageStack, folderPath: FolderPathStr):
     """
         Name: Save stack
         Category: Process
     """
-    if type(channels) is Channel:
+    if type(channels) is ImageStack:
         return channels.save(folderPath)
     if len(channels) == 1:
         return channels[0].save(folderPath)
     for ch in channels:
-        if type(ch) != Channel:
+        if type(ch) != ImageStack:
             return
     out = channels[0].clone(np.array([chn.data for chn in channels]))
     out.save(folderPath)
 
-def channelSaveToObj(chn: Channel, stepsize: int=2, outputDir: StrFolderPath=""):
+def channelSaveToObj(chn: ImageStack, stepsize: int=2, outputDir: FolderPathStr=""):
     """
         Name: Export to .obj
         Category: Export
@@ -241,7 +142,7 @@ def channelSaveToObj(chn: Channel, stepsize: int=2, outputDir: StrFolderPath="")
             file.write("f {} {} {}\n".format(*(f + 1)))
     print(f'saved: {filename}')
 
-def listSaveCSV(data: NamedArray, path: StrFolderPath):
+def listSaveCSV(data: NamedArray, path: FolderPathStr):
     """
         Name: Export to .csv
         Category: Export
@@ -258,14 +159,14 @@ def listSaveCSV(data: NamedArray, path: StrFolderPath):
             file.write("\n".join(map(str, list(array.data))))
         print(f'saved: {filename}')
 
-def _axisQuantifSaveCSV(axis_data, path: StrFolderPath, filename: str):
+def _axisQuantifSaveCSV(axis_data, path: FolderPathStr, filename: str):
     if len(axis_data) != 3:
         raise ValueError("Need only 3 axis")
     listSaveCSV(axis_data[0], path, filename + "_front.csv")
     listSaveCSV(axis_data[1], path, filename + "_top.csv")
     listSaveCSV(axis_data[2], path, filename + "_left.csv")
 
-def _createDirectory(path: StrFolderPath):
+def _createDirectory(path: FolderPathStr):
     """
         Name: Create folder
         Category: Export
@@ -277,7 +178,7 @@ import matplotlib.pyplot as plt
 from vedo.applications import Browser
 from vedo.picture import Picture
 
-def _plotChannel(input: Channel):
+def _plotChannel(input:ImageStack):
     actors = []
 
     for i in range(input.shape[0]):
@@ -291,7 +192,7 @@ def _plotFrame(data: np.ndarray):
     _plt.add(Picture(data, flip=True))
     _plt.show()
 
-def _plotChannelRGB(ch_r: Channel=None, ch_g: Channel=None, ch_b: Channel=None):
+def _plotChannelRGB(ch_r:ImageStack=None, ch_g:ImageStack=None, ch_b:ImageStack=None):
     def getrgb(arr, col):
         rgb = np.zeros((arr.shape[0], arr.shape[1], arr.shape[2], 3))
         rgb[:, :, :, col] = arr[:, :, :]
@@ -336,7 +237,7 @@ def _plotArrays(data_list, labels=[], title=""):
     plt.legend()
     plt.show()
 
-def _plotMesh(filename: StrFilePath, rotate: bool=True, mirror: bool=False):
+def _plotMesh(filename: FilePathStr, rotate: bool=True, mirror: bool=False):
     mesh = Mesh(filename)
     if rotate:
         mesh = mesh.rotate(90)

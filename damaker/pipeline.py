@@ -3,7 +3,6 @@ import os, json
 import os.path
 import re
 from typing import Callable
-from .Channel import Channel, Channels, SingleChannel
 from .utils import *
 
 
