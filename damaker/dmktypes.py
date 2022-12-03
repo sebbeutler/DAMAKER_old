@@ -1,16 +1,23 @@
 
+import inspect
 from enum import Enum
+from functools import wraps
 from typing import NamedTuple, Optional
 
+
+def method(func):
+    def method_decorator(self, *args, **kwargs):
+        ret = func(self, *args, **kwargs)
+        if inspect.signature(func).return_annotation is inspect._empty:
+            ret = self
+        return ret
+
+    return method_decorator
 
 class FilePathStr(str):
     pass
 class FolderPathStr(str):
     pass
-
-class NamedArray:
-    name: str=""
-    data: list=[]
 
 class PixelSize(NamedTuple):
     Z: Optional[float]
@@ -60,16 +67,3 @@ class Circle():
 class CircleF():
     center: Point
     radius: float
-
-import inspect
-
-
-def method(func):
-
-    def method_decorator(self, *args, **kwargs):
-        ret = func(self, *args, **kwargs)
-        if inspect.signature(func).return_annotation is inspect._empty:
-            ret = self
-        return ret
-
-    return method_decorator

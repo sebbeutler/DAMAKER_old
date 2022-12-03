@@ -1,4 +1,4 @@
-from aicsimageio.types import PhysicalPixelSizes
+from aicsimageio.types import PhysicalPixelSize
 import numpy as np
 from aicsimageio.writers import OmeTiffWriter
 from ome_types.model import OME
@@ -18,10 +18,10 @@ class ChannelDimensions(NamedTuple):
     SizeX: Optional[int]
 
 class Channel:
-    def __init__(self, name: str="", data: np.ndarray=[], physicalPixelSizes: PhysicalPixelSizes=None, id: float=0, lut: pg.ColorMap=None, metadata: OME=None, units: PhysicalPixelUnit=None):
+    def __init__(self, name: str="", data: np.ndarray=[], physicalPixelSize: PhysicalPixelSize=None, id: float=0, lut: pg.ColorMap=None, metadata: OME=None, units: PhysicalPixelUnit=None):
         self.name = name
         self.data = np.array(data)
-        self.px_sizes = physicalPixelSizes
+        self.px_sizes = physicalPixelSize
         self.units = units
         self.id = id
         self.lut = lut

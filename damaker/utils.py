@@ -1,22 +1,20 @@
 import os
 
+import bioformats
+import javabridge
+import numpy as np
+import xmltodict
+from skimage import measure
+from tifffile import TiffFile
+from vedo import Mesh, Plotter
+
 from .dmktypes import *
 from .ImageStack import *
-
-import numpy as np
-from skimage import measure
-
-from tiffile import TiffFile
 
 # AICSio #
 # from aicsimageio.writers import OmeTiffWriter
 # from aicsimageio.readers import bioformats_reader, OmeTiffReader
-# from aicsimageio.types import PhysicalPixelSizes
-
-# BIOFORMATS #
-import javabridge, bioformats, xmltodict
-
-from vedo import Mesh, Plotter
+# from aicsimageio.types import PhysicalPixelSize
 
 def _dataloader_bioformats(filename, StrFilePath) -> ImageStack:
     raise Exception()
@@ -91,80 +89,73 @@ def _dataloader_tiffile(filename: FilePathStr) -> np.ndarray:
     print('✔')
     return data
 
-def channelSave(chn: ImageStack, folderPath: FolderPathStr, includeChannelId: bool=False):
-    """
-        Name: Save channel
-        Category: Export
-    """ 
-    chn.save(folderPath, includeChannelId)
+# def channelSave(chn: ImageStack, folderPath: FolderPathStr, includeChannelId: bool=False):
+#     """
+#         Name: Save channel
+#         Category: Export
+#     """ 
+#     chn.save(folderPath, includeChannelId)
 
-def channelsSave(channels: ImageStack, folderPath: FolderPathStr):
-    """
-        Name: Save stack
-        Category: Process
-    """
-    if type(channels) is ImageStack:
-        return channels.save(folderPath)
-    if len(channels) == 1:
-        return channels[0].save(folderPath)
-    for ch in channels:
-        if type(ch) != ImageStack:
-            return
-    out = channels[0].clone(np.array([chn.data for chn in channels]))
-    out.save(folderPath)
+# def channelsSave(channels: ImageStack, folderPath: FolderPathStr):
+#     """
+#         Name: Save stack
+#         Category: Process
+#     """
+#     if type(channels) is ImageStack:
+#         return channels.save(folderPath)
+#     if len(channels) == 1:
+#         return channels[0].save(folderPath)
+#     for ch in channels:
+#         if type(ch) != ImageStack:
+#             return
+#     out = channels[0].clone(np.array([chn.data for chn in channels]))
+#     out.save(folderPath)
 
-def channelSaveToObj(chn: ImageStack, stepsize: int=2, outputDir: FolderPathStr=""):
-    """
-        Name: Export to .obj
-        Category: Export
-    """
-    chn = chn.copy()
+# def channelSaveToObj(chn: ImageStack, stepsize: int=2, outputDir: FolderPathStr=""):
+#     """
+#         Name: Export to .obj
+#         Category: Export
+#     """
+#     chn = chn.copy()
 
-    for i in range(stepsize):
-        chn.data = np.insert(chn.data, 0, np.zeros_like(chn.data[0]), axis=0)
-        chn.data = np.insert(chn.data, -1, np.zeros_like(chn.data[0]), axis=0)
+#     for i in range(stepsize):
+#         chn.data = np.insert(chn.data, 0, np.zeros_like(chn.data[0]), axis=0)
+#         chn.data = np.insert(chn.data, -1, np.zeros_like(chn.data[0]), axis=0)
 
-        chn.data = np.insert(chn.data, 0, np.zeros_like(chn.data[:, 0, :]), axis=1)
-        chn.data = np.insert(chn.data, -1, np.zeros_like(chn.data[:, 0, :]), axis=1)        
+#         chn.data = np.insert(chn.data, 0, np.zeros_like(chn.data[:, 0, :]), axis=1)
+#         chn.data = np.insert(chn.data, -1, np.zeros_like(chn.data[:, 0, :]), axis=1)        
 
-        chn.data = np.insert(chn.data, 0, np.zeros_like(chn.data[:, :, 0]), axis=2)
-        chn.data = np.insert(chn.data, -1, np.zeros_like(chn.data[:, :, 0]), axis=2)
+#         chn.data = np.insert(chn.data, 0, np.zeros_like(chn.data[:, :, 0]), axis=2)
+#         chn.data = np.insert(chn.data, -1, np.zeros_like(chn.data[:, :, 0]), axis=2)
 
-    # plot(chn)
-    vertices, triangles, normals, values = measure.marching_cubes(chn.data, 0, step_size=stepsize, spacing=(chn.px_sizes.Z, chn.px_sizes.Y, chn.px_sizes.X), method="lorensen")    
+#     # plot(chn)
+#     vertices, triangles, normals, values = measure.marching_cubes(chn.data, 0, step_size=stepsize, spacing=(chn.px_sizes.Z, chn.px_sizes.Y, chn.px_sizes.X), method="lorensen")    
 
-    filename = outputDir + '/' + chn.name + '.obj'
-    with open(filename, 'w') as file:        
-        for v in vertices:
-            file.write("v {} {} {}\n".format(*v))
+#     filename = outputDir + '/' + chn.name + '.obj'
+#     with open(filename, 'w') as file:        
+#         for v in vertices:
+#             file.write("v {} {} {}\n".format(*v))
 
-        for f in triangles:
-            file.write("f {} {} {}\n".format(*(f + 1)))
-    print(f'saved: {filename}')
+#         for f in triangles:
+#             file.write("f {} {} {}\n".format(*(f + 1)))
+#     print(f'saved: {filename}')
 
-def listSaveCSV(data: NamedArray, path: FolderPathStr):
-    """
-        Name: Export to .csv
-        Category: Export
-    """
-    if type(data) is NamedArray:
-        data = [data]
-    for array in data:
-        if not type(array) is NamedArray:
-            continue
-        filename = array.name
-        if not filename.endswith(".csv"):
-            filename += ".csv"
-        with open(path + "/" + filename, "w") as file:
-            file.write("\n".join(map(str, list(array.data))))
-        print(f'saved: {filename}')
-
-def _axisQuantifSaveCSV(axis_data, path: FolderPathStr, filename: str):
-    if len(axis_data) != 3:
-        raise ValueError("Need only 3 axis")
-    listSaveCSV(axis_data[0], path, filename + "_front.csv")
-    listSaveCSV(axis_data[1], path, filename + "_top.csv")
-    listSaveCSV(axis_data[2], path, filename + "_left.csv")
+# def _listSaveCSV(data: NamedArray, path: FolderPathStr):
+#     """
+#         Name: Export to .csv
+#         Category: Export
+#     """
+#     if type(data) is NamedArray:
+#         data = [data]
+#     for array in data:
+#         if not type(array) is NamedArray:
+#             continue
+#         filename = array.name
+#         if not filename.endswith(".csv"):
+#             filename += ".csv"
+#         with open(path + "/" + filename, "w") as file:
+#             file.write("\n".join(map(str, list(array.data))))
+#         print(f'saved: {filename}')
 
 def _createDirectory(path: FolderPathStr):
     """
@@ -172,7 +163,6 @@ def _createDirectory(path: FolderPathStr):
         Category: Export
     """
     os.makedirs(path, exist_ok=True)
-
 
 import matplotlib.pyplot as plt
 from vedo.applications import Browser
@@ -205,7 +195,7 @@ def _plotChannelRGB(ch_r:ImageStack=None, ch_g:ImageStack=None, ch_b:ImageStack=
     res = red + green + blue
     res = res.clip(0, 255)
 
-    _plotChannel(Channel("", res))
+    _plotChannel(ImageStack("", res))
 
 def _plotFrameRGB(data_r=None, data_g=None, data_b=None):
     def getrgbF(arr, col):

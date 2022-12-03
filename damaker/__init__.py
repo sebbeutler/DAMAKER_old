@@ -1,6 +1,9 @@
 import enum
 import os
 import sys
+from inspect import signature, Signature
+from typing import Callable
+from collections.abc import Iterable
 
 # DMK_DIR = os.path.dirname(sys.argv[0])
 DMK_DIR = os.getcwd()
@@ -28,6 +31,9 @@ def _createPluginsFolder():
 # 	return input
 """)
 
+from .dmktypes import *
+from .ImageStack import *
+
 def importPlugins():
     _createPluginsFolder()
     import importlib.util
@@ -38,10 +44,68 @@ def importPlugins():
     import plugins
     return plugins
 
-from .dmktypes import *
-from .ImageStack import *
+class Operation():
+    alias: str
+    category: str
+    func: Callable
+    signature: Signature
+    hits: dict
+
+    def __init__(self, alias: str, category: str, func: Callable, _signature: Signature, hints: dict):
+        self.alias = alias
+        self.category = category
+        self.func = func
+        self.signature = _signature
+        self.hints = hints
+
+__operations__: dict[str, Operation] = {}
+
+class DamakerException(Exception):
+    pass
+
+class FormatMismatchException(DamakerException):
+    pass
+
+class DimensionCountMismatchException(DamakerException):
+    pass
+
+class LengthMismatchException(DamakerException):
+    pass
+
+class ShapeMismatchException(DamakerException):
+    pass
+
+# Operation DECORATOR #
+def operation(**hints):
+    global __operations__
+    def damaker_operation_decorator(func: Callable):
+        alias: str = hints.get('alias')
+        category: str = hints.get('category')
+        ndim_hint = hints.get('ndim')
+
+        if alias == None:
+            alias = func.__name__
+        if category == None:
+            category = 'Plugins'
+
+        __operations__[alias] = Operation(alias, category, func, signature(func), hints)
+
+        def damaker_operation_wrapper(*args, **kwargs):
+            print(f'>> Running {alias}')
+            if ndim_hint != None:
+                if issubclass(type(args[0]), ImageStack):
+                    input: ImageStack = args[0]
+                    if (isinstance(ndim_hint, Iterable) and input.ndim not in ndim_hint) or input.ndim != ndim_hint:
+                        raise DimensionCountMismatchException()
+            return func(*args, **kwargs)
+        return damaker_operation_wrapper
+    return damaker_operation_decorator
+
+# TODO MAAAAAAAAAIN PIPELINEEEE, should be ez bro, then you need to do the modalities
+# actually maybe just put the baseline for the pipeline, then you make sure all the GUI is
+# is working properly then u can chill
 # from .pipeline import *
-# from .processing import *
+from .processing import *
 from .utils import *
 
 
@@ -60,7 +124,7 @@ def load(filepath: FilePathStr, data_loader=BuiltInDataLoader.TIFFILE, metadata_
     """
     # biofile = bioformats_reader.BioFile(filepath)
     # metadata = biofile.ome_metadata
-    # px_sizes = PhysicalPixelSizes(
+    # px_sizes = PhysicalPixelSize(
     #     metadata.images[0].pixels.physical_size_z,
     #     metadata.images[0].pixels.physical_size_y,
     #     metadata.images[0].pixels.physical_size_x

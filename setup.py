@@ -1,10 +1,14 @@
 from setuptools import setup
 
+# python setup.py build && python -m build
+# twine upload --repository testpypi dist/*
+# pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ damaker
+
 ##############################################################
 setup(
     name="damaker",
     python_requires=">=3.8",
-    version="0.0.1",
+    version="0.0.3",
     packages=[
                "damaker",
                "damaker_gui",
@@ -17,14 +21,15 @@ setup(
 
     install_requires=[
         "numpy",
+        "pandas",
         "scipy",
         "matplotlib",
         "imageio",
         "aicsimageio",
         "tifffile",
         "bioformats-jar",
-        # "python-bioformats",
-        # "python-javabridge",
+        "python-bioformats",
+        "python-javabridge",
         # "rpy2",
         "py4j",
         "PySide2",

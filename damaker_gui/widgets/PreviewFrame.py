@@ -38,8 +38,8 @@ class ReslicerWorker(QThread):
         top = []
         left = []
         for channel in self.channels:
-            top.append(damaker.processing._resliceTop(channel))
-            left.append(damaker.processing._resliceLeft(channel))
+            top.append(damaker.processing._channelResliceTop(channel))
+            left.append(damaker.processing._channelResliceLeft(channel))
         self.finished.emit(top, left)
 
 class PreviewFrame(QFrame, widgets.IView):

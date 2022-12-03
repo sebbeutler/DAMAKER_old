@@ -1,7 +1,9 @@
 README.md
 setup.py
-damaker/Channel.py
+damaker/ImageStack.py
+damaker/_Channel.py
 damaker/__init__.py
+damaker/dmktypes.py
 damaker/pipeline.py
 damaker/processing.py
 damaker/utils.py

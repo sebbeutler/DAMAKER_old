@@ -5,6 +5,8 @@ imageio
 aicsimageio
 tifffile
 bioformats-jar
+python-bioformats
+python-javabridge
 py4j
 PySide2
 PyOpenGL

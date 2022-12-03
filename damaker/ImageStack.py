@@ -1,4 +1,5 @@
-from typing import Tuple
+import os
+from typing import Any, Tuple
 
 import numpy as np
 
@@ -10,6 +11,9 @@ class ImageStackMetadata:
     unit: MesureUnit
     filepath: FilePathStr
 
+    def basename(self) -> str:
+        return os.path.basename(self.filepath) if self.filepath != None else 'Unamed'
+
     def __str__(self):
         return f'''\
 pixelsize: {self.pixelsize}
@@ -18,23 +22,29 @@ filepath: {self.filepath}
 '''
 
 class ImageStack:
-    data: np.ndarray
-    metadata: ImageStackMetadata
+    data: np.ndarray = None
+    metadata: ImageStackMetadata = None
 
     data_loader=None
     metadata_loader=None
 
-    @method
+    @property
     def shape(self) -> Tuple[int, ...]:
         if issubclass(type(self.data), np.ndarray):
             return self.data.shape
         return ()
 
-    @method
+    @property
     def format(self) -> type:
         if issubclass(type(self.data), np.ndarray):
             return self.data.dtype
         return ()
+
+    @property
+    def ndim(self) -> int:
+        if issubclass(type(self.data), np.ndarray):
+            return len(self.data.shape)
+        return 0
 
     @method
     def setDataLoader(self, loader):
@@ -57,7 +67,30 @@ class ImageStack:
         if self.metadata != None:
             self.metadata.filepath = filepath
 
+    def clone(self, data=None, metadata=None) -> Any:
+        cloned = ImageStack()
+
+        cloned.metadata_loader = self.metadata_loader
+        cloned.data_loader = self.data_loader
+
+        cloned.metadata =  metadata if metadata != None else self.metadata
+        cloned.data =  data if data != None else self.data.copy()
+
+        return cloned
+
+    @method
+    def get(self, metadata_id: str) -> Any:
+        return self.metadata.__dict__[metadata_id]  if self.metadata != None else None
+
+    @method
+    def set(self, metadata_id: str, value):
+        if self.metadata == None:
+            self.metadata = ImageStackMetadata()
+        self.metadata.__dict__[metadata_id] = value
+
+
     def __str__(self):
-        return f'shape: {self.shape()}\n' + \
-            f'format: {self.format()}\n' + \
+        return f'shape: {self.shape}\n' + \
+            f'format: {self.format}\n' + \
             str(self.metadata)
+
