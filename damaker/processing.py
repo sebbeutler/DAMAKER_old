@@ -8,6 +8,8 @@ import pandas as pd
 import SimpleITK as sitk
 import vedo
 from scipy import ndimage
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 from vedo import Mesh
 
 import damaker
@@ -825,3 +827,21 @@ def dilation(input: ImageStack, iterations: int= 1, mask: ImageStack=None, borde
     input.data = ndimage.binary_dilation(input.data, None, iterations, mask, border_value, origin, brute_force)
     return input
 
+@damaker.operation(alias='PCA', category='Quantification')
+def dmk_PCA(input: pd.DataFrame, classes: list[str], features: list[str], n_components: int=6) -> pd.DataFrame:
+    ## Data scaling
+
+    x1 = input.loc[:, features].values
+    y1 = input.loc[:, classes].values
+    x1 = StandardScaler().fit_transform(x1)
+
+    ## Perform PCA
+
+    pca = PCA(n_components=n_components)
+    principalComponents = pca.fit_transform(x1)
+    principalDataframe = pd.DataFrame(
+        data = principalComponents,
+        columns = [f'PC{i}' for i in range(1, n_components+1)]
+    )
+
+    return pd.concat([principalDataframe, input[classes]], axis = 1)
