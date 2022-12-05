@@ -1,10 +1,10 @@
 # DAMAKER
 
-- binaries: https://github.com/subski/DAMAKER/releases
-- pip: https://test.pypi.org/project/damaker/0.3.0/
-- documentation: damaker.readthedocs.io/en/latest/
-- github: https://github.com/subski/DAMAKER
-- trello : https://trello.com/b/bgtG1JQn/damaker
+- binaries: <https://github.com/subski/DAMAKER/releases>
+- pip: <https://test.pypi.org/project/damaker/0.3.0/>
+- documentation: <https://damaker.readthedocs.io/en/latest/>
+- github: <https://github.com/subski/DAMAKER>
+- trello : <https://trello.com/b/bgtG1JQn/damaker>
 
 ## Install (pip)
 
