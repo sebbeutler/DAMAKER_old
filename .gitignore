@@ -24,6 +24,7 @@ __pycache__/
 .qt_for_python/
 
 /resources/
+/*.egg-info/
 
 # PyInstaller #
 /build/

@@ -4,11 +4,13 @@ from setuptools import setup
 # twine upload --repository testpypi dist/*
 # pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ damaker
 
+# view @ https://test.pypi.org/project/damaker/0.3.0/
+
 ##############################################################
 setup(
     name = "damaker",
     python_requires = ">=3.8",
-    version = "0.3.0",
+    version = "0.3.1",
     packages = [
         "damaker",
         "damaker_gui",

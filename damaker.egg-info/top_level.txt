@@ -1,2 +1,0 @@
-damaker
-damaker_gui
