@@ -1,32 +1,39 @@
 import os
-from typing import Any, Tuple
+from typing import Any, Callable, Tuple
 
 import numpy as np
+from typing_extensions import Self
 
 from .dmktypes import *
-
 
 class ImageStackMetadata:
     pixelsize: PixelSize
     unit: MesureUnit
     filepath: FilePathStr
 
+    @property
     def basename(self) -> str:
-        return os.path.basename(self.filepath) if self.filepath != None else 'Unamed'
+        if self.filepath != None:
+            return os.path.basename(self.filepath)
+        else: return 'Unamed'
 
-    def __str__(self):
-        return f'''\
+    def __str__(self) -> str:
+        return \
+f'''
 pixelsize: {self.pixelsize}
 unit: {self.unit.value}
 filepath: {self.filepath}
 '''
 
+    def __iter__(self) -> iter:
+        return iter(self.__dict__.items())
+
 class ImageStack:
     data: np.ndarray = None
     metadata: ImageStackMetadata = None
 
-    data_loader=None
-    metadata_loader=None
+    data_loader: Callable[[str], np.ndarray] = None
+    metadata_loader: Callable[[str], ImageStackMetadata] = None
 
     @property
     def shape(self) -> Tuple[int, ...]:
@@ -67,14 +74,15 @@ class ImageStack:
         if self.metadata != None:
             self.metadata.filepath = filepath
 
-    def clone(self, data=None, metadata=None) -> Any:
+    @method
+    def clone(self, data=None, metadata=None) -> Self:
         cloned = ImageStack()
 
         cloned.metadata_loader = self.metadata_loader
         cloned.data_loader = self.data_loader
 
         cloned.metadata =  metadata if metadata != None else self.metadata
-        cloned.data =  data if data != None else self.data.copy()
+        cloned.data =  data if type(data) is np.ndarray else self.data.copy()
 
         return cloned
 
@@ -88,9 +96,7 @@ class ImageStack:
             self.metadata = ImageStackMetadata()
         self.metadata.__dict__[metadata_id] = value
 
-
-    def __str__(self):
+    def __str__(self) -> str:
         return f'shape: {self.shape}\n' + \
             f'format: {self.format}\n' + \
             str(self.metadata)
-

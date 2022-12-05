@@ -9,7 +9,7 @@ from tifffile import TiffFile
 from vedo import Mesh, Plotter
 
 from .dmktypes import *
-from .ImageStack import *
+from .imagestack import *
 
 # AICSio #
 # from aicsimageio.writers import OmeTiffWriter
@@ -167,6 +167,7 @@ def _createDirectory(path: FolderPathStr):
 import matplotlib.pyplot as plt
 from vedo.applications import Browser
 from vedo.picture import Picture
+
 
 def _plotChannel(input:ImageStack):
     actors = []

@@ -16,7 +16,8 @@ import damaker
 import damaker.utils as utils
 
 from .dmktypes import *
-from .ImageStack import *
+from .imagestack import *
+from .operation import *
 
 
 def _foo() -> None:
@@ -42,7 +43,7 @@ def channelSelect(input: ImageStack, id: int=1) -> ImageStack:
         print(f"channelSelect: no channels with id={id}")
     return channels
 
-@damaker.operation(alias='Invert colors')
+@damaker.Operation(alias='Invert colors')
 def channelInvert(input: ImageStack) -> ImageStack:
     """
         Name: Invert colors
@@ -79,7 +80,7 @@ class cv_Interpolation(enum.Enum):
     area = cv2.INTER_AREA
     lanczos4 = cv2.INTER_LANCZOS4
 
-@damaker.operation(alias='Rotate angle', ndim=3)
+@damaker.Operation(alias='Rotate angle', ndim=3)
 def channelRotate(input: ImageStack, degrees: float, inter: cv_Interpolation=cv_Interpolation.bilinear) -> ImageStack:
     """
         Name: Rotation angle
@@ -116,7 +117,7 @@ class RotationTypes(enum.Enum):
     counter_clockwise_90 = cv2.ROTATE_90_COUNTERCLOCKWISE
     rotate_180 = cv2.ROTATE_180
 
-@damaker.operation(alias='Rotation', ndim=3)
+@damaker.Operation(alias='Rotation', ndim=3)
 def channelRotateType(input: ImageStack, rotType: RotationTypes=RotationTypes.clockwise_90) -> ImageStack:
     """
         Name: Rotation
@@ -137,7 +138,7 @@ class FlipTypes(enum.Enum):
     vertically = 0
     horizontally = 1
 
-@damaker.operation(alias='Flip', ndim=3)
+@damaker.Operation(alias='Flip', ndim=3)
 def channelFlip(input: ImageStack, flipType: FlipTypes=FlipTypes.horizontally) -> ImageStack:
     """
         Name: Flip
@@ -147,8 +148,7 @@ def channelFlip(input: ImageStack, flipType: FlipTypes=FlipTypes.horizontally) -
         input.data[i] = cv2.flip(input.data[i], flipType.value)
     return input
 
-# TODO: Test this shit
-@damaker.operation(alias='Flip', ndim=[2,3])
+@damaker.Operation(alias='Pixel intensity', ndim=[2,3])
 def pixelIntensity(input: ImageStack, frameId: int=-1) -> pd.DataFrame:
     """
         Name: Pixel intensity
@@ -165,7 +165,7 @@ def pixelIntensity(input: ImageStack, frameId: int=-1) -> pd.DataFrame:
         px_intensity[px] += 1
 
     output = pd.DataFrame(px_intensity)
-    print(output.Name)
+    output.Name = f'pxIntesity_{input.metadata.basename}'
     return output
 
 def _framePixelIntensity(input: np.ndarray):
@@ -176,7 +176,7 @@ class ZProjectionTypes(enum.Enum):
     min = 1
     mean = 2
 
-@damaker.operation(alias='Z Projection', category='Process', ndim=3)
+@damaker.Operation(alias='Z Projection', category='Process', ndim=3)
 def channelZProjection(input: ImageStack, projectionType: ZProjectionTypes=ZProjectionTypes.max) -> ImageStack:
     """
         Name: Z Projection
@@ -198,7 +198,7 @@ class MathOperationTypes(enum.Enum):
     ADD = 2
     SUB = 3
 
-@damaker.operation(alias='Math', category='Process')
+@damaker.Operation(alias='Math', category='Process')
 def mathOperators(input1: ImageStack, input2: ImageStack, opType: MathOperationTypes=MathOperationTypes.SUB) -> ImageStack:
     """
         Name: Math
@@ -262,7 +262,7 @@ def _operatorSUB(input: ImageStack) -> ImageStack:
     output.data = output.data.astype(np.uint8)
     return output
 
-@damaker.operation(alias='Brightness & Contrast', category='Transform')
+@damaker.Operation(alias='Brightness & Contrast', category='Transform')
 def changeBrightnessAndContrast(input: ImageStack, brightness: int, contrast: int) -> ImageStack:
     """
         Name: Brightness & Contrast
@@ -307,7 +307,7 @@ def _resetAvg():
     global avg_counter
     avg_counter = 0
 
-@damaker.operation(alias='Mean', category='Process')
+@damaker.Operation(alias='Mean', category='Process')
 def averageImageStack(input: list[ImageStack], consensusSelection: int=0) -> ImageStack:
     """
         Name: Mean
@@ -347,7 +347,7 @@ def averageImageStack(input: list[ImageStack], consensusSelection: int=0) -> Ima
 
     return output
 
-@damaker.operation(alias='Clip intensity', category='Transform')
+@damaker.Operation(alias='Clip intensity', category='Transform')
 def clipImageStack(input: ImageStack, tmin: int=0, tmax: int=255) -> ImageStack:
     """
         Name: Clip intensity
@@ -364,7 +364,7 @@ class ResliceType(enum.Enum):
     right = 3
 
 # TODO: Review reslice if too slow
-@damaker.operation(alias='Reslice', category='Process', ndim=3)
+@damaker.Operation(alias='Reslice', category='Process', ndim=3)
 def resliceChannel(input: ImageStack, resliceType: ResliceType=ResliceType.top) -> ImageStack:
     """
         Name: Reslice
@@ -401,7 +401,7 @@ def _channelResliceTop(input: ImageStack) -> ImageStack:
 
     output: ImageStack = input.copy(result.astype(np.uint8))
     output.set('pixelsize', PixelSize(input.px_sizes.Y, input.px_sizes.Y, input.px_sizes.X))
-    output.set('filepath', "reslicedTop_" + input.metadata.basename())
+    output.set('filepath', "reslicedTop_" + input.metadata.basename)
 
     return input
 
@@ -428,12 +428,12 @@ def _channelResliceLeft(input: ImageStack) -> ImageStack:
 
     output: ImageStack = input.copy(result.astype(np.uint8))
     output.set('pixelsize', PixelSize(input.px_sizes.X, input.px_sizes.X, input.px_sizes.Y))
-    output.set('filepath', "reslicedLeft_" + input.metadata.basename())
+    output.set('filepath', "reslicedLeft_" + input.metadata.basename)
 
     return output
 
 # TODO: reverse optional axis
-@damaker.operation(alias='Reverse stack', category='Transform', ndim=3)
+@damaker.Operation(alias='Reverse stack', category='Transform', ndim=3)
 def channelReverse(input: ImageStack) -> ImageStack:
     """
         Name: Reverse stack
@@ -445,7 +445,7 @@ def channelReverse(input: ImageStack) -> ImageStack:
 def _sliceVolume(data, s_z, s_y, s_x, threshold=0):
     return np.count_nonzero(data[data >= threshold]) * s_z * s_y * s_x
 
-@damaker.operation(alias='Volume', category='Quantification', ndim=3)
+@damaker.Operation(alias='Volume', category='Quantification', ndim=3)
 def channelTotalVolume(input: ImageStack, minObjSize: int=0) -> pd.DataFrame:
     """
         Name: Volume
@@ -465,7 +465,7 @@ def channelTotalVolume(input: ImageStack, minObjSize: int=0) -> pd.DataFrame:
     output.Name = input.name
     return output
 
-@damaker.operation(alias='Volume distribution', category='Quantification', ndim=3)
+@damaker.Operation(alias='Volume distribution', category='Quantification', ndim=3)
 def channelVolumeArray(input: ImageStack) -> pd.DataFrame:
     """
         Name: Volume distribution
@@ -483,7 +483,7 @@ def channelVolumeArray(input: ImageStack) -> pd.DataFrame:
     return output
 
 # TODO: combine pd.DataFrame
-@damaker.operation(alias='Volume distribution per axis', category='Quantification', ndim=3)
+@damaker.Operation(alias='Volume distribution per axis', category='Quantification', ndim=3)
 def channelAxisQuantification(input: ImageStack, outputPath: utils.FolderPathStr) -> pd.DataFrame:
     """
         Name: Volume distribution per axis
@@ -495,7 +495,7 @@ def channelAxisQuantification(input: ImageStack, outputPath: utils.FolderPathStr
 
     utils._axisQuantifSaveCSV([axisFront, axisTop, axisLeft], outputPath, input.name)
 
-@damaker.operation(alias='Mesh distance', category='Quantification')
+@damaker.Operation(alias='Mesh distance', category='Quantification')
 def meshCompareDistance(mesh1: Mesh, mesh2: Mesh, largest_region: bool=False) -> pd.DataFrame:
     """
         Name: Mesh distance
@@ -555,7 +555,7 @@ def _meshCompareDistance_fiji(mesh1, mesh2):
     return obj1.pointdata["Distance"]
 
 # TODO: stack format converter
-@damaker.operation(alias='Format converter', category='Import')
+@damaker.Operation(alias='Format converter', category='Import')
 def channelFromBinary(input: ImageStack) -> ImageStack:
     """
         Name: Format converter
@@ -603,7 +603,7 @@ def channelFromBinary(input: ImageStack) -> ImageStack:
 #         segmentation(input, classifiers.folder + "/" + file).save(outputDir)
 
 # TODO: Verify pixelsize when resampling
-@damaker.operation(alias='Resample', category='Import', ndim=3)
+@damaker.Operation(alias='Resample', category='Import', ndim=3)
 def resampleImageStack(input: ImageStack, sizeX: int, sizeY: int, sizeZ: int) -> ImageStack:
     """
         Name: Resample
@@ -637,7 +637,7 @@ def _resamplePixelSize(input: ImageStack, x:float, y:float, z:float) -> ImageSta
 
     return input
 
-@damaker.operation(alias='Homogenize with reference', category='Import', ndim=3)
+@damaker.Operation(alias='Homogenize with reference', category='Import', ndim=3)
 def resampleLike(input: ImageStack, ref: ImageStack) -> ImageStack:
     """
         Name: Homogenize with reference
@@ -657,7 +657,7 @@ def resampleLike(input: ImageStack, ref: ImageStack) -> ImageStack:
     # ??
     return input
 
-@damaker.operation(alias='Homogenize Mean', category='Import')
+@damaker.Operation(alias='Homogenize Mean', category='Import')
 def resampleMean(input: ImageStack) -> ImageStack:
     """
         Name: Homogenize Mean
@@ -693,7 +693,7 @@ def _imageToImageStack(img, chn=None):
     chn.data = sitk.GetArrayFromImage(img)
     chn.data = chn.data.astype(np.uint8)
     res_px = img.GetSpacing()
-    chn.pixelsize = PhysicalPixelSize(res_px[2], res_px[1], res_px[0])
+    chn.pixelsize = PixelSize(res_px[2], res_px[1], res_px[0])
     return chn
 
 # def registration(input: ImageStack, reference: ImageStack, nb_iteration: int=200, retTransform=None) -> ImageStack:
@@ -816,18 +816,18 @@ def _imageToImageStack(img, chn=None):
 #             final.append(_imageToImageStack(mov_res, chn))
 #         utils.channelsSave(final, outputPath)
 
-@damaker.operation(alias='Erosion', category='Process')
+@damaker.Operation(alias='Erosion', category='Process')
 def erosion(input: ImageStack, bool, iterations: int, border_value: int=0, brute_force: bool=False) -> ImageStack:
     input.data = ndimage.binary_erosion(input.data, None, iterations, None, None, border_value, 0, brute_force)
     return input
 
 # scipy.ndimage.binary_dilation(input, structure=None, iterations=1, mask=None, output=None, border_value=0, origin=0, brute_force=False)[source]
-@damaker.operation(alias='Dilatation', category='Process')
+@damaker.Operation(alias='Dilatation', category='Process')
 def dilation(input: ImageStack, iterations: int= 1, mask: ImageStack=None, border_value:int = 0, origin: int=0, brute_force: bool=False) -> ImageStack:
     input.data = ndimage.binary_dilation(input.data, None, iterations, mask, border_value, origin, brute_force)
     return input
 
-@damaker.operation(alias='PCA', category='Quantification')
+@damaker.Operation(alias='PCA', category='Quantification')
 def dmk_PCA(input: pd.DataFrame, classes: list[str], features: list[str], n_components: int=6) -> pd.DataFrame:
     ## Data scaling
 
