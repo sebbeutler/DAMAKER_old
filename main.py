@@ -4,11 +4,17 @@
 # os.environ['JAVA_HOME'] = 'C:/Program Files/Java/jdk-11.0.13'
 # os.environ["JAVA_HOME"] = "C:/Users/PC/anaconda3/envs/dmk/Library" 
 
-import damaker 
+import damaker
+import damaker.processing as p
+import damaker.stream as s
 
 # ImageStack loading
 
-stack = damaker.load('resources/E1.tif') # Should be 3-dimensionnal for 'Pixel intensity'
+stack = damaker.load(
+    'resources/E1.tif',
+    data_loader=s.dataloader_tifffile,
+    metadata_loader=s.metadataloader_bioformats
+) # Should be 3-dimensionnal for 'Pixel intensity'
 
 stack = stack.clone(stack.data[1])      # Keep channel n°2 only (created as a distinct copy)
 

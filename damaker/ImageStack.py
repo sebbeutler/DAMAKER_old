@@ -64,11 +64,14 @@ class ImageStack:
     @method
     def loadAll(self, filepath: FilePathStr):
 
-        print("loading data : ", end='')
-        self.data = self.data_loader(filepath)
+        if self.data_loader != None:
+            print("loading data : ", end='')
+            self.data = self.data_loader(filepath)
 
-        print("loading metadata : ", end='')
-        self.metadata = self.metadata_loader(filepath)
+        if self.metadata_loader != None:
+            print("loading metadata : ", end='')
+            self.metadata = self.metadata_loader(filepath)
+
         print('')
 
         if self.metadata != None:

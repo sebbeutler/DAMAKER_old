@@ -3,7 +3,9 @@ import inspect
 from dataclasses import dataclass
 from enum import Enum
 from functools import wraps
-from typing import NamedTuple, Optional
+from typing import Any, NamedTuple, Optional, Callable
+
+# TODOC
 
 # DECORATORS #
 
@@ -16,12 +18,25 @@ def method(func):
 
     return method_decorator
 
+def obselete(msg: str='', avi=True):
+    def obselete_wrapper(func):
+        def obselete_decorator(*args, **kwargs):
+            if not avi:
+                raise ObseleteCallException()
+            print(f'[WARNING]: Usage of an obselete function {func.__name__}.')
+            return func(*args, **kwargs)
+        return obselete_decorator
+    return obselete_wrapper
+
 # TYPES #
 
 class FilePathStr(str):
     pass
 class FolderPathStr(str):
     pass
+class DmkUnkown():
+    pass
+DamakerPluginLoader = Callable[[str], Any]
 
 # TUPLES / ENUMS #
 
@@ -107,4 +122,7 @@ class ShapeMismatchException(DamakerException):
     pass
 
 class OperationMissingOutputException(DamakerException):
+    pass
+
+class ObseleteCallException(DamakerException):
     pass

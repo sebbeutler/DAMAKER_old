@@ -13,13 +13,14 @@ from sklearn.preprocessing import StandardScaler
 from vedo import Mesh
 
 import damaker
-import damaker.utils as utils
+import damaker.stream as stream
 
 from .dmktypes import *
 from .imagestack import *
 from .operation import *
 
 
+@damaker.Operation(alias='[Test]', category='Plugins')
 def _foo() -> None:
     """
         Name: Foo
@@ -28,22 +29,52 @@ def _foo() -> None:
     """
     return None
 
-# TODO: Uses ?
-def channelSelect(input: ImageStack, id: int=1) -> ImageStack:
-    """
-        Name: Select channel by id
-        Category: Import
-        Desc: Choose a specific channel among the inputs.
-    """
-    channels = []
-    for channel in input:
-        if channel.id == id:
-            channels.append(channel)
-    if len(channels) == 0:
-        print(f"channelSelect: no channels with id={id}")
-    return channels
+###########################
+# ___      __   ___  __   #
+#  |  \ / |__) |__  /__`  #
+#  |   |  |    |___ .__/  #
+###########################
 
-@damaker.Operation(alias='Invert colors')
+class RotationTypes(enum.Enum):
+    clockwise_90 =  cv2.ROTATE_90_CLOCKWISE
+    counter_clockwise_90 = cv2.ROTATE_90_COUNTERCLOCKWISE
+    rotate_180 = cv2.ROTATE_180
+
+class ResliceType(enum.Enum):
+    top = 0
+    bottom = 1
+    left = 2
+    right = 3
+
+class MathOperationTypes(enum.Enum):
+    AND = 0
+    OR = 1
+    ADD = 2
+    SUB = 3
+
+class FlipTypes(enum.Enum):
+    vertically = 0
+    horizontally = 1
+
+class ZProjectionTypes(enum.Enum):
+    max = 0
+    min = 1
+    mean = 2
+
+class cv_Interpolation(enum.Enum):
+    nearest = cv2.INTER_NEAREST
+    bilinear = cv2.INTER_LINEAR
+    bicubic = cv2.INTER_CUBIC
+    area = cv2.INTER_AREA
+    lanczos4 = cv2.INTER_LANCZOS4
+
+################################################
+# ___  __             __   ___  __   __        #
+#  |  |__)  /\  |\ | /__` |__  /  \ |__)  |\/| #
+#  |  |  \ /~~\ | \| .__/ |    \__/ |  \  |  | #
+################################################
+
+@damaker.Operation(alias='Invert colors', category='Transform')
 def channelInvert(input: ImageStack) -> ImageStack:
     """
         Name: Invert colors
@@ -57,15 +88,8 @@ def channelInvert(input: ImageStack) -> ImageStack:
 
     return input
 
-# def channelCrop(input: ImageStack, x1: int, y1: int, x2: int, y2: int) -> ImageStack:
-#     """
-#         Name: Crop
-#         Category: Transform
-#     """
-#     input.data = input.data[:, y1:y2, x1:x2]
-#     return input
-
-def channelCrop(input: ImageStack, target: utils.Rect) -> ImageStack:
+@damaker.Operation(alias='Crop', category='Transform')
+def channelCrop(input: ImageStack, target: stream.Rect) -> ImageStack:
     """
         Name: Crop
         Category: Transform
@@ -73,14 +97,7 @@ def channelCrop(input: ImageStack, target: utils.Rect) -> ImageStack:
     input.data = input.data[:, target.pos.y:target.size.y, target.pos.x:target.size.x]
     return input
 
-class cv_Interpolation(enum.Enum):
-    nearest = cv2.INTER_NEAREST
-    bilinear = cv2.INTER_LINEAR
-    bicubic = cv2.INTER_CUBIC
-    area = cv2.INTER_AREA
-    lanczos4 = cv2.INTER_LANCZOS4
-
-@damaker.Operation(alias='Rotate angle', ndim=3)
+@damaker.Operation(alias='Rotate angle', category='Transform', ndim=3)
 def channelRotate(input: ImageStack, degrees: float, inter: cv_Interpolation=cv_Interpolation.bilinear) -> ImageStack:
     """
         Name: Rotation angle
@@ -112,12 +129,7 @@ def channelRotate(input: ImageStack, degrees: float, inter: cv_Interpolation=cv_
     input.data = new_data.astype(np.uint8)
     return input
 
-class RotationTypes(enum.Enum):
-    clockwise_90 =  cv2.ROTATE_90_CLOCKWISE
-    counter_clockwise_90 = cv2.ROTATE_90_COUNTERCLOCKWISE
-    rotate_180 = cv2.ROTATE_180
-
-@damaker.Operation(alias='Rotation', ndim=3)
+@damaker.Operation(alias='Rotation', category='Transform', ndim=3)
 def channelRotateType(input: ImageStack, rotType: RotationTypes=RotationTypes.clockwise_90) -> ImageStack:
     """
         Name: Rotation
@@ -134,11 +146,7 @@ def channelRotateType(input: ImageStack, rotType: RotationTypes=RotationTypes.cl
 
     return input
 
-class FlipTypes(enum.Enum):
-    vertically = 0
-    horizontally = 1
-
-@damaker.Operation(alias='Flip', ndim=3)
+@damaker.Operation(alias='Flip', category='Transform', ndim=3)
 def channelFlip(input: ImageStack, flipType: FlipTypes=FlipTypes.horizontally) -> ImageStack:
     """
         Name: Flip
@@ -148,33 +156,42 @@ def channelFlip(input: ImageStack, flipType: FlipTypes=FlipTypes.horizontally) -
         input.data[i] = cv2.flip(input.data[i], flipType.value)
     return input
 
-@damaker.Operation(alias='Pixel intensity', ndim=[2,3])
-def pixelIntensity(input: ImageStack, frameId: int=-1) -> pd.DataFrame:
+@damaker.Operation(alias='Brightness & Contrast', category='Transform')
+def changeBrightnessAndContrast(input: ImageStack, brightness: int, contrast: int) -> ImageStack:
     """
-        Name: Pixel intensity
-        Category: Quantification
+        Name: Brightness & Contrast
+        Category: Transform
     """
-    if frameId < 0:
-        data = input.data
-    else:
-        data = input.data[frameId]
+    if input.format != np.uint8:
+        raise damaker.FormatMismatchException()
 
-    px_intensity = np.zeros(shape=(256), dtype=np.int32)
+    def contrastFactor(c):
+        return (259*(c + 255)) / (255*(259 - c))
 
-    for px in data:
-        px_intensity[px] += 1
+    factor = contrastFactor(contrast)
 
-    output = pd.DataFrame(px_intensity)
-    output.Name = f'pxIntesity_{input.metadata.basename}'
-    return output
+    data = input.data.astype(np.float16)
 
-def _framePixelIntensity(input: np.ndarray):
-    return pixelIntensity(ImageStack(data=[input]), 0)
+    data = factor*((data + brightness) - 128) + 128
 
-class ZProjectionTypes(enum.Enum):
-    max = 0
-    min = 1
-    mean = 2
+    input.data = data.clip(0, 255).astype(np.uint8)
+    return input
+
+@damaker.Operation(alias='Clip intensity', category='Transform')
+def clipImageStack(input: ImageStack, tmin: int=0, tmax: int=255) -> ImageStack:
+    """
+        Name: Clip intensity
+        Category: Transform
+    """
+    input.data[input.data < tmin] = 0
+    input.data[input.data > tmax] = 0
+    return input
+
+######################################
+#  __   __   __   __   ___  __   __  #
+# |__) |__) /  \ /  ` |__  /__` /__` #
+# |    |  \ \__/ \__, |___ .__/ .__/ #
+######################################
 
 @damaker.Operation(alias='Z Projection', category='Process', ndim=3)
 def channelZProjection(input: ImageStack, projectionType: ZProjectionTypes=ZProjectionTypes.max) -> ImageStack:
@@ -188,15 +205,6 @@ def channelZProjection(input: ImageStack, projectionType: ZProjectionTypes=ZProj
         return input.clone(input.data.min(0)[np.newaxis])
     elif projectionType == ZProjectionTypes.mean:
         return input.clone(input.data.mean(0)[np.newaxis])
-
-
-# TODO: Verify types of the channels to be ImageStack
-
-class MathOperationTypes(enum.Enum):
-    AND = 0
-    OR = 1
-    ADD = 2
-    SUB = 3
 
 @damaker.Operation(alias='Math', category='Process')
 def mathOperators(input1: ImageStack, input2: ImageStack, opType: MathOperationTypes=MathOperationTypes.SUB) -> ImageStack:
@@ -262,28 +270,6 @@ def _operatorSUB(input: ImageStack) -> ImageStack:
     output.data = output.data.astype(np.uint8)
     return output
 
-@damaker.Operation(alias='Brightness & Contrast', category='Transform')
-def changeBrightnessAndContrast(input: ImageStack, brightness: int, contrast: int) -> ImageStack:
-    """
-        Name: Brightness & Contrast
-        Category: Transform
-    """
-    if input.format != np.uint8:
-        raise damaker.FormatMismatchException()
-
-    def contrastFactor(c):
-        return (259*(c + 255)) / (255*(259 - c))
-
-    factor = contrastFactor(contrast)
-
-    data = input.data.astype(np.float16)
-
-    data = factor*((data + brightness) - 128) + 128
-
-    input.data = data.clip(0, 255).astype(np.uint8)
-    return input
-
-# TODO: ??
 def _changeFrameBrightnessAndContrast(frame: np.ndarray, brightness: int, contrast: int):
     """
         Name: Brightness & Contrast
@@ -346,22 +332,6 @@ def averageImageStack(input: list[ImageStack], consensusSelection: int=0) -> Ima
         output = clipImageStack(output, consensusSelection/len(input) * 255, 255)
 
     return output
-
-@damaker.Operation(alias='Clip intensity', category='Transform')
-def clipImageStack(input: ImageStack, tmin: int=0, tmax: int=255) -> ImageStack:
-    """
-        Name: Clip intensity
-        Category: Transform
-    """
-    input.data[input.data < tmin] = 0
-    input.data[input.data > tmax] = 0
-    return input
-
-class ResliceType(enum.Enum):
-    top = 0
-    bottom = 1
-    left = 2
-    right = 3
 
 # TODO: Review reslice if too slow
 @damaker.Operation(alias='Reslice', category='Process', ndim=3)
@@ -432,15 +402,42 @@ def _channelResliceLeft(input: ImageStack) -> ImageStack:
 
     return output
 
-# TODO: reverse optional axis
-@damaker.Operation(alias='Reverse stack', category='Transform', ndim=3)
-def channelReverse(input: ImageStack) -> ImageStack:
-    """
-        Name: Reverse stack
-        Category: Transform
-    """
-    input.data = input.data[::-1]
+@damaker.Operation(alias='Erosion', category='Process')
+def erosion(input: ImageStack, bool, iterations: int, border_value: int=0, brute_force: bool=False) -> ImageStack:
+    input.data = ndimage.binary_erosion(input.data, None, iterations, None, None, border_value, 0, brute_force)
     return input
+
+# scipy.ndimage.binary_dilation(input, structure=None, iterations=1, mask=None, output=None, border_value=0, origin=0, brute_force=False)[source]
+@damaker.Operation(alias='Dilatation', category='Process')
+def dilation(input: ImageStack, iterations: int= 1, mask: ImageStack=None, border_value:int = 0, origin: int=0, brute_force: bool=False) -> ImageStack:
+    input.data = ndimage.binary_dilation(input.data, None, iterations, mask, border_value, origin, brute_force)
+    return input
+
+##############################################################
+#  __                 ___    ___    __       ___    __       #
+# /  \ |  |  /\  |\ |  |  | |__  | /  `  /\   |  | /  \ |\ | #
+# \__X \__/ /~~\ | \|  |  | |    | \__, /~~\  |  | \__/ | \| #
+##############################################################
+
+@damaker.Operation(alias='Pixel intensity', category='Quantification', ndim=[2,3])
+def pixelIntensity(input: ImageStack, frameId: int=-1) -> pd.DataFrame:
+    """
+        Name: Pixel intensity
+        Category: Quantification
+    """
+    if frameId < 0:
+        data = input.data
+    else:
+        data = input.data[frameId]
+
+    px_intensity = np.zeros(shape=(256), dtype=np.int32)
+
+    for px in data:
+        px_intensity[px] += 1
+
+    output = pd.DataFrame(px_intensity)
+    output.Name = f'pxIntesity_{input.metadata.basename}'
+    return output
 
 def _sliceVolume(data, s_z, s_y, s_x, threshold=0):
     return np.count_nonzero(data[data >= threshold]) * s_z * s_y * s_x
@@ -465,6 +462,7 @@ def channelTotalVolume(input: ImageStack, minObjSize: int=0) -> pd.DataFrame:
     output.Name = input.name
     return output
 
+# TODO: Optimize without a for-loop
 @damaker.Operation(alias='Volume distribution', category='Quantification', ndim=3)
 def channelVolumeArray(input: ImageStack) -> pd.DataFrame:
     """
@@ -484,7 +482,7 @@ def channelVolumeArray(input: ImageStack) -> pd.DataFrame:
 
 # TODO: combine pd.DataFrame
 @damaker.Operation(alias='Volume distribution per axis', category='Quantification', ndim=3)
-def channelAxisQuantification(input: ImageStack, outputPath: utils.FolderPathStr) -> pd.DataFrame:
+def channelAxisQuantification(input: ImageStack) -> pd.DataFrame:
     """
         Name: Volume distribution per axis
         Category: Quantification
@@ -493,7 +491,9 @@ def channelAxisQuantification(input: ImageStack, outputPath: utils.FolderPathStr
     axisTop = channelVolumeArray(_channelResliceTop(input))
     axisLeft = channelVolumeArray(_channelResliceLeft(input))
 
-    utils._axisQuantifSaveCSV([axisFront, axisTop, axisLeft], outputPath, input.name)
+    output = pd.DataFrame()
+    output.Name = input.metadata.basename
+    raise NotImplemented() # Combine axis into a dataframe
 
 @damaker.Operation(alias='Mesh distance', category='Quantification')
 def meshCompareDistance(mesh1: Mesh, mesh2: Mesh, largest_region: bool=False) -> pd.DataFrame:
@@ -554,53 +554,25 @@ def _meshCompareDistance_fiji(mesh1, mesh2):
 
     return obj1.pointdata["Distance"]
 
-# TODO: stack format converter
-@damaker.Operation(alias='Format converter', category='Import')
-def channelFromBinary(input: ImageStack) -> ImageStack:
-    """
-        Name: Format converter
-        Category: Import
-    """
-    input.data[input.data > 0] = 255
-    return input
 
-# _jar_path = 'C:/Users/PC/source/DAMAKER/damaker/weka/bin/weka_segmentation_gateway.jar'
-# def segmentation(input: ImageStack, classifier: utils.FilePathStr) -> ImageStack:
-#     """
-#         Name: Apply Trainable Weka Segmentation 3D
-#         Category: Segmentation
-#     """
-#     input = input.copy()
-#     # process = subprocess.Pope
-#     # n("java -Xms200M -Xmx8G -jar " + _jar_path)
-#     gateway = JavaGateway()
+@damaker.Operation(alias='PCA', category='Quantification')
+def dmk_PCA(input: pd.DataFrame, classes: list[str], features: list[str], n_components: int=6) -> pd.DataFrame:
+    ## Data scaling
 
-#     z, y, x = input.shape
-#     arr = bytes(input.data.flatten().tolist())
-#     img = gateway.entry_point.numpyToImagePlus(arr, x, y, z)
-#     segmented = gateway.entry_point.runSegmentation(img, os.path.abspath(classifier))
+    x1 = input.loc[:, features].values
+    y1 = input.loc[:, classes].values
+    x1 = StandardScaler().fit_transform(x1)
 
-#     res = []
-#     for frame in segmented:
-#         res += frame
-#     input.data = np.array(res).reshape(z, y, x)
-#     channelFromBinary(input)
+    ## Perform PCA
 
-#     input.name = classifier.split("/")[-1].split(".")[0] + "_" + input.name
+    pca = PCA(n_components=n_components)
+    principalComponents = pca.fit_transform(x1)
+    principalDataframe = pd.DataFrame(
+        data = principalComponents,
+        columns = [f'PC{i}' for i in range(1, n_components+1)]
+    )
 
-#     gateway.shutdown()
-
-#     return input
-
-# def segmentationMultiClassifier(input: ImageStack, classifiers: BatchParameters, outputDir: utils.FolderPathStr):
-#     """
-#         Name: Apply Trainable Weka Segmentation 3D (Multiple Classifiers)
-#         Category: Segmentation
-#     """
-#     classifiers.load()
-#     print(classifiers.fileList)
-#     for file in classifiers.fileList:
-#         segmentation(input, classifiers.folder + "/" + file).save(outputDir)
+    return pd.concat([principalDataframe, input[classes]], axis = 1)
 
 # TODO: Verify pixelsize when resampling
 @damaker.Operation(alias='Resample', category='Import', ndim=3)
@@ -695,153 +667,3 @@ def _imageToImageStack(img, chn=None):
     res_px = img.GetSpacing()
     chn.pixelsize = PixelSize(res_px[2], res_px[1], res_px[0])
     return chn
-
-# def registration(input: ImageStack, reference: ImageStack, nb_iteration: int=200, retTransform=None) -> ImageStack:
-#     """
-#         Name: SITK Registration direct
-#         Category: Registration
-#     """
-#     def resample(image, transform):
-#         reference_image = image
-#         interpolator = sitk.sitkLinear
-#         default_value = 0.0
-#         return sitk.Resample(image, reference_image, transform, interpolator, default_value)
-
-#     def _plotImage(img):
-#         utils._plotImageStack(ImageStack("", sitk.GetArrayFromImage(img)))
-
-#     ref = _channelToImage(reference)
-
-#     mov =  _channelToImage(input)
-
-#     flt = sitk.ResampleImageFilter()
-#     flt.SetReferenceImage(ref)
-#     mov = flt.Execute(mov)
-
-#     initial_transform = sitk.CenteredTransformInitializer(
-#         ref,
-#         mov,
-#         sitk.Euler3DTransform(),
-#         sitk.CenteredTransformInitializerFilter.GEOMETRY
-#     )
-
-#     registration_method = sitk.ImageRegistrationMethod()
-
-#     # Similarity metric settings.
-#     registration_method.SetMetricAsMattesMutualInformation(numberOfHistogramBins=50)
-#     registration_method.SetMetricSamplingStrategy(registration_method.RANDOM)
-#     registration_method.SetMetricSamplingPercentage(0.01)
-#     registration_method.SetInterpolator(sitk.sitkLinear)
-
-#     # registration_method.SetOptimizerAsExhaustive(numberOfSteps=[0,1,1,0,0,0], stepLength = np.pi)
-#     # registration_method.SetOptimizerScales([1,1,1,1,1,1])
-
-#     # Optimizer settings.
-#     registration_method.SetOptimizerAsGradientDescent(
-#         learningRate=1.0,
-#         numberOfIterations=nb_iteration,
-#         convergenceMinimumValue=1e-6,
-#         convergenceWindowSize=10,
-#     )
-#     registration_method.SetOptimizerScalesFromPhysicalShift()
-
-#     # Setup for the multi-resolution framework.
-#     registration_method.SetShrinkFactorsPerLevel(shrinkFactors=[4, 2, 1])
-#     registration_method.SetSmoothingSigmasPerLevel(smoothingSigmas=[2, 1, 0])
-#     registration_method.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()
-
-#     registration_method.SetInitialTransform(initial_transform, inPlace=False)
-#     # registration_method.SetInitialTransform(initial_transform, inPlace=True)
-
-#     final_transform = registration_method.Execute(
-#         ref, mov
-#     )
-
-
-#     print(f'Final metric value: {registration_method.GetMetricValue()}')
-#     print(
-#         f'Optimizer stopping condition, {registration_method.GetOptimizerStopConditionDescription()}'
-#     )
-
-#     if retTransform == True:
-#         return final_transform
-
-#     mov_res: sitk.Image = sitk.Resample(
-#         mov,
-#         ref,
-#         final_transform,
-#         sitk.sitkLinear,
-#         0.0,
-#         mov.GetPixelID(),
-#     )
-
-#     # reference.data = sitk.GetArrayFromImage(ref)
-#     input = _imageToImageStack(mov_res, input)
-
-#     print(f'registration complete: {input}')
-#     return input
-
-# def registrationMultiImageStack(input: BatchParameters, reference: SingleImageStack, refImageStack: int=1, nb_iteration: int=200, outputPath: utils.FolderPathStr="") -> None:
-#     """
-#         Name: SITK Registration though reference
-#         Category: Registration
-#     """
-#     input.load()
-#     ref = _channelToImage(reference[0])
-
-#     while not input.finished():
-#         channels = input.next()
-#         final_transform = None
-#         for chn in channels:
-#             if chn.id == refImageStack:
-#                 final_transform = registration(chn, reference[0], retTransform=True)
-#                 break
-#         if final_transform == None:
-#             print("No suitable channel found")
-#             continue
-
-#         final = []
-#         for chn in channels:
-#             mov = sitk.GetImageFromArray(chn.data.astype(np.float32))
-#             mov.SetSpacing(tuple(reversed(chn.px_sizes)))
-#             mov_res: sitk.Image = sitk.Resample(
-#                 mov,
-#                 ref,
-#                 final_transform,
-#                 sitk.sitkLinear,
-#                 0.0,
-#                 mov.GetPixelID(),
-#             )
-
-#             final.append(_imageToImageStack(mov_res, chn))
-#         utils.channelsSave(final, outputPath)
-
-@damaker.Operation(alias='Erosion', category='Process')
-def erosion(input: ImageStack, bool, iterations: int, border_value: int=0, brute_force: bool=False) -> ImageStack:
-    input.data = ndimage.binary_erosion(input.data, None, iterations, None, None, border_value, 0, brute_force)
-    return input
-
-# scipy.ndimage.binary_dilation(input, structure=None, iterations=1, mask=None, output=None, border_value=0, origin=0, brute_force=False)[source]
-@damaker.Operation(alias='Dilatation', category='Process')
-def dilation(input: ImageStack, iterations: int= 1, mask: ImageStack=None, border_value:int = 0, origin: int=0, brute_force: bool=False) -> ImageStack:
-    input.data = ndimage.binary_dilation(input.data, None, iterations, mask, border_value, origin, brute_force)
-    return input
-
-@damaker.Operation(alias='PCA', category='Quantification')
-def dmk_PCA(input: pd.DataFrame, classes: list[str], features: list[str], n_components: int=6) -> pd.DataFrame:
-    ## Data scaling
-
-    x1 = input.loc[:, features].values
-    y1 = input.loc[:, classes].values
-    x1 = StandardScaler().fit_transform(x1)
-
-    ## Perform PCA
-
-    pca = PCA(n_components=n_components)
-    principalComponents = pca.fit_transform(x1)
-    principalDataframe = pd.DataFrame(
-        data = principalComponents,
-        columns = [f'PC{i}' for i in range(1, n_components+1)]
-    )
-
-    return pd.concat([principalDataframe, input[classes]], axis = 1)

@@ -95,7 +95,6 @@ class Operation:
         global __operations__
         __operations__[self.alias] = self
 
-        
         def damaker_operation_wrapper(ndim_hint, func, alias):
             def damaker_operation(*args, **kwargs):
                 print(f'>> Running: {alias}')
