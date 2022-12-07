@@ -3,7 +3,7 @@ import os
 # TODO: exclude unused module. see: https://stackoverflow.com/questions/4890159/python-excluding-modules-pyinstaller
 
 # -Settings-
-_VERSION = '0.3.0'
+_VERSION = '0.3.1'
 _ICON  = f'{os.path.dirname(__file__)}/damaker_gui/resources/icons/16x16/damaker.ico'
 _STANDALONE = True
 _COMPRESS = False

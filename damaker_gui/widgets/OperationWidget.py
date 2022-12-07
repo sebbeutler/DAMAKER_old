@@ -164,7 +164,7 @@ class OperationWidget(QFrame):
                 formWidget.getParameter = lambda widget: widget.isChecked()
 
             # ROI
-            elif param.annotation is damaker.utils.Rect:
+            elif param.annotation is damaker.stream.Rect:
                 formWidget = widgets.RectROIInput()
 
             if formWidget != None:

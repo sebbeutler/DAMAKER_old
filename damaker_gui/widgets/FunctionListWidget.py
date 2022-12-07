@@ -12,7 +12,7 @@ from PySide2.QtCore import Signal, QSize
 import damaker
 from damaker.pipeline import Operation
 import damaker.processing
-import damaker.utils
+import damaker.stream
 
 import damaker_gui
 import damaker_gui.widgets as widgets
@@ -95,7 +95,7 @@ class FunctionListWidget(QSplitter, widgets.ITabWidget):
     def loadFunctions(self):
         damaker.plugins = damaker.importPlugins()
         self.functions = dict(getmembers(damaker.processing, isfunction))        
-        self.functions.update(dict(getmembers(damaker.utils, isfunction)))
+        self.functions.update(dict(getmembers(damaker.stream, isfunction)))
         self.functions.update(dict(getmembers(damaker.plugins, isfunction)))
 
         # print(dict(getmembers(damaker.plugins, lambda obj: isinstance(obj, robjects.functions.Function))))

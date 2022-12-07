@@ -7,7 +7,7 @@ import pyqtgraph as pg
 import numpy as np
 
 from damaker.Channel import Channel
-from damaker.utils import loadChannelsFromFile
+from damaker.stream import loadChannelsFromFile
 
 import damaker_gui
 
