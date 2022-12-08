@@ -56,5 +56,5 @@ class IView(ITabWidget):
     def updated(self):
         damaker_gui.MainWindow.Instance.viewChanged.emit(self)
 
-    def isView(obj):
+    def isInstance(obj):
         return obj is not None and issubclass(type(obj), IView)

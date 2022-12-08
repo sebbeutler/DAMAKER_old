@@ -1,7 +1,7 @@
 from PySide2.QtWidgets import QFormLayout, QFrame, QComboBox
 import damaker_gui.widgets as widgets
 from damaker_gui.widgets.ITabWidget import IView
-from damaker_gui.widgets.PreviewWidget import _luts
+from damaker_gui.widgets.StackView import _luts
 from . import clearLayout
 import damaker_gui
 
@@ -28,7 +28,7 @@ class LutSelectorWidget(QFrame, widgets.ITabWidget):
         damaker_gui.MainWindow.Instance.tabSelected.connect(self.updateForm)
 
     def updateForm(self, target: widgets.PreviewFrame=None):
-        if not IView.isView(target): return
+        if not IView.isInstance(target): return
         self.target = target 
         clearLayout(self._layout)
         for chn in self.target.view.channels.keys():

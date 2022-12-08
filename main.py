@@ -1,70 +1,65 @@
 # %%
-import os
+
+# import os
 # os.environ['JAVA_HOME'] = 'C:/Program Files/Java/jdk-11.0.13'
-os.environ["JAVA_HOME"] = "C:/Users/PC/anaconda3/envs/dmk/Library" 
+# os.environ["JAVA_HOME"] = "C:/Users/PC/anaconda3/envs/dmk/Library" 
 
-import javabridge
-import damaker_gui
-damaker_gui.run(exit=False)
-javabridge.kill_vm()
+import damaker
+import damaker.processing as p
+import damaker.stream as s
+
+# ImageStack loading
+
+stack = damaker.load(
+    'resources/E1.tif',
+    data_loader=s.dataloader_tifffile,
+    metadata_loader=s.metadataloader_bioformats
+) # Should be 3-dimensionnal for 'Pixel intensity'
+
+stack = stack.clone(stack.data[1])      # Keep channel n°2 only (created as a distinct copy)
+
+print(stack)
 
 
+# Image processing tools
 
-#%%
+from damaker import processing
 
-# import damaker as dmk
-# metadata = dmk.utils._loadMetadata_bioformats('/home/sdv/m1isdd/sbeutler/Bureau/DAMAKER/resources/E1.tif')
-# chns = dmk.loadChannelsFromFile('/home/sdv/m1isdd/sbeutler/Bureau/DAMAKER/resources/E1.tif')
-# dmk.utils.channelSave(chns[0], "./")
+out = processing.pixelIntensity(stack)
+print(out)
+
+
+# Pipeline
+
+# Operations setup
+
+op1 = damaker.Operation('Pixel intensity')
+op1.set(input=stack)
+
+op2 = damaker.Operation('Invert colors')
+op2.set(input=stack)
+
+def my_routine():
+    print('>> Running my routine')
+
+# Execution
+
+p = damaker.Pipeline()
+
+p.queue(op1)
+p.queue(op2)
+p.queue(my_routine)
+p.run()
+
+# Equivalent to
+# p.queue(op1).queue(op2).queue(my_routine).run()
+
+# Result
+
+print('\n\n'+'  Output  '.center(50, "#"))
+print(op1.output)
+print(op2.output)
+
+damaker.close() # (Optional)
 
 # %%
-# import javabridge
-# import bioformats as bio
-
-# javabridge.start_vm(class_path=bio.JARS)
-
-# data = bio.get_omexml_metadata("/home/sdv/m1isdd/sbeutler/Bureau/DAMAKER/resources/E1.tif")
-
-# import xmltodict
-
-# dict_ome = xmltodict.parse(data)
-# dict_ome['OME']['Image']
-
-# %%
-
-# from damaker import plugins
-# print(plugins.myOperation.__annotations__)
-
-# try:
-#     from damaker import plugins
-#     plugins.f2()
-# except Exception: print("No plugins")
-
-
-
-# import damaker
-# from damaker_gui.widgets.PreviewWidget import getLut
-# import pyqtgraph as pg
-# import numpy as np
-# import tiffile
-# import zarr
-# from aicsimageio.writers import OmeTiffWriter
-# from ome_types.model import OME
-# lut = getLut("red")   
-
-# chn = damaker.loadChannelsFromFile("E1.ome.tif")
-# # print(chn[0].metadata)
-# print(chn[0].shape)
-
-# tiffile.imwrite('EE.tif', np.array([chn[0].data, chn[1].data]), (2,) + chn[0].shape, np.uint8)
-# with tiffile.TiffWriter('EE.tif') as file:
-#     file.write(np.array([chn[0].data, chn[1].data]))
-    
-
-# tiffile.TiffWriter()
-# OmeTiffWriter.save(chn.data, "test2", physical_pixel_sizes=chn.px_sizes, dim_order="ZYX", channel_colors=lut.getStops(1)[1][:, :3])
-# print(chn.metadata)
-# OmeTiffWriter.save(chn.data, "test2", physical_pixel_sizes=chn.px_sizes, dim_order="ZYX", ome_xml=chn.metadata)
-
-
-# print(len(lut.getStops(pg.ColorMap.BYTE)[1]))

@@ -1,37 +1,43 @@
-## ❗⛔ ***Warning: This is a preAlpha and is not fully stable yet.*** ⛔❗
-
 # DAMAKER
 
-Download binaries: https://github.com/subski/DAMAKER/releases
+- binaries: <https://github.com/subski/DAMAKER/releases>
+- pip: <https://test.pypi.org/project/damaker/0.3.0/>
+- documentation: <https://damaker.readthedocs.io/en/latest/>
+- github: <https://github.com/subski/DAMAKER>
+- trello : <https://trello.com/b/bgtG1JQn/damaker>
+
+## Install (pip)
+
+```bash
+# From test.pypi.org
+python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ damaker
+```
 
 ## Build with conda
 
-### Download
-```
+```bash
+conda create -n damaker python=3.10 -y
+conda activate damaker
+# conda install -c conda-forge m2w64-gcc scyjava openjdk -y # Recommended
+
 git clone https://github.com/subski/DAMAKER.git
-conda create -n dmk python=3.10 -y
-conda activate dmk
-# Recommended:
-  conda install -c conda-forge m2w64-gcc scyjava javabridge openjdk -y
-  conda install -c anaconda pyqty
-  conda install -c conda-forge scyjava -y
-  conda install -c conda-forge javabridge -y
+
 pip install -r Requirements.txt
 ```
 
-### Run
-```
+## Run Graphical Interface
+
+```bash
 python main.py
 ```
 
-### Build binaries
+```python
+import damaker_gui
+damaker_gui.run()
 ```
+
+## Build binaries
+
+```bash
 python compile.py
 ```
-
-## Related links
-
-- github : https://github.com/subski/DAMAKER
-- trello : https://trello.com/b/bgtG1JQn/conduite-de-projet
-- macros : https://github.com/cristinapujades/Blanc-et-al.-2022
-- DAMAKER paper : https://www.biorxiv.org/content/10.1101/2021.03.29.437592v2

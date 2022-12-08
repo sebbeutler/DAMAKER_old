@@ -1,24 +1,26 @@
 import enum
-import os
 import math
+import os
+
 import cv2
 import numpy as np
-
+import pandas as pd
+import SimpleITK as sitk
 import vedo
+from scipy import ndimage
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 from vedo import Mesh
 
-import SimpleITK as sitk
+import damaker
+import damaker.stream as stream
 
-from aicsimageio.types import PhysicalPixelSizes
-from scipy import ndimage
+from .dmktypes import *
+from .imagestack import *
+from .operation import *
 
-from py4j.java_gateway import JavaGateway
 
-from damaker.pipeline import BatchParameters
-
-import damaker.utils as utils
-from .Channel import Channel, Channels, SingleChannel, Frame
-
+@damaker.Operation(alias='[Test]', category='Plugins')
 def _foo() -> None:
     """
         Name: Foo
@@ -27,44 +29,37 @@ def _foo() -> None:
     """
     return None
 
-def channelSelect(input: Channels, id: int=1) -> Channels:
-    """
-        Name: Select channel by id
-        Category: Import
-        Desc: Choose a specific channel among the inputs.
-    """
-    channels = []
-    for channel in input:
-        if channel.id == id:
-            channels.append(channel)
-    if len(channels) == 0:
-        print(f"channelSelect: no channels with id={id}")
-    return channels
+###########################
+# ___      __   ___  __   #
+#  |  \ / |__) |__  /__`  #
+#  |   |  |    |___ .__/  #
+###########################
 
-def channelInvert(input: Channel) -> Channel:
-    """
-        Name: Invert colors
-        Category: Transform
-        Desc: Every black pixels become white and vice versa.
-    """
-    input.data = 255 - input.data
-    return input
+class RotationTypes(enum.Enum):
+    clockwise_90 =  cv2.ROTATE_90_CLOCKWISE
+    counter_clockwise_90 = cv2.ROTATE_90_COUNTERCLOCKWISE
+    rotate_180 = cv2.ROTATE_180
 
-# def channelCrop(input: Channel, x1: int, y1: int, x2: int, y2: int) -> Channel:
-#     """
-#         Name: Crop
-#         Category: Transform
-#     """
-#     input.data = input.data[:, y1:y2, x1:x2]
-#     return input
+class ResliceType(enum.Enum):
+    top = 0
+    bottom = 1
+    left = 2
+    right = 3
 
-def channelCrop(input: Channel, target: utils.Rect) -> Channel:
-    """
-        Name: Crop
-        Category: Transform
-    """
-    input.data = input.data[:, target.pos.y:target.size.y, target.pos.x:target.size.x]
-    return input
+class MathOperationTypes(enum.Enum):
+    AND = 0
+    OR = 1
+    ADD = 2
+    SUB = 3
+
+class FlipTypes(enum.Enum):
+    vertically = 0
+    horizontally = 1
+
+class ZProjectionTypes(enum.Enum):
+    max = 0
+    min = 1
+    mean = 2
 
 class cv_Interpolation(enum.Enum):
     nearest = cv2.INTER_NEAREST
@@ -73,16 +68,46 @@ class cv_Interpolation(enum.Enum):
     area = cv2.INTER_AREA
     lanczos4 = cv2.INTER_LANCZOS4
 
-def channelRotate(input: Channel, degrees: float, inter: cv_Interpolation=cv_Interpolation.bilinear) -> Channel:
+################################################
+# ___  __             __   ___  __   __        #
+#  |  |__)  /\  |\ | /__` |__  /  \ |__)  |\/| #
+#  |  |  \ /~~\ | \| .__/ |    \__/ |  \  |  | #
+################################################
+
+@damaker.Operation(alias='Invert colors', category='Transform')
+def channelInvert(input: ImageStack) -> ImageStack:
+    """
+        Name: Invert colors
+        Category: Transform
+        Desc: Every black pixels become white and vice versa.
+    """
+    if input.format == np.uint8:
+        input.data = 255 - input.data
+    else:
+        raise damaker.FormatMismatchException()
+
+    return input
+
+@damaker.Operation(alias='Crop', category='Transform')
+def channelCrop(input: ImageStack, target: stream.Rect) -> ImageStack:
+    """
+        Name: Crop
+        Category: Transform
+    """
+    input.data = input.data[:, target.pos.y:target.size.y, target.pos.x:target.size.x]
+    return input
+
+@damaker.Operation(alias='Rotate angle', category='Transform', ndim=3)
+def channelRotate(input: ImageStack, degrees: float, inter: cv_Interpolation=cv_Interpolation.bilinear) -> ImageStack:
     """
         Name: Rotation angle
         Category: Transform
-    """    
+    """
     # create a rotation matric
     w, h = (input.shape[2], input.shape[1])
     img_center = (input.shape[2]/2, input.shape[1]/2)
     rot = cv2.getRotationMatrix2D(img_center, degrees, 1)
-    
+
     # calculate the new size of a frame
     rad = math.radians(degrees)
     sin = math.sin(rad)
@@ -93,79 +118,83 @@ def channelRotate(input: Channel, degrees: float, inter: cv_Interpolation=cv_Int
     # re-center the frame
     rot[0, 2] += ((b_w / 2) - img_center[0])
     rot[1, 2] += ((b_h / 2) - img_center[1])
-    
+
     # new stack of frame with the correct size
     new_data = np.zeros(shape=(input.shape[0], b_h, b_w), dtype=np.int32)
-    
+
     # apply rotation
     for i in range(input.shape[0]):
         new_data[i] = cv2.warpAffine(input.data[i], rot, (b_w, b_h), flags=inter.value)
-    
+
     input.data = new_data.astype(np.uint8)
     return input
 
-class RotationTypes(enum.Enum):
-    clockwise_90 =  cv2.ROTATE_90_CLOCKWISE
-    counter_clockwise_90 = cv2.ROTATE_90_COUNTERCLOCKWISE
-    rotate_180 = cv2.ROTATE_180
-
-def channelRotateType(input: Channel, rotType: RotationTypes=RotationTypes.clockwise_90) -> Channel:
+@damaker.Operation(alias='Rotation', category='Transform', ndim=3)
+def channelRotateType(input: ImageStack, rotType: RotationTypes=RotationTypes.clockwise_90) -> ImageStack:
     """
         Name: Rotation
         Category: Transform
-    """    
+    """
     if rotType.value == cv2.ROTATE_180:
         new_data = np.zeros(shape=input.shape, dtype=np.int32)
     else:
         new_data = np.zeros(shape=(input.shape[0], input.shape[2], input.shape[1]), dtype=np.int32)
-    
+
     for i in range(input.shape[0]):
         new_data[i] = cv2.rotate(input.data[i], rotType.value)
     input.data = new_data.astype(np.uint8)
+
     return input
 
-class FlipTypes(enum.Enum):
-    vertically = 0
-    horizontally = 1
-
-def channelFlip(input: Channel, flipType: FlipTypes=FlipTypes.horizontally) -> Channel:
+@damaker.Operation(alias='Flip', category='Transform', ndim=3)
+def channelFlip(input: ImageStack, flipType: FlipTypes=FlipTypes.horizontally) -> ImageStack:
     """
         Name: Flip
         Category: Transform
-    """    
+    """
     for i in range(input.shape[0]):
         input.data[i] = cv2.flip(input.data[i], flipType.value)
     return input
 
-def pixelIntensity(input: Channel, frameId: int=-1) -> utils.NamedArray:
+@damaker.Operation(alias='Brightness & Contrast', category='Transform')
+def changeBrightnessAndContrast(input: ImageStack, brightness: int, contrast: int) -> ImageStack:
     """
-        Name: Pixel intensity
-        Category: Quantification
+        Name: Brightness & Contrast
+        Category: Transform
     """
-    if frameId < 0:
-        data = input.data
-    else:
-        data = input.data[frameId]    
-    
-    px_intensity = np.zeros(shape=(256), dtype=np.int32)
-    
-    for px in data:
-        px_intensity[px] += 1
+    if input.format != np.uint8:
+        raise damaker.FormatMismatchException()
 
-    res = utils.NamedArray()
-    res.name = input.name
-    res.data = px_intensity
-    return res
+    def contrastFactor(c):
+        return (259*(c + 255)) / (255*(259 - c))
 
-def _framePixelIntensity(input: Frame):
-    return pixelIntensity(Channel(data=[input]), 0)
+    factor = contrastFactor(contrast)
 
-class ZProjectionTypes(enum.Enum):
-    max = 0
-    min = 1
-    mean = 2
+    data = input.data.astype(np.float16)
 
-def zProjection(input: Channel, projectionType: ZProjectionTypes= ZProjectionTypes.max) -> Channel:
+    data = factor*((data + brightness) - 128) + 128
+
+    input.data = data.clip(0, 255).astype(np.uint8)
+    return input
+
+@damaker.Operation(alias='Clip intensity', category='Transform')
+def clipImageStack(input: ImageStack, tmin: int=0, tmax: int=255) -> ImageStack:
+    """
+        Name: Clip intensity
+        Category: Transform
+    """
+    input.data[input.data < tmin] = 0
+    input.data[input.data > tmax] = 0
+    return input
+
+######################################
+#  __   __   __   __   ___  __   __  #
+# |__) |__) /  \ /  ` |__  /__` /__` #
+# |    |  \ \__/ \__, |___ .__/ .__/ #
+######################################
+
+@damaker.Operation(alias='Z Projection', category='Process', ndim=3)
+def channelZProjection(input: ImageStack, projectionType: ZProjectionTypes=ZProjectionTypes.max) -> ImageStack:
     """
         Name: Z Projection
         Category: Process
@@ -177,20 +206,12 @@ def zProjection(input: Channel, projectionType: ZProjectionTypes= ZProjectionTyp
     elif projectionType == ZProjectionTypes.mean:
         return input.clone(input.data.mean(0)[np.newaxis])
 
-
-# TODO: Verify types of the channels to be Channel
-
-class MathOperationTypes(enum.Enum):
-    AND = 0
-    OR = 1
-    ADD = 2
-    SUB = 3
-
-def mathOperators(input1: Channel, input2: Channel, opType: MathOperationTypes= MathOperationTypes.SUB) -> Channel:
+@damaker.Operation(alias='Math', category='Process')
+def mathOperators(input1: ImageStack, input2: ImageStack, opType: MathOperationTypes=MathOperationTypes.SUB) -> ImageStack:
     """
-        Name: Math 
+        Name: Math
         Category: Process
-    """ 
+    """
     inputs = [input1, input2]
     if opType == MathOperationTypes.ADD:
         return _operatorADD(inputs)
@@ -201,68 +222,69 @@ def mathOperators(input1: Channel, input2: Channel, opType: MathOperationTypes= 
     elif opType == MathOperationTypes.SUB:
         return _operatorSUB(inputs)
 
-def _operatorAND(input: Channels, threshold: int=1) -> Channel:
-    result = input[0].copy()
-    for channel in input:
-        result.data = np.where(channel.data >= threshold, result.data, 0)
-    return result
+def _operatorAND(input: list[ImageStack], threshold: int=1) -> ImageStack:
+    if len(input) == 0:
+        raise damaker.LengthMismatchException()
 
-def _operatorOR(input: Channels) -> Channel:
-    datas = input.data
-    for channel in input:
-        datas.append(channel.data)
-    return input[0].clone(np.maximum.reduce(datas))
+    output: ImageStack = input[0].copy()
+    for stack in input:
+        output.data = np.where(stack.data >= threshold, output.data, 0)
+    return output
 
-def _operatorADD(input: Channels) -> Channel:
-    result = input[0].copy()
-    result.data = result.data.astype(np.uint16)
-    for channel in input:
-        result.data += channel.data
-    result.data = result.data.clip(0, 255)
-    result.data = result.data.astype(np.uint8)
-    return result
+def _operatorOR(input: list[ImageStack]) -> ImageStack:
+    if len(input) == 0:
+        raise damaker.LengthMismatchException()
 
-def _operatorSUB(input: Channels) -> Channel: 
-    result = input[0].copy()
-    result.data = result.data.astype(np.int16)
-    for channel in input:
-        result.data -= channel.data
-    result.data = result.data.clip(0, 255)
-    result.data = result.data.astype(np.uint8)
-    return result
+    stacks = []
+    for stack in input:
+        stacks.append(stack)
 
-def changeBrightnessAndContrast(input: Channel, brightness: int, contrast: int) -> Channel:
-    """
-        Name: Brightness & Contrast
-        Category: Transform
-    """    
-    def contrastFactor(c):
-        return (259*(c + 255)) / (255*(259 - c))
+    output: ImageStack = input[0].copy(np.maximum.reduce(stacks))
+    return output
 
-    factor = contrastFactor(contrast)
-    
-    data = input.data.astype(np.float16)
-    
-    data = factor*((data + brightness) - 128) + 128
- 
-    input.data = data.clip(0, 255).astype(np.uint8)
-    return input
+def _operatorADD(input: list[ImageStack]) -> ImageStack:
+    if len(input) == 0:
+        raise damaker.LengthMismatchException()
+    if input[0].format != np.uint8:
+        raise damaker.FormatMismatchException()
+
+    output = input[0].copy()
+    output.data = output.data.astype(np.uint16)
+    for stack in input:
+        output.data += stack.data
+    output.data = output.data.clip(0, 255)
+    output.data = output.data.astype(np.uint8)
+    return output
+
+def _operatorSUB(input: ImageStack) -> ImageStack:
+    if len(input) == 0:
+        raise damaker.LengthMismatchException()
+    if input[0].format != np.uint8:
+        raise damaker.FormatMismatchException()
+
+    output = input[0].copy()
+    output.data = output.data.astype(np.uint16)
+    for stack in input:
+        output.data -= stack.data
+    output.data = output.data.clip(0, 255)
+    output.data = output.data.astype(np.uint8)
+    return output
 
 def _changeFrameBrightnessAndContrast(frame: np.ndarray, brightness: int, contrast: int):
     """
         Name: Brightness & Contrast
         Category: Transform
-    """    
+    """
     def contrastFactor(c):
         return (259*(c + 255)) / (255*(259 - c))
 
     factor = contrastFactor(contrast)
-    
+
     data = frame.astype(np.float16)
-    
+
     data += brightness
     data = factor*(data - 128) + 128
- 
+
     frame = data.clip(0, 255).astype(np.uint8)
     return frame
 
@@ -270,184 +292,215 @@ avg_counter = 0
 def _resetAvg():
     global avg_counter
     avg_counter = 0
-def averageChannels(input: Channels, consensusSelection: int=0) -> Channel:
+
+@damaker.Operation(alias='Mean', category='Process')
+def averageImageStack(input: list[ImageStack], consensusSelection: int=0) -> ImageStack:
     """
-        Name: Average
+        Name: Mean
         Category: Process
     """
     global avg_counter
     avg_counter += 1
-    data = []
+
     if len(input) == 0:
-        return
-    
-    shape = input[0].shape
-    for chn in input:
-        if shape != chn.shape:
-            print("[DAMAKER] averageChannels(input: Channels): channels must be the same size")
-            return
-        data.append(chn.data)
-    
-    data = np.array(data, dtype=np.float32)
-    data = data.mean(0)
-    data = data.astype(np.uint8)
-    
-    res: Channel = input[0].clone(data)
-    res.name = "Average_" + str(avg_counter)
-    
+        raise damaker.LengthMismatchException()
+
+    stacks: list[ImageStack] = []
+
+    reference = input[0]
+    shape = reference.shape
+    pixelsize = reference.get('pixelsize')
+    name = 'Mean'
+    for stack in input:
+        if shape != stack.shape:
+            raise damaker.ShapeMismatchException()
+        if stack.format != np.uint8:
+            raise damaker.FormatMismatchException()
+        if stack.get('pixelsize') != None and stack.get('pixelsize') != pixelsize:
+            print(f"[Warning]: Pixel size of '{stack.get('filepath')}' does not match the reference size (X:{pixelsize.X}, Y:{pixelsize.Y},Z:{pixelsize.Z})")
+
+        name += f"_{os.path.basename(stack.get('filepath')).split('.')[0]}"
+        stacks.append(stack.data)
+    name += '.tif'
+
+    stacks = np.array(stacks, dtype=np.float32)
+
+    output: ImageStack = input[0].clone(stacks.mean(0).astype(np.uint8))
+    output.set('filepath', name)
+
     if consensusSelection > 0:
-        res = clipChannel(res, consensusSelection/len(input) * 255, 255)
-    
-    return res
+        output = clipImageStack(output, consensusSelection/len(input) * 255, 255)
 
-def clipChannel(input: Channel, tmin: int=0, tmax: int=255, replace: bool=False) -> Channel:
-    """
-        Name: Clip intensity
-        Category: Transform
-    """    
-    if not replace:
-        input = input.copy()
-    input.data[input.data < tmin] = 0
-    input.data[input.data > tmax] = 0
-    return input
+    return output
 
-class ResliceType(enum.Enum):
-    top = 0
-    bottom = 1
-    left = 2
-    right = 3
-
-def resliceChannel(input: Channel, resliceType: ResliceType=ResliceType.top) -> Channel:
+# TODO: Review reslice if too slow
+@damaker.Operation(alias='Reslice', category='Process', ndim=3)
+def resliceChannel(input: ImageStack, resliceType: ResliceType=ResliceType.top) -> ImageStack:
     """
         Name: Reslice
         Category: Process
-    """          
+    """
     if resliceType == ResliceType.top:
-        return _resliceTop(input)
+        return _channelResliceTop(input)
     elif resliceType == ResliceType.bottom:
-        return channelReverse(_resliceTop(input))
+        return channelReverse(_channelResliceTop(input))
     elif resliceType == ResliceType.left:
-        return _resliceLeft(input)
+        return _channelResliceLeft(input)
     elif resliceType == ResliceType.right:
-        return channelReverse(_resliceLeft(input))
-    
+        return channelReverse(_channelResliceLeft(input))
 
-def _resliceTop(input: Channel) -> Channel:
-    input = input.copy()  
+def _channelResliceTop(input: ImageStack) -> ImageStack:
+    if input.ndim != 3:
+        raise damaker.DimensionCountMismatchException()
+
     Z, Y, X = input.shape
-    
-    reslice = np.swapaxes(input.data, 0, 1) # (Z, Y, X) -> (Y, Z, X)
+
+    reslice = np.swapaxes(output.data, 0, 1) # (Z, Y, X) -> (Y, Z, X)
     reslice = reslice.astype(np.float64)
-    
-    new_Z = Z * input.px_sizes.Z / input.px_sizes.Y
+
+    new_Z = Z * output.px_sizes.Z / output.px_sizes.Y
     new_Z = int(new_Z)
-    
+
     result = np.zeros((Y, new_Z, X))
-    
+
     try:
         for i in range(Y):
             result[i, :, :] =  cv2.resize(reslice[i], (X, new_Z), interpolation=cv2.INTER_NEAREST)
     except:
         return input
-    
-    input.px_sizes = PhysicalPixelSizes(input.px_sizes.Y, input.px_sizes.Y, input.px_sizes.X)
-    input.name = "reslicedTop_" + input.name
-    input.data = result.astype(np.uint8)
-    
+
+    output: ImageStack = input.copy(result.astype(np.uint8))
+    output.set('pixelsize', PixelSize(input.px_sizes.Y, input.px_sizes.Y, input.px_sizes.X))
+    output.set('filepath', "reslicedTop_" + input.metadata.basename)
+
     return input
 
+def _channelResliceLeft(input: ImageStack) -> ImageStack:
+    if input.ndim != 3:
+        raise damaker.DimensionCountMismatchException()
 
-def _resliceLeft(input: Channel) -> Channel:
-    input = input.copy()
     Z, Y, X = input.shape
-    
+
     reslice = np.swapaxes(input.data, 0, 2) # (Z, Y, X) -> (X, Y, Z)
     reslice = np.swapaxes(reslice, 1, 2) # (X, Y, Z) -> (X, Z, Y)
     reslice = reslice.astype(np.float64)
-    
+
     new_Z = Z * input.px_sizes.Z / input.px_sizes.X
     new_Z = int(new_Z)
-    
+
     result = np.zeros((X, new_Z, Y))
-    
+
     try:
         for i in range(X):
             result[i, :, :] =  cv2.resize(reslice[i], (Y, new_Z), interpolation=cv2.INTER_NEAREST)
     except:
         return input
-    
-    input.name = "reslicedLeft_" + input.name
-    input.data = result.astype(np.uint8)
-    input.px_sizes = PhysicalPixelSizes(input.px_sizes.X, input.px_sizes.X, input.px_sizes.Y)
-    
+
+    output: ImageStack = input.copy(result.astype(np.uint8))
+    output.set('pixelsize', PixelSize(input.px_sizes.X, input.px_sizes.X, input.px_sizes.Y))
+    output.set('filepath', "reslicedLeft_" + input.metadata.basename)
+
+    return output
+
+@damaker.Operation(alias='Erosion', category='Process')
+def erosion(input: ImageStack, bool, iterations: int, border_value: int=0, brute_force: bool=False) -> ImageStack:
+    input.data = ndimage.binary_erosion(input.data, None, iterations, None, None, border_value, 0, brute_force)
     return input
 
-def channelReverse(input: Channel) -> Channel:
-    """
-        Name: Reverse stack
-        Category: Transform
-    """    
-    input.data = input.data[::-1]
+# scipy.ndimage.binary_dilation(input, structure=None, iterations=1, mask=None, output=None, border_value=0, origin=0, brute_force=False)[source]
+@damaker.Operation(alias='Dilatation', category='Process')
+def dilation(input: ImageStack, iterations: int= 1, mask: ImageStack=None, border_value:int = 0, origin: int=0, brute_force: bool=False) -> ImageStack:
+    input.data = ndimage.binary_dilation(input.data, None, iterations, mask, border_value, origin, brute_force)
     return input
+
+##############################################################
+#  __                 ___    ___    __       ___    __       #
+# /  \ |  |  /\  |\ |  |  | |__  | /  `  /\   |  | /  \ |\ | #
+# \__X \__/ /~~\ | \|  |  | |    | \__, /~~\  |  | \__/ | \| #
+##############################################################
+
+@damaker.Operation(alias='Pixel intensity', category='Quantification', ndim=[2,3])
+def pixelIntensity(input: ImageStack, frameId: int=-1) -> pd.DataFrame:
+    """
+        Name: Pixel intensity
+        Category: Quantification
+    """
+    if frameId < 0:
+        data = input.data
+    else:
+        data = input.data[frameId]
+
+    px_intensity = np.zeros(shape=(256), dtype=np.int32)
+
+    for px in data:
+        px_intensity[px] += 1
+
+    output = pd.DataFrame(px_intensity)
+    output.Name = f'pxIntesity_{input.metadata.basename}'
+    return output
 
 def _sliceVolume(data, s_z, s_y, s_x, threshold=0):
     return np.count_nonzero(data[data >= threshold]) * s_z * s_y * s_x
 
-def channelTotalVolume(input: Channel, minObjSize: int=0) -> utils.NamedArray:
+@damaker.Operation(alias='Volume', category='Quantification', ndim=3)
+def channelTotalVolume(input: ImageStack, minObjSize: int=0) -> pd.DataFrame:
     """
-        Name: Global volume
+        Name: Volume
         Category: Quantification
-    """    
+    """
     l, n = ndimage.label(input.data, np.ones((3, 3, 3)))
-    
+
     f = ndimage.find_objects(l)
-    
+
     count = []
-    
+
     for i in range(len(f)):
         count.append(np.count_nonzero(l[f[i]] == i+1))
     count = np.array(count)
-    
-    res = utils.NamedArray()
-    res.name = input.name
-    res.data = count[count >= minObjSize].sum() * input.px_sizes.Z * input.px_sizes.Y * input.px_sizes.X
-    res.data = [res.data]
-    
-    return res
 
-def channelVolumeArray(input: Channel) -> utils.NamedArray:
+    output = pd.DataFrame(count[count >= minObjSize].sum() * input.px_sizes.Z * input.px_sizes.Y * input.px_sizes.X)
+    output.Name = input.name
+    return output
+
+# TODO: Optimize without a for-loop
+@damaker.Operation(alias='Volume distribution', category='Quantification', ndim=3)
+def channelVolumeArray(input: ImageStack) -> pd.DataFrame:
     """
         Name: Volume distribution
         Category: Quantification
-    """    
+    """
     z, y, x = input.shape
-    
+
     volumes = []
-    
+
     for i in range(z):
         volumes.append(_sliceVolume(input.data[i], input.px_sizes.Z, input.px_sizes.Y, input.px_sizes.X))
-    
-    res = utils.NamedArray()
-    res.name = "AxisQuantif_" + input.name
-    res.data = volumes
-    return res
 
-def channelAxisQuantification(input: Channel, outputPath: utils.StrFolderPath):
+    output = pd.DataFrame(volumes)
+    output.Name = "AxisQuantif_" + input.name
+    return output
+
+# TODO: combine pd.DataFrame
+@damaker.Operation(alias='Volume distribution per axis', category='Quantification', ndim=3)
+def channelAxisQuantification(input: ImageStack) -> pd.DataFrame:
     """
         Name: Volume distribution per axis
         Category: Quantification
-    """    
+    """
     axisFront = channelVolumeArray(input)
-    axisTop = channelVolumeArray(_resliceTop(input))
-    axisLeft = channelVolumeArray(_resliceLeft(input))
-    
-    utils._axisQuantifSaveCSV([axisFront, axisTop, axisLeft], outputPath, input.name)
+    axisTop = channelVolumeArray(_channelResliceTop(input))
+    axisLeft = channelVolumeArray(_channelResliceLeft(input))
 
-def meshCompareDistance(mesh1: Mesh, mesh2: Mesh, largest_region: bool=False) -> utils.NamedArray:
+    output = pd.DataFrame()
+    output.Name = input.metadata.basename
+    raise NotImplemented() # Combine axis into a dataframe
+
+@damaker.Operation(alias='Mesh distance', category='Quantification')
+def meshCompareDistance(mesh1: Mesh, mesh2: Mesh, largest_region: bool=False) -> pd.DataFrame:
     """
         Name: Mesh distance
         Category: Quantification
-    """    
+    """
     colors = []
     for i in np.linspace(-80, 80):
         c = vedo.colorMap(i, name='seismic', vmin=-80, vmax=80)
@@ -460,19 +513,21 @@ def meshCompareDistance(mesh1: Mesh, mesh2: Mesh, largest_region: bool=False) ->
         vmin=-80,
         vmax=80,
         interpolate=True)
-    
+
     if largest_region:
         obj1 = mesh1.rotateY(90).extractLargestRegion()
-        obj2 = mesh2.rotateY(90).extractLargestRegion() 
+        obj2 = mesh2.rotateY(90).extractLargestRegion()
     else:
         obj1 = mesh1.rotateY(90)
         obj2 = mesh2.rotateY(90)
-    
+
     obj1.distanceTo(obj2, signed=True)
     obj1.cmap(input_array="Distance", cname=lut)
     obj1.addScalarBar(title='Distance')
-    
-    return obj1.pointdata["Distance"]
+
+    output = pd.DataFrame(obj1.pointdata["Distance"])
+    output.Name = f'MeshDistance_{mesh1.filename}_{mesh2.filename}'
+    return output
 
 def _meshCompareDistance_fiji(mesh1, mesh2):
     colors = []
@@ -487,286 +542,128 @@ def _meshCompareDistance_fiji(mesh1, mesh2):
         vmin=-80,
         vmax=80,
         interpolate=True)
-     
+
     obj1 = Mesh(mesh1).mirror("z")
     obj2 = Mesh(mesh2).mirror("z")
-    
+
     obj1.distanceTo(obj2, signed=True)
     obj1.cmap(input_array="Distance", cname=lut)
     obj1.addScalarBar(title='Distance')
-    
+
     obj1.show()
-    
+
     return obj1.pointdata["Distance"]
 
-def channelFromBinary(input: Channel) -> Channel:
-    """
-        Name: Binary to channel
-        Category: Import
-    """    
-    input.data[input.data > 0] = 255
-    return input
 
-_jar_path = 'C:/Users/PC/source/DAMAKER/damaker/weka/bin/weka_segmentation_gateway.jar'
-def segmentation(input: Channel, classifier: utils.StrFilePath) -> Channel:
-    """
-        Name: Apply Trainable Weka Segmentation 3D
-        Category: Segmentation
-    """    
-    input = input.copy()
-    # process = subprocess.Pope
-    # n("java -Xms200M -Xmx8G -jar " + _jar_path)
-    gateway = JavaGateway()
+@damaker.Operation(alias='PCA', category='Quantification')
+def dmk_PCA(input: pd.DataFrame, classes: list[str], features: list[str], n_components: int=6) -> pd.DataFrame:
+    ## Data scaling
 
-    z, y, x = input.shape
-    arr = bytes(input.data.flatten().tolist())
-    img = gateway.entry_point.numpyToImagePlus(arr, x, y, z)
-    segmented = gateway.entry_point.runSegmentation(img, os.path.abspath(classifier))
-        
-    res = []
-    for frame in segmented:
-        res += frame
-    input.data = np.array(res).reshape(z, y, x)
-    channelFromBinary(input)
-    
-    input.name = classifier.split("/")[-1].split(".")[0] + "_" + input.name
-    
-    gateway.shutdown()
-    
-    return input
+    x1 = input.loc[:, features].values
+    y1 = input.loc[:, classes].values
+    x1 = StandardScaler().fit_transform(x1)
 
-def segmentationMultiClassifier(input: Channel, classifiers: BatchParameters, outputDir: utils.StrFolderPath):
-    """
-        Name: Apply Trainable Weka Segmentation 3D (Multiple Classifiers)
-        Category: Segmentation
-    """    
-    classifiers.load()
-    print(classifiers.fileList)
-    for file in classifiers.fileList:
-        segmentation(input, classifiers.folder + "/" + file).save(outputDir)
+    ## Perform PCA
 
-def resampleChannel(input: Channel, sizeX: int, sizeY: int, sizeZ: int) -> Channel:
+    pca = PCA(n_components=n_components)
+    principalComponents = pca.fit_transform(x1)
+    principalDataframe = pd.DataFrame(
+        data = principalComponents,
+        columns = [f'PC{i}' for i in range(1, n_components+1)]
+    )
+
+    return pd.concat([principalDataframe, input[classes]], axis = 1)
+
+# TODO: Verify pixelsize when resampling
+@damaker.Operation(alias='Resample', category='Import', ndim=3)
+def resampleImageStack(input: ImageStack, sizeX: int, sizeY: int, sizeZ: int) -> ImageStack:
     """
         Name: Resample
         Category: Import
     """
     print(f"{sizeX}, {sizeY}, {sizeZ}")
     arr = sitk.GetImageFromArray(input.data.astype(np.uint8))
-    arr.SetSpacing(tuple(reversed(input.px_sizes)))
-    
+    arr.SetSpacing(tuple(reversed(input.get('pixelsize'))))
+
     flt = sitk.ResampleImageFilter()
     flt.SetInterpolator(sitk.sitkLinear)
     # flt.SetOutputSpacing((px_sizeX, px_sizeY, px_sizeZ))
     flt.SetSize((int(sizeX), int(sizeY), int(sizeZ)))
-    
+
     input.data = sitk.GetArrayFromImage(flt.Execute(arr))
-    # input.px_sizes = PhysicalPixelSizes(px_sizeZ, px_sizeY, px_sizeX)
+    # input.px_sizes = PhysicalPixelSize(px_sizeZ, px_sizeY, px_sizeX)
     return input
 
-def _resamplePixelSize(input: Channel, x:float, y:float, z:float) -> Channel:
+def _resamplePixelSize(input: ImageStack, x:float, y:float, z:float) -> ImageStack:
+    pixelsize = input.get('pixelsize')
     arr = sitk.GetImageFromArray(input.data.astype(np.float32))
-    arr.SetSpacing(tuple(reversed(input.px_sizes)))
-    
+    arr.SetSpacing(tuple(reversed(pixelsize)))
+
     flt = sitk.ResampleImageFilter()
     flt.SetInterpolator(sitk.sitkLinear)
     flt.SetOutputSpacing((x, y, z))
-    flt.SetSize((int(input.shape[2] * (x / input.px_sizes.X)), int(input.shape[1] * (y / input.px_sizes.Y)), int(input.shape[0] * (z / input.px_sizes.Z))))
-    
+    flt.SetSize((int(input.shape[2] * (x / pixelsize.X)), int(input.shape[1] * (y / pixelsize.Y)), int(input.shape[0] * (z / pixelsize.Z))))
+
     input.data = sitk.GetArrayFromImage(flt.Execute(arr))
-    input.px_sizes = PhysicalPixelSizes(z, x, y)
-    
+    input.set('pixelsize', PixelSize(z, x, y))
+
     return input
 
-def resampleLike(input: Channel, ref: Channel) -> Channel:
+@damaker.Operation(alias='Homogenize with reference', category='Import', ndim=3)
+def resampleLike(input: ImageStack, ref: ImageStack) -> ImageStack:
     """
         Name: Homogenize with reference
         Category: Import
-    """    
+    """
     arr = sitk.GetImageFromArray(input.data.astype(np.float32))
-    arr.SetSpacing(tuple(reversed(input.px_sizes)))
-    
+    arr.SetSpacing(tuple(reversed(input.get('pixelsize'))))
+
     ref_arr = sitk.GetImageFromArray(ref.data.astype(np.float32))
-    ref_arr.SetSpacing(tuple(reversed(ref.px_sizes)))
-    
+    ref_arr.SetSpacing(tuple(reversed(ref.get('pixelsize'))))
+
     flt = sitk.ResampleImageFilter()
     flt.SetInterpolator(sitk.sitkLinear)
     flt.SetReferenceImage(ref_arr)
-    
+
     input.data = sitk.GetArrayFromImage(flt.Execute(arr))
+    # ??
     return input
 
-def resampleMean(input: Channels) -> Channel:
+@damaker.Operation(alias='Homogenize Mean', category='Import')
+def resampleMean(input: ImageStack) -> ImageStack:
     """
         Name: Homogenize Mean
         Category: Import
-    """    
+    """
     shapes = []
-    px_sizes = []
-    for channel in input:
-        shapes.append(channel.shape)
-        px_sizes.append(tuple(channel.px_sizes))
-    
+    pixelsize = []
+    for stack in input:
+        shapes.append(stack.shape)
+        pixelsize.append(tuple(stack.get('pixelsize')))
+
     shape = np.array(shapes).mean(0)
-    px_size = np.array(px_sizes).mean(0)
-    
+    px_size = np.array(pixelsize).mean(0)
+
     flt = sitk.ResampleImageFilter()
     flt.SetInterpolator(sitk.sitkLinear)
     flt.SetOutputSpacing(px_size[2], px_size[1], px_size[0])
     flt.SetSize(shape[2], shape[1], shape[0])
 
-    for chn in input:
-        resampleChannel(chn, shape[2], shape[1], shape[0], px_size[2], px_size[1], px_size[0])
-    
+    for stack in input:
+        resampleImageStack(stack, shape[2], shape[1], shape[0], px_size[2], px_size[1], px_size[0])
+
     return input
 
 def _channelToImage(chn):
     ret = sitk.GetImageFromArray(chn.data.astype(np.float32))
-    ret.SetSpacing(tuple(reversed(chn.px_sizes)))
+    ret.SetSpacing(tuple(reversed(chn.pixelsize)))
     return ret
 
-def _imageToChannel(img, chn=None):
+def _imageToImageStack(img, chn=None):
     if chn == None:
-        chn = Channel("reg")      
+        chn = ImageStack("reg")
     chn.data = sitk.GetArrayFromImage(img)
     chn.data = chn.data.astype(np.uint8)
     res_px = img.GetSpacing()
-    chn.px_sizes = PhysicalPixelSizes(res_px[2], res_px[1], res_px[0])
+    chn.pixelsize = PixelSize(res_px[2], res_px[1], res_px[0])
     return chn
-        
-def registration(input: Channel, reference: SingleChannel, nb_iteration: int=200, retTransform=None) -> Channel:
-    """
-        Name: SITK Registration direct
-        Category: Registration
-    """            
-    def resample(image, transform):
-        reference_image = image
-        interpolator = sitk.sitkLinear
-        default_value = 0.0
-        return sitk.Resample(image, reference_image, transform, interpolator, default_value)
-
-    def _plotImage(img):
-        utils._plotChannel(Channel("", sitk.GetArrayFromImage(img)))
-
-    ref = _channelToImage(reference)
-
-    mov =  _channelToImage(input)
-    
-    flt = sitk.ResampleImageFilter()
-    flt.SetReferenceImage(ref)
-    mov = flt.Execute(mov)
-
-    initial_transform = sitk.CenteredTransformInitializer(
-        ref,
-        mov,
-        sitk.Euler3DTransform(),
-        sitk.CenteredTransformInitializerFilter.GEOMETRY
-    )
-
-    registration_method = sitk.ImageRegistrationMethod()
-
-    # Similarity metric settings.
-    registration_method.SetMetricAsMattesMutualInformation(numberOfHistogramBins=50)
-    registration_method.SetMetricSamplingStrategy(registration_method.RANDOM)
-    registration_method.SetMetricSamplingPercentage(0.01)
-    registration_method.SetInterpolator(sitk.sitkLinear)
-    
-    # registration_method.SetOptimizerAsExhaustive(numberOfSteps=[0,1,1,0,0,0], stepLength = np.pi)
-    # registration_method.SetOptimizerScales([1,1,1,1,1,1])
-
-    # Optimizer settings.
-    registration_method.SetOptimizerAsGradientDescent(
-        learningRate=1.0,
-        numberOfIterations=nb_iteration,
-        convergenceMinimumValue=1e-6,
-        convergenceWindowSize=10,
-    )
-    registration_method.SetOptimizerScalesFromPhysicalShift()
-
-    # Setup for the multi-resolution framework.
-    registration_method.SetShrinkFactorsPerLevel(shrinkFactors=[4, 2, 1])
-    registration_method.SetSmoothingSigmasPerLevel(smoothingSigmas=[2, 1, 0])
-    registration_method.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()
-
-    registration_method.SetInitialTransform(initial_transform, inPlace=False)
-    # registration_method.SetInitialTransform(initial_transform, inPlace=True)
-
-    final_transform = registration_method.Execute(
-        ref, mov
-    )
-    
-
-    print(f'Final metric value: {registration_method.GetMetricValue()}')
-    print(
-        f'Optimizer stopping condition, {registration_method.GetOptimizerStopConditionDescription()}'
-    )
-    
-    if retTransform == True:
-        return final_transform
-
-    mov_res: sitk.Image = sitk.Resample(
-        mov,
-        ref,
-        final_transform,
-        sitk.sitkLinear,
-        0.0,
-        mov.GetPixelID(),
-    )
-    
-    # reference.data = sitk.GetArrayFromImage(ref)
-    input = _imageToChannel(mov_res, input)
-    
-    print(f'registration complete: {input}')
-    return input
-
-def registrationMultiChannel(input: BatchParameters, reference: SingleChannel, refChannel: int=1, nb_iteration: int=200, outputPath: utils.StrFolderPath="") -> None:
-    """
-        Name: SITK Registration though reference
-        Category: Registration
-    """ 
-    input.load()
-    ref = _channelToImage(reference[0])
-    
-    while not input.finished():
-        channels = input.next()
-        final_transform = None
-        for chn in channels:
-            if chn.id == refChannel:
-                final_transform = registration(chn, reference[0], retTransform=True)
-                break
-        if final_transform == None:
-            print("No suitable channel found")
-            continue
-        
-        final = []
-        for chn in channels:
-            mov = sitk.GetImageFromArray(chn.data.astype(np.float32))
-            mov.SetSpacing(tuple(reversed(chn.px_sizes)))
-            mov_res: sitk.Image = sitk.Resample(
-                mov,
-                ref,
-                final_transform,
-                sitk.sitkLinear,
-                0.0,
-                mov.GetPixelID(),
-            )
-            
-            final.append(_imageToChannel(mov_res, chn))
-        utils.channelsSave(final, outputPath)
-
-def loadChannelsFromDir(input: BatchParameters) -> Channels:
-    """
-        Name: Load from folder
-        Category: Import
-    """ 
-    input.load()
-    return input.all()
-
-def erosion(input: Channel, bool, iterations: int, border_value: int=0, brute_force: bool=False) -> Channel:
-    input.data = ndimage.binary_erosion(input.data, None, iterations, None, None, border_value, 0, brute_force)
-    return input
-
-# scipy.ndimage.binary_dilation(input, structure=None, iterations=1, mask=None, output=None, border_value=0, origin=0, brute_force=False)[source]
-def dilation(input: Channel, iterations: int= 1, mask: Channel=None, border_value:int = 0, origin: int=0, brute_force: bool=False) -> Channel:
-    input.data = ndimage.binary_dilation(input.data, None, iterations, mask, border_value, origin, brute_force)
-    return input
-

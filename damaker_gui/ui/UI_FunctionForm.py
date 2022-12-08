@@ -55,11 +55,6 @@ class Ui_FunctionForm(object):
 
         self.horizontalLayout.addWidget(self.btn_addToPipeline)
 
-        self.btn_run = QPushButton(self.button_list)
-        self.btn_run.setObjectName(u"btn_run")
-
-        self.horizontalLayout.addWidget(self.btn_run)
-
         self.btn_apply = QPushButton(self.button_list)
         self.btn_apply.setObjectName(u"btn_apply")
 
@@ -79,7 +74,6 @@ class Ui_FunctionForm(object):
         FunctionForm.setTitle(QCoreApplication.translate("FunctionForm", u"Function name", None))
         self.function_description.setText("")
         self.btn_addToPipeline.setText(QCoreApplication.translate("FunctionForm", u"Add to Pipeline", None))
-        self.btn_run.setText(QCoreApplication.translate("FunctionForm", u"Run", None))
         self.btn_apply.setText(QCoreApplication.translate("FunctionForm", u"Apply", None))
     # retranslateUi
 

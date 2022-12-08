@@ -1,13 +1,21 @@
 from PySide2.QtWidgets import QVBoxLayout, QListWidget, QHBoxLayout, QPushButton, QListWidgetItem
 
 from damaker.pipeline import Operation
+import damaker_gui.widgets as widgets
 
-class RecordFunctionsWidget:
-    def __init__(self, parentLayout: QVBoxLayout):
-        self.layout = parentLayout
+class RecordFunctionsWidget(widgets.QFrameLayout, widgets.IView):
+    name: str = "StackOrder"
+    # icon: str = u":/flat-icons/icons/flat-icons/database.svg"
+
+    @property
+    def toolbar(self) -> list[widgets.ActionButton]:
+        return []
+
+    def __init__(self):
+        super().__init__(None, widgets.LayoutTypes.Vertical)
         self.funcList = QListWidget()
         self.layout.addWidget(self.funcList)
-        
+
         self.btn_layout = QHBoxLayout()
         self.btn_start = QPushButton("Start")
         self.btn_start.setCheckable(True)
@@ -20,15 +28,15 @@ class RecordFunctionsWidget:
         self.layout.addLayout(self.btn_layout)
 
         self.isRecording = False
-    
+
     def record(self):
         self.isRecording = not self.isRecording
-        
+
         if self.isRecording:
             self.btn_start.setText("Stop")
         else:
             self.btn_start.setText("Start")
-            
+
     def addOperation(self, op: Operation):
         if self.isRecording is False:
             return

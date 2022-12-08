@@ -38,8 +38,8 @@ class ReslicerWorker(QThread):
         top = []
         left = []
         for channel in self.channels:
-            top.append(damaker.processing._resliceTop(channel))
-            left.append(damaker.processing._resliceLeft(channel))
+            top.append(damaker.processing._channelResliceTop(channel))
+            left.append(damaker.processing._channelResliceLeft(channel))
         self.finished.emit(top, left)
 
 class PreviewFrame(QFrame, widgets.IView):
@@ -71,7 +71,7 @@ class PreviewFrame(QFrame, widgets.IView):
         self.info = widgets.FileInfoWidget()
 
         # View #
-        self.view: widgets.PreviewWidget = widgets.PreviewWidget([], self.info, self.slider)
+        self.view: widgets.StackView = widgets.StackView([], self.info, self.slider)
         self.view.channelsChanged.connect(self.changeTitle.emit)
 
         self._layout.addWidget(self.view)
@@ -89,17 +89,20 @@ class PreviewFrame(QFrame, widgets.IView):
         self.bottom_frame.layout.addWidget(self.action_frame)
         self.bottom_frame.layout.addWidget(self.info)
         self._layout.addWidget(self.bottom_frame)
-        
+
         # 3D loader thread #
         self.thread3DView = widgets.Loader3DViewThread()
         self.preview3D = None
 
         # Orthogonal loader thread #
-        self.threadOrtho = ReslicerWorker()        
+        self.threadOrtho = ReslicerWorker()
         self.threadOrtho.finished.connect(self.setProjections)
         self.idProj = (0, 0)
         self.projX: list[Channel] = None
         self.projY: list[Channel] = None
+
+        # ROI set #
+        self.roi_set_list: list[widgets.ROISet] = []
 
         # File preload from argument #
         if path != "":
@@ -197,6 +200,38 @@ class PreviewFrame(QFrame, widgets.IView):
             event.accept()
         else:
             event.ignore()
+
+    def isInstance(obj):
+        return obj is not None and issubclass(type(obj), PreviewFrame)
+
+    def connectRoiSet(self, roi_set: widgets.ROISet):
+        if roi_set not in self.roi_set_list:
+            self.roi_set_list.append(roi_set)
+
+    def showRoiSet(self, roi_set: widgets.ROISet):
+        self.connectRoiSet(roi_set)
+        if roi_set.visible:
+            return
+        for i in range(roi_set.list.count()):
+            roi = roi_set.list.item(i).roi
+            self.view.addItem(roi)
+        roi_set.visible = True
+
+    def hideRoiSet(self, roi_set: widgets.ROISet):
+        self.connectRoiSet(roi_set)
+        if not roi_set.visible:
+            return
+        for i in range(roi_set.list.count()):
+            roi = roi_set.list.item(i).roi
+            self.view.removeItem(roi)
+        roi_set.visible = False
+
+    def toggleRoiSet(self, roi_set: widgets.ROISet):
+        if roi_set.visible:
+            self.hideRoiSet(roi_set)
+        else:
+            self.showRoiSet(roi_set)
+
 
 class Loader3DViewThread(QThread):
     loaded = Signal(widgets.Preview3DWidget)
