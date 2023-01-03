@@ -1,3 +1,10 @@
+import damaker_gui
+import sys
+
+damaker_gui.run()
+
+sys.exit()
+
 # %%
 
 # import os

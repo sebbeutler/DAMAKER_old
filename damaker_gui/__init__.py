@@ -74,29 +74,29 @@ class MainWindow(QMainWindow):
         self.ui.dock4.setCurrentIndex(2)
 
         # -Preview Z-Stack- #
-        self.ui.dock1.addTab(widgets.PreviewFrame())
-        self.ui.dock1.addTab(widgets.PreviewFrame())
+        # self.ui.dock1.addTab(widgets.PreviewFrame())
+        # self.ui.dock1.addTab(widgets.PreviewFrame())
 
-        # -Operations- #
-        self.operationList = widgets.FunctionListWidget()
-        self.ui.dock4.addTab(self.operationList)
+        # # -Operations- #
+        # self.operationList = widgets.FunctionListWidget()
+        # self.ui.dock4.addTab(self.operationList)
 
-        # -Pipeline- #
-        self.pipeline = widgets.PipelineViewer()
-        self.ui.dock2.addTab(self.pipeline)
-        self.operationList.connectPipeline(self.pipeline)
+        # # -Pipeline- #
+        # self.pipeline = widgets.PipelineViewer()
+        # self.ui.dock2.addTab(self.pipeline)
+        # self.operationList.connectPipeline(self.pipeline)
 
-        # -LUT- #
-        self.colorMap = widgets.LutSelectorWidget()
-        self.ui.dock4.addTab(self.colorMap)
+        # # -LUT- #
+        # self.colorMap = widgets.LutSelectorWidget()
+        # self.ui.dock4.addTab(self.colorMap)
 
-        # -Brightness&Contrast- #
-        self.colorAdjust = widgets.ColorAdjustWidget()
-        self.ui.dock4.addTab(self.colorAdjust)
+        # # -Brightness&Contrast- #
+        # self.colorAdjust = widgets.ColorAdjustWidget()
+        # self.ui.dock4.addTab(self.colorAdjust)
 
-        # -Record- #
-        self.record = widgets.RecordFunctionsWidget()
-        self.ui.dock4.addTab(self.record)
+        # # -Record- #
+        # self.record = widgets.RecordFunctionsWidget()
+        # self.ui.dock4.addTab(self.record)
 
         # -Open file from args- #
         for arg in sys.argv[1:]:

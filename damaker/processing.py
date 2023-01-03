@@ -334,6 +334,7 @@ def averageImageStack(input: list[ImageStack], consensusSelection: int=0) -> Ima
     return output
 
 # TODO: Review reslice if too slow
+@obselete
 @damaker.Operation(alias='Reslice', category='Process', ndim=3)
 def resliceChannel(input: ImageStack, resliceType: ResliceType=ResliceType.top) -> ImageStack:
     """
