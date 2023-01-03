@@ -6,10 +6,12 @@ from typing_extensions import Self
 
 from .dmktypes import *
 
+@dataclass
 class ImageStackMetadata:
-    pixelsize: PixelSize
-    unit: MesureUnit
-    filepath: FilePathStr
+    pixelsize: PixelSize = None
+    unit: MesureUnit = None
+    filepath: FilePathStr = None
+    lut: np.ndarray = None
 
     @property
     def basename(self) -> str:
@@ -28,6 +30,7 @@ filepath: {self.filepath}
     def __iter__(self) -> iter:
         return iter(self.__dict__.items())
 
+@dataclass
 class ImageStack:
     data: np.ndarray = None
     metadata: ImageStackMetadata = None
@@ -63,13 +66,13 @@ class ImageStack:
 
     @method
     def loadAll(self, filepath: FilePathStr):
-
+# TODO: missing , end='' in the print ( it was causing error in logging for GUI)
         if self.data_loader != None:
-            print("loading data : ", end='')
+            print("loading data : ")
             self.data = self.data_loader(filepath)
 
         if self.metadata_loader != None:
-            print("loading metadata : ", end='')
+            print("loading metadata : ")
             self.metadata = self.metadata_loader(filepath)
 
         print('')
