@@ -26,6 +26,8 @@ from .DockHandler import *
 
 # TODO: Update with new damaker lib
 
+from .ImageStackWidget import *
+
 # from .StackView import *
 # from .InputWidget import *
 # from .BatchSelectionWidget import *

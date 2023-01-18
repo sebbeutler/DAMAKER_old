@@ -74,7 +74,7 @@ class MainWindow(QMainWindow):
         self.ui.dock4.setCurrentIndex(2)
 
         # -Preview Z-Stack- #
-        # self.ui.dock1.addTab(widgets.PreviewFrame())
+        self.ui.dock1.addTab(widgets.ImageStackWidget())
         # self.ui.dock1.addTab(widgets.PreviewFrame())
 
         # # -Operations- #
